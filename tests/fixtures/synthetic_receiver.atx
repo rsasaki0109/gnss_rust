@@ -1,0 +1,35 @@
+     1.4            M                                       ANTEX VERSION / SYST
+A                                                           PCV TYPE / REFANT
+                                                            END OF HEADER
+                                                            START OF ANTENNA
+TESTANT NONE        RX001                                   TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    90.0    10.0                                    ZEN1 / ZEN2 / DZEN
+     2                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+     12.00     -8.00     90.00                              NORTH / EAST / UP
+   NOAZI   -1.00   -0.80   -0.20    0.80    2.20    4.00    6.20    8.80   11.80   15.20
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+     -5.00     18.00    125.00                              NORTH / EAST / UP
+   NOAZI   -2.00   -1.70   -0.80    0.70    2.80    5.50    8.80   12.70   17.20   22.30
+   G02                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA
+BLOCK IIF           G01                 G063                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    90.0    10.0                                    ZEN1 / ZEN2 / DZEN
+     2                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+      0.00      0.00   2000.00                              NORTH / EAST / UP
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+      0.00      0.00   2000.00                              NORTH / EAST / UP
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   G02                                                      END OF FREQUENCY
+                                                            END OF ANTENNA

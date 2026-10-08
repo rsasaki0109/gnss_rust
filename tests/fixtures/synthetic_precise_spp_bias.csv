@@ -1,0 +1,10 @@
+# satellite,tracking,source,from_week,from_tow,until_week,until_tow,correction_m,clock_reference
+G01,1C,RinexClk,2300,346200,2300,346410,-1.2000000000000002,synthetic-precise-clock-v1
+G02,1C,RinexClk,2300,346200,2300,346410,-4.4000000000000004,synthetic-precise-clock-v1
+G07,1C,RinexClk,2300,346200,2300,346410,-1.2000000000000002,synthetic-precise-clock-v1
+G08,1C,RinexClk,2300,346200,2300,346410,-4.4000000000000004,synthetic-precise-clock-v1
+G09,1C,RinexClk,2300,346200,2300,346410,2,synthetic-precise-clock-v1
+G18,1C,RinexClk,2300,346200,2300,346410,2,synthetic-precise-clock-v1
+G19,1C,RinexClk,2300,346200,2300,346410,-1.2000000000000002,synthetic-precise-clock-v1
+G25,1C,RinexClk,2300,346200,2300,346410,-1.2000000000000002,synthetic-precise-clock-v1
+G26,1C,RinexClk,2300,346200,2300,346410,-4.4000000000000004,synthetic-precise-clock-v1

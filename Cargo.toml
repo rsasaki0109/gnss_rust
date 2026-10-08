@@ -1,0 +1,19 @@
+[package]
+name = "gnss-rust"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Rust port of the libgnss++ GNSS toolkit"
+license = "MIT AND BSD-2-Clause AND Apache-2.0"
+repository = "https://github.com/rsasaki0109/gnss_rust"
+
+[lib]
+name = "gnss_rust"
+path = "src/lib.rs"
+
+[[bin]]
+name = "gnss-rust"
+path = "src/bin/gnss.rs"
+
+[lints.rust]
+unsafe_code = "forbid"

@@ -1,0 +1,183 @@
+     1.4            G                                       ANTEX VERSION / SYST
+A                                                           PCV TYPE / REFANT
+                                                            END OF HEADER
+                                                            START OF ANTENNA
+BLOCK TEST          G01                 G101                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    14.0     2.0                                    ZEN1 / ZEN2 / DZEN
+     3                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+     30.00    -17.00   2104.00                              NORTH / EAST / UP
+   NOAZI    1.00    1.50    2.00    2.50    3.00    3.50    4.00    4.50
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+    -22.00     14.00   2407.00                              NORTH / EAST / UP
+   NOAZI    2.00    2.50    3.00    3.50    4.00    4.50    5.00    5.50
+   G02                                                      END OF FREQUENCY
+   G05                                                      START OF FREQUENCY
+      8.00     31.00   2205.00                              NORTH / EAST / UP
+   NOAZI    3.00    3.50    4.00    4.50    5.00    5.50    6.00    6.50
+   G05                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA
+BLOCK TEST          G02                 G102                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    14.0     2.0                                    ZEN1 / ZEN2 / DZEN
+     3                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+     60.00    -34.00   2108.00                              NORTH / EAST / UP
+   NOAZI    1.00    1.50    2.00    2.50    3.00    3.50    4.00    4.50
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+    -44.00     28.00   2414.00                              NORTH / EAST / UP
+   NOAZI    2.00    2.50    3.00    3.50    4.00    4.50    5.00    5.50
+   G02                                                      END OF FREQUENCY
+   G05                                                      START OF FREQUENCY
+     16.00     62.00   2210.00                              NORTH / EAST / UP
+   NOAZI    3.00    3.50    4.00    4.50    5.00    5.50    6.00    6.50
+   G05                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA
+BLOCK TEST          G07                 G107                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    14.0     2.0                                    ZEN1 / ZEN2 / DZEN
+     3                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+    210.00   -119.00   2128.00                              NORTH / EAST / UP
+   NOAZI    1.00    1.50    2.00    2.50    3.00    3.50    4.00    4.50
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+   -154.00     98.00   2449.00                              NORTH / EAST / UP
+   NOAZI    2.00    2.50    3.00    3.50    4.00    4.50    5.00    5.50
+   G02                                                      END OF FREQUENCY
+   G05                                                      START OF FREQUENCY
+     56.00    217.00   2235.00                              NORTH / EAST / UP
+   NOAZI    3.00    3.50    4.00    4.50    5.00    5.50    6.00    6.50
+   G05                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA
+BLOCK TEST          G08                 G108                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    14.0     2.0                                    ZEN1 / ZEN2 / DZEN
+     3                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+    240.00   -136.00   2132.00                              NORTH / EAST / UP
+   NOAZI    1.00    1.50    2.00    2.50    3.00    3.50    4.00    4.50
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+   -176.00    112.00   2456.00                              NORTH / EAST / UP
+   NOAZI    2.00    2.50    3.00    3.50    4.00    4.50    5.00    5.50
+   G02                                                      END OF FREQUENCY
+   G05                                                      START OF FREQUENCY
+     64.00    248.00   2240.00                              NORTH / EAST / UP
+   NOAZI    3.00    3.50    4.00    4.50    5.00    5.50    6.00    6.50
+   G05                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA
+BLOCK TEST          G09                 G109                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    14.0     2.0                                    ZEN1 / ZEN2 / DZEN
+     3                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+    270.00   -153.00   2136.00                              NORTH / EAST / UP
+   NOAZI    1.00    1.50    2.00    2.50    3.00    3.50    4.00    4.50
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+   -198.00    126.00   2463.00                              NORTH / EAST / UP
+   NOAZI    2.00    2.50    3.00    3.50    4.00    4.50    5.00    5.50
+   G02                                                      END OF FREQUENCY
+   G05                                                      START OF FREQUENCY
+     72.00    279.00   2245.00                              NORTH / EAST / UP
+   NOAZI    3.00    3.50    4.00    4.50    5.00    5.50    6.00    6.50
+   G05                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA
+BLOCK TEST          G18                 G118                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    14.0     2.0                                    ZEN1 / ZEN2 / DZEN
+     3                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+    540.00   -306.00   2172.00                              NORTH / EAST / UP
+   NOAZI    1.00    1.50    2.00    2.50    3.00    3.50    4.00    4.50
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+   -396.00    252.00   2526.00                              NORTH / EAST / UP
+   NOAZI    2.00    2.50    3.00    3.50    4.00    4.50    5.00    5.50
+   G02                                                      END OF FREQUENCY
+   G05                                                      START OF FREQUENCY
+    144.00    558.00   2290.00                              NORTH / EAST / UP
+   NOAZI    3.00    3.50    4.00    4.50    5.00    5.50    6.00    6.50
+   G05                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA
+BLOCK TEST          G19                 G119                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    14.0     2.0                                    ZEN1 / ZEN2 / DZEN
+     3                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+    570.00   -323.00   2176.00                              NORTH / EAST / UP
+   NOAZI    1.00    1.50    2.00    2.50    3.00    3.50    4.00    4.50
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+   -418.00    266.00   2533.00                              NORTH / EAST / UP
+   NOAZI    2.00    2.50    3.00    3.50    4.00    4.50    5.00    5.50
+   G02                                                      END OF FREQUENCY
+   G05                                                      START OF FREQUENCY
+    152.00    589.00   2295.00                              NORTH / EAST / UP
+   NOAZI    3.00    3.50    4.00    4.50    5.00    5.50    6.00    6.50
+   G05                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA
+BLOCK TEST          G25                 G125                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    14.0     2.0                                    ZEN1 / ZEN2 / DZEN
+     3                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+    750.00   -425.00   2200.00                              NORTH / EAST / UP
+   NOAZI    1.00    1.50    2.00    2.50    3.00    3.50    4.00    4.50
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+   -550.00    350.00   2575.00                              NORTH / EAST / UP
+   NOAZI    2.00    2.50    3.00    3.50    4.00    4.50    5.00    5.50
+   G02                                                      END OF FREQUENCY
+   G05                                                      START OF FREQUENCY
+    200.00    775.00   2325.00                              NORTH / EAST / UP
+   NOAZI    3.00    3.50    4.00    4.50    5.00    5.50    6.00    6.50
+   G05                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA
+BLOCK TEST          G26                 G126                TYPE / SERIAL NO
+     0.0                                                    DAZI
+     0.0    14.0     2.0                                    ZEN1 / ZEN2 / DZEN
+     3                                                      # OF FREQUENCIES
+  2020     1     1     0     0    0.0000000                 VALID FROM
+  2030     1     1     0     0    0.0000000                 VALID UNTIL
+   G01                                                      START OF FREQUENCY
+    780.00   -442.00   2204.00                              NORTH / EAST / UP
+   NOAZI    1.00    1.50    2.00    2.50    3.00    3.50    4.00    4.50
+   G01                                                      END OF FREQUENCY
+   G02                                                      START OF FREQUENCY
+   -572.00    364.00   2582.00                              NORTH / EAST / UP
+   NOAZI    2.00    2.50    3.00    3.50    4.00    4.50    5.00    5.50
+   G02                                                      END OF FREQUENCY
+   G05                                                      START OF FREQUENCY
+    208.00    806.00   2330.00                              NORTH / EAST / UP
+   NOAZI    3.00    3.50    4.00    4.50    5.00    5.50    6.00    6.50
+   G05                                                      END OF FREQUENCY
+                                                            END OF ANTENNA

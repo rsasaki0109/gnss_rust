@@ -1,0 +1,40 @@
+ginan-iers2010 (libgnss++ vendored subset)
+==========================================
+
+This directory contains C++ wrappers around IERS Conventions (2010)
+routines, adapted from:
+
+    Geoscience Australia - Ginan
+    https://github.com/GeoscienceAustralia/ginan
+    Copyright 2020 Geoscience Australia
+    Licensed under Apache License, Version 2.0
+
+The wrapper code is itself a translation/wrapper of FORTRAN routines
+distributed by the IERS as part of the IERS Conventions 2010 software:
+
+    https://iers-conventions.obspm.fr/
+
+The IERS Conventions 2010 routines are public-domain scientific software
+produced under the auspices of the International Earth Rotation and
+Reference Systems Service. The C++ wrappers in this directory are
+licensed under Apache License, Version 2.0 (see ./LICENSE).
+
+A list of modifications made by libgnss++ to the upstream ginan sources
+is recorded in ./README.md ("Modifications" section), as required by
+Apache License 2.0 §4(b).
+
+Rust translation in gnss-rust
+============================
+Derived from libgnss++ commit 72f3b7c2c4c088dc575286a6f0edf4e407bc499a,
+third_party/ginan-iers2010/dehanttideinel/dehanttide_all.cpp.
+Underlying Ginan source: GeoscienceAustralia/ginan@535ef0a (v4.1.1).
+
+src/iers2010.rs is a Rust translation with these modifications:
+- Fixed arrays replace Eigen vectors; API evaluates one station per call.
+- Explicit TT-century/UT-hour arguments and Earth-fixed Sun/Moon inputs.
+- Input and result validation, including errors on axial stations rather
+  than division by zero, and errors instead of nonfinite displacements.
+- Body terms share scalar expressions; return individual correction terms
+  and instantaneous coordinates as well as the summed displacement.
+- Step-1 and Step-2 retained; no permanent-tide Step-3 added.
+No SOFA source is included in the Rust library.
