@@ -1,0 +1,5 @@
+{
+  "error": "Reference CSV keys are GPS Week / GPS TOW (s); old harness used nonexistent compact names.",
+  "solver_executed": false,
+  "solver_or_threshold_changed": false
+}

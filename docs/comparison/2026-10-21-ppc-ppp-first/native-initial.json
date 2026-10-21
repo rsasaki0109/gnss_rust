@@ -1,0 +1,47 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_ppp_initial",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset"
+  ],
+  "build_command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "/workspace/gnss_rust/scripts/native_ppc_ppp_initial.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-Wl,--end-group",
+    "-o",
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_ppp_initial"
+  ],
+  "returncode": 0,
+  "build_returncode": 0,
+  "source_sha256": {
+    "scripts/native_ppc_ppp_initial.cpp": "31ca10a96f1a9b5b059ebdd228fe71eac5732e8faf9c021e47f2401edb3b00ea"
+  },
+  "binary_sha256": "026391ad355904afe8d344fa58a59ee7d6a11a4a0460a1cda3054191c68ff570",
+  "native_library_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "prior_native_proof_sha256": "0af517e7cb0eed5f537386d683fdf824a63b5cafa2637f8dd986eedfe1cc3ba4",
+  "actual_initializeFilter_calls": 6,
+  "prior_seed": "unchanged RINEX approximate position, zero clock, explicit valid seed, no SPP solve or reference.csv",
+  "precise_products_loaded_branch_explicit": true,
+  "whole_native_PPP_executed": false,
+  "upstream_source_patched": false,
+  "stdout_sha256": "27b2f330d3588a7ce54daf5da4fdccd7d8402404bf1cf612e99bb80020ec271b",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

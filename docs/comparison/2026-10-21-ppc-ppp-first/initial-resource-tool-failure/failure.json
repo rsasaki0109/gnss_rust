@@ -1,0 +1,5 @@
+{
+  "error": "GNU /usr/bin/time is unavailable. Replace external command with isolated POSIX wait4 measurement wrapper before any solver execution.",
+  "solver_executed": false,
+  "solver_or_threshold_changed": false
+}

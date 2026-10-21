@@ -1,0 +1,1518 @@
+{
+  "cases": {
+    "nagoya-run1": {
+      "1C2W-calibrated": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7597,
+          "PPP_FLOAT": 5
+        },
+        "successful_fraction": 0.0006577216521967903,
+        "longest_successful_epoch_streak": 4,
+        "maximum_success_to_success_gap_s": 0.40000000002328306,
+        "epochs_before_any_commit": 248,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 303,
+          "initial PPP: PostfitRejected": 60,
+          "initial PPP: Filter(InnovationRejected)": 5081,
+          "initial PPP: InsufficientCode { available: 4 }": 895,
+          "initial PPP: InsufficientCode { available: 3 }": 580,
+          "initial PPP: InsufficientCode { available: 1 }": 140,
+          "initial PPP: InsufficientCode { available: 0 }": 120,
+          "initial PPP: InsufficientCode { available: 2 }": 403,
+          "initial PPP: InsufficientPhase { available: 3 }": 15
+        },
+        "initial_success_time": [
+          "2325",
+          "550429.59999999997671694"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 5,
+              "horizontal_rms_m": 2.8045615210055512,
+              "vertical_rms_m": 11.280449175092537,
+              "three_dimensional_rms_m": 11.623859037210957,
+              "horizontal_p50_m": 2.8065509439478915,
+              "horizontal_p95_m": 2.8344836585470574,
+              "maximum_3d_m": 11.958109693604744
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 5,
+              "horizontal_rms_m": 1.989144146317139,
+              "vertical_rms_m": 10.046168930869468,
+              "three_dimensional_rms_m": 10.241201327109763,
+              "horizontal_p50_m": 1.9906471643741954,
+              "horizontal_p95_m": 2.0057552362118405,
+              "maximum_3d_m": 10.570352110028443
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 7.789240690995939,
+        "resource_log": "nagoya-run1-1C2W-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2W-raw-float": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7597,
+          "PPP_FLOAT": 5
+        },
+        "successful_fraction": 0.0006577216521967903,
+        "longest_successful_epoch_streak": 4,
+        "maximum_success_to_success_gap_s": 0.40000000002328306,
+        "epochs_before_any_commit": 248,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 303,
+          "initial PPP: PostfitRejected": 60,
+          "initial PPP: Filter(InnovationRejected)": 5081,
+          "initial PPP: InsufficientCode { available: 4 }": 895,
+          "initial PPP: InsufficientCode { available: 3 }": 580,
+          "initial PPP: InsufficientCode { available: 1 }": 140,
+          "initial PPP: InsufficientCode { available: 0 }": 120,
+          "initial PPP: InsufficientCode { available: 2 }": 403,
+          "initial PPP: InsufficientPhase { available: 3 }": 15
+        },
+        "initial_success_time": [
+          "2325",
+          "550429.59999999997671694"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 5,
+              "horizontal_rms_m": 2.8045615239312647,
+              "vertical_rms_m": 11.28044916657472,
+              "three_dimensional_rms_m": 11.623859029650694,
+              "horizontal_p50_m": 2.8065509461504967,
+              "horizontal_p95_m": 2.83448366183016,
+              "maximum_3d_m": 11.958109693604744
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 5,
+              "horizontal_rms_m": 1.9891441498138032,
+              "vertical_rms_m": 10.046168922363075,
+              "three_dimensional_rms_m": 10.241201319444517,
+              "horizontal_p50_m": 1.9906471673292763,
+              "horizontal_p95_m": 2.0057552408792585,
+              "maximum_3d_m": 10.570352110028443
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 7.903101225965656,
+        "resource_log": "nagoya-run1-1C2W-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-calibrated": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7596,
+          "PPP_FLOAT": 6
+        },
+        "successful_fraction": 0.0007892659826361484,
+        "longest_successful_epoch_streak": 4,
+        "maximum_success_to_success_gap_s": 3.599999999976717,
+        "epochs_before_any_commit": 200,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 230,
+          "initial PPP: Filter(InnovationRejected)": 5223,
+          "initial PPP: PostfitRejected": 97,
+          "initial PPP: InsufficientPhase { available: 3 }": 365,
+          "initial PPP: InsufficientCode { available: 4 }": 889,
+          "initial PPP: InsufficientPhase { available: 1 }": 22,
+          "initial PPP: InsufficientCode { available: 2 }": 137,
+          "initial PPP: InsufficientCode { available: 1 }": 74,
+          "initial PPP: InsufficientCode { available: 0 }": 56,
+          "initial PPP: InsufficientCode { available: 3 }": 418,
+          "initial PPP: InsufficientPhase { available: 2 }": 83,
+          "initial PPP: InsufficientPhase { available: 0 }": 2
+        },
+        "initial_success_time": [
+          "2325",
+          "550420.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 6,
+              "horizontal_rms_m": 3.1877475041711443,
+              "vertical_rms_m": 9.178873837203948,
+              "three_dimensional_rms_m": 9.716658842917996,
+              "horizontal_p50_m": 3.166865519647904,
+              "horizontal_p95_m": 3.268287629619113,
+              "maximum_3d_m": 10.579616799608432
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 6,
+              "horizontal_rms_m": 2.6375196980589535,
+              "vertical_rms_m": 7.9541052985963185,
+              "three_dimensional_rms_m": 8.379994108518636,
+              "horizontal_p50_m": 2.606320922486273,
+              "horizontal_p95_m": 2.7878340711218184,
+              "maximum_3d_m": 9.272060869576162
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 8.541723448957782,
+        "resource_log": "nagoya-run1-1C2L-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-raw-float": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7596,
+          "PPP_FLOAT": 6
+        },
+        "successful_fraction": 0.0007892659826361484,
+        "longest_successful_epoch_streak": 4,
+        "maximum_success_to_success_gap_s": 3.599999999976717,
+        "epochs_before_any_commit": 200,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 230,
+          "initial PPP: Filter(InnovationRejected)": 5223,
+          "initial PPP: PostfitRejected": 97,
+          "initial PPP: InsufficientPhase { available: 3 }": 365,
+          "initial PPP: InsufficientCode { available: 4 }": 889,
+          "initial PPP: InsufficientPhase { available: 1 }": 22,
+          "initial PPP: InsufficientCode { available: 2 }": 137,
+          "initial PPP: InsufficientCode { available: 1 }": 74,
+          "initial PPP: InsufficientCode { available: 0 }": 56,
+          "initial PPP: InsufficientCode { available: 3 }": 418,
+          "initial PPP: InsufficientPhase { available: 2 }": 83,
+          "initial PPP: InsufficientPhase { available: 0 }": 2
+        },
+        "initial_success_time": [
+          "2325",
+          "550420.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 6,
+              "horizontal_rms_m": 3.1877475025947772,
+              "vertical_rms_m": 9.178873853080558,
+              "three_dimensional_rms_m": 9.716658857398729,
+              "horizontal_p50_m": 3.1668655180354124,
+              "horizontal_p95_m": 3.2682876295303087,
+              "maximum_3d_m": 10.579616799608432
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 6,
+              "horizontal_rms_m": 2.637519695388105,
+              "vertical_rms_m": 7.954105314582159,
+              "three_dimensional_rms_m": 8.37999412285142,
+              "horizontal_p50_m": 2.6063209222801103,
+              "horizontal_p95_m": 2.7878340688907413,
+              "maximum_3d_m": 9.272060869576162
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 8.664808976987842,
+        "resource_log": "nagoya-run1-1C2L-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      }
+    },
+    "nagoya-run2": {
+      "1C2W-calibrated": {
+        "input_epochs": 9451,
+        "status_counts": {
+          "INVALID": 9450,
+          "PPP_FLOAT": 1
+        },
+        "successful_fraction": 0.00010580890911014708,
+        "longest_successful_epoch_streak": 1,
+        "maximum_success_to_success_gap_s": null,
+        "epochs_before_any_commit": 82,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 193,
+          "initial PPP: Filter(InnovationRejected)": 4507,
+          "initial PPP: InsufficientCode { available: 4 }": 2174,
+          "initial PPP: InsufficientCode { available: 1 }": 135,
+          "initial PPP: InsufficientCode { available: 3 }": 1738,
+          "initial PPP: InsufficientPhase { available: 3 }": 30,
+          "initial PPP: InsufficientCode { available: 2 }": 622,
+          "initial PPP: InsufficientCode { available: 0 }": 51
+        },
+        "initial_success_time": [
+          "2323",
+          "555736.40000000002328306"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1,
+              "horizontal_rms_m": 1.8673331328902922,
+              "vertical_rms_m": 7.560088891944897,
+              "three_dimensional_rms_m": 7.7872894567557,
+              "horizontal_p50_m": 1.8673331328902922,
+              "horizontal_p95_m": 1.8673331328902922,
+              "maximum_3d_m": 7.7872894567557
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 1,
+              "horizontal_rms_m": 1.0443089132735026,
+              "vertical_rms_m": 6.3258272356369245,
+              "three_dimensional_rms_m": 6.411448457366586,
+              "horizontal_p50_m": 1.0443089132735026,
+              "horizontal_p95_m": 1.0443089132735026,
+              "maximum_3d_m": 6.411448457366586
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 9.701423995022196,
+        "resource_log": "nagoya-run2-1C2W-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2W-raw-float": {
+        "input_epochs": 9451,
+        "status_counts": {
+          "INVALID": 9450,
+          "PPP_FLOAT": 1
+        },
+        "successful_fraction": 0.00010580890911014708,
+        "longest_successful_epoch_streak": 1,
+        "maximum_success_to_success_gap_s": null,
+        "epochs_before_any_commit": 82,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 193,
+          "initial PPP: Filter(InnovationRejected)": 4507,
+          "initial PPP: InsufficientCode { available: 4 }": 2174,
+          "initial PPP: InsufficientCode { available: 1 }": 135,
+          "initial PPP: InsufficientCode { available: 3 }": 1738,
+          "initial PPP: InsufficientPhase { available: 3 }": 30,
+          "initial PPP: InsufficientCode { available: 2 }": 622,
+          "initial PPP: InsufficientCode { available: 0 }": 51
+        },
+        "initial_success_time": [
+          "2323",
+          "555736.40000000002328306"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1,
+              "horizontal_rms_m": 1.8673331328902922,
+              "vertical_rms_m": 7.560088891944897,
+              "three_dimensional_rms_m": 7.7872894567557,
+              "horizontal_p50_m": 1.8673331328902922,
+              "horizontal_p95_m": 1.8673331328902922,
+              "maximum_3d_m": 7.7872894567557
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 1,
+              "horizontal_rms_m": 1.0443089132735026,
+              "vertical_rms_m": 6.3258272356369245,
+              "three_dimensional_rms_m": 6.411448457366586,
+              "horizontal_p50_m": 1.0443089132735026,
+              "horizontal_p95_m": 1.0443089132735026,
+              "maximum_3d_m": 6.411448457366586
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 8.170680929964874,
+        "resource_log": "nagoya-run2-1C2W-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-calibrated": {
+        "input_epochs": 9451,
+        "status_counts": {
+          "PPP_FLOAT": 1,
+          "INVALID": 9450
+        },
+        "successful_fraction": 0.00010580890911014708,
+        "longest_successful_epoch_streak": 1,
+        "maximum_success_to_success_gap_s": null,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 111,
+          "initial PPP: Filter(InnovationRejected)": 5505,
+          "initial PPP: InsufficientCode { available: 4 }": 1594,
+          "initial PPP: InsufficientPhase { available: 3 }": 737,
+          "initial PPP: InsufficientCode { available: 3 }": 950,
+          "initial PPP: InsufficientPhase { available: 0 }": 13,
+          "initial PPP: InsufficientPhase { available: 1 }": 71,
+          "initial PPP: InsufficientPhase { available: 2 }": 264,
+          "initial PPP: InsufficientCode { available: 0 }": 32,
+          "initial PPP: InsufficientCode { available: 2 }": 147,
+          "initial PPP: InsufficientCode { available: 1 }": 26
+        },
+        "initial_success_time": [
+          "2323",
+          "555720.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1,
+              "horizontal_rms_m": 1.8872641437545192,
+              "vertical_rms_m": 5.50981483959762,
+              "three_dimensional_rms_m": 5.824072931802247,
+              "horizontal_p50_m": 1.8872641437545192,
+              "horizontal_p95_m": 1.8872641437545192,
+              "maximum_3d_m": 5.824072931802247
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 1,
+              "horizontal_rms_m": 1.2063359338335384,
+              "vertical_rms_m": 4.27561724128885,
+              "three_dimensional_rms_m": 4.442538596260533,
+              "horizontal_p50_m": 1.2063359338335384,
+              "horizontal_p95_m": 1.2063359338335384,
+              "maximum_3d_m": 4.442538596260533
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 9.195083962986246,
+        "resource_log": "nagoya-run2-1C2L-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-raw-float": {
+        "input_epochs": 9451,
+        "status_counts": {
+          "PPP_FLOAT": 1,
+          "INVALID": 9450
+        },
+        "successful_fraction": 0.00010580890911014708,
+        "longest_successful_epoch_streak": 1,
+        "maximum_success_to_success_gap_s": null,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 111,
+          "initial PPP: Filter(InnovationRejected)": 5505,
+          "initial PPP: InsufficientCode { available: 4 }": 1594,
+          "initial PPP: InsufficientPhase { available: 3 }": 737,
+          "initial PPP: InsufficientCode { available: 3 }": 950,
+          "initial PPP: InsufficientPhase { available: 0 }": 13,
+          "initial PPP: InsufficientPhase { available: 1 }": 71,
+          "initial PPP: InsufficientPhase { available: 2 }": 264,
+          "initial PPP: InsufficientCode { available: 0 }": 32,
+          "initial PPP: InsufficientCode { available: 2 }": 147,
+          "initial PPP: InsufficientCode { available: 1 }": 26
+        },
+        "initial_success_time": [
+          "2323",
+          "555720.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1,
+              "horizontal_rms_m": 1.8872641437545192,
+              "vertical_rms_m": 5.50981483959762,
+              "three_dimensional_rms_m": 5.824072931802247,
+              "horizontal_p50_m": 1.8872641437545192,
+              "horizontal_p95_m": 1.8872641437545192,
+              "maximum_3d_m": 5.824072931802247
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 1,
+              "horizontal_rms_m": 1.2063359338335384,
+              "vertical_rms_m": 4.27561724128885,
+              "three_dimensional_rms_m": 4.442538596260533,
+              "horizontal_p50_m": 1.2063359338335384,
+              "horizontal_p95_m": 1.2063359338335384,
+              "maximum_3d_m": 4.442538596260533
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 8.902063375979196,
+        "resource_log": "nagoya-run2-1C2L-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      }
+    },
+    "nagoya-run3": {
+      "1C2W-calibrated": {
+        "input_epochs": 5201,
+        "status_counts": {
+          "INVALID": 5083,
+          "PPP_FLOAT": 118
+        },
+        "successful_fraction": 0.022687944626033456,
+        "longest_successful_epoch_streak": 115,
+        "maximum_success_to_success_gap_s": 0.40000000002328306,
+        "epochs_before_any_commit": 51,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 97,
+          "initial PPP: Filter(InnovationRejected)": 2094,
+          "initial PPP: InsufficientCode { available: 3 }": 1059,
+          "initial PPP: InsufficientCode { available: 4 }": 1354,
+          "initial PPP: InsufficientPhase { available: 2 }": 4,
+          "initial PPP: InsufficientPhase { available: 3 }": 18,
+          "initial PPP: InsufficientCode { available: 2 }": 400,
+          "initial PPP: InsufficientCode { available: 1 }": 47,
+          "initial PPP: InsufficientCode { available: 0 }": 10
+        },
+        "initial_success_time": [
+          "2325",
+          "553810.19999999995343387"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 118,
+              "horizontal_rms_m": 2.0573472616591437,
+              "vertical_rms_m": 8.117702629954673,
+              "three_dimensional_rms_m": 8.374352138728668,
+              "horizontal_p50_m": 2.1025219499575627,
+              "horizontal_p95_m": 2.391312832980957,
+              "maximum_3d_m": 9.73427331308899
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 118,
+              "horizontal_rms_m": 2.8382813806012606,
+              "vertical_rms_m": 9.311440340635926,
+              "three_dimensional_rms_m": 9.734411251467131,
+              "horizontal_p50_m": 2.854905120873637,
+              "horizontal_p95_m": 3.1708467579100703,
+              "maximum_3d_m": 11.106650756375211
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 4.718605535977986,
+        "resource_log": "nagoya-run3-1C2W-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2W-raw-float": {
+        "input_epochs": 5201,
+        "status_counts": {
+          "INVALID": 5083,
+          "PPP_FLOAT": 118
+        },
+        "successful_fraction": 0.022687944626033456,
+        "longest_successful_epoch_streak": 115,
+        "maximum_success_to_success_gap_s": 0.40000000002328306,
+        "epochs_before_any_commit": 51,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 97,
+          "initial PPP: Filter(InnovationRejected)": 2094,
+          "initial PPP: InsufficientCode { available: 3 }": 1059,
+          "initial PPP: InsufficientCode { available: 4 }": 1354,
+          "initial PPP: InsufficientPhase { available: 2 }": 4,
+          "initial PPP: InsufficientPhase { available: 3 }": 18,
+          "initial PPP: InsufficientCode { available: 2 }": 400,
+          "initial PPP: InsufficientCode { available: 1 }": 47,
+          "initial PPP: InsufficientCode { available: 0 }": 10
+        },
+        "initial_success_time": [
+          "2325",
+          "553810.19999999995343387"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 118,
+              "horizontal_rms_m": 2.0573472635316143,
+              "vertical_rms_m": 8.11770265427215,
+              "three_dimensional_rms_m": 8.374352162760898,
+              "horizontal_p50_m": 2.102521934250052,
+              "horizontal_p95_m": 2.391312834097316,
+              "maximum_3d_m": 9.734273115730948
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 118,
+              "horizontal_rms_m": 2.838281382464408,
+              "vertical_rms_m": 9.31144036618111,
+              "three_dimensional_rms_m": 9.73441127644559,
+              "horizontal_p50_m": 2.8549051192484405,
+              "horizontal_p95_m": 3.170846755693294,
+              "maximum_3d_m": 11.106650560103237
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 3.849164662999101,
+        "resource_log": "nagoya-run3-1C2W-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-calibrated": {
+        "input_epochs": 5201,
+        "status_counts": {
+          "PPP_FLOAT": 19,
+          "INVALID": 5182
+        },
+        "successful_fraction": 0.003653143626225726,
+        "longest_successful_epoch_streak": 19,
+        "maximum_success_to_success_gap_s": 0.2000000000698492,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 134,
+          "initial PPP: Filter(InnovationRejected)": 2892,
+          "initial PPP: InsufficientPhase { available: 3 }": 587,
+          "initial PPP: InsufficientPhase { available: 0 }": 14,
+          "initial PPP: InsufficientPhase { available: 2 }": 312,
+          "initial PPP: InsufficientPhase { available: 1 }": 45,
+          "initial PPP: InsufficientCode { available: 4 }": 744,
+          "initial PPP: InsufficientCode { available: 3 }": 376,
+          "initial PPP: InsufficientCode { available: 2 }": 78
+        },
+        "initial_success_time": [
+          "2325",
+          "553800.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 19,
+              "horizontal_rms_m": 0.700105948659935,
+              "vertical_rms_m": 6.914476698328031,
+              "three_dimensional_rms_m": 6.949829951234083,
+              "horizontal_p50_m": 0.7485607874081569,
+              "horizontal_p95_m": 0.7930126340880673,
+              "maximum_3d_m": 9.10412360285797
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 19,
+              "horizontal_rms_m": 0.6397857886869184,
+              "vertical_rms_m": 5.745980223511618,
+              "three_dimensional_rms_m": 5.781488959117052,
+              "horizontal_p50_m": 0.5927935366343509,
+              "horizontal_p95_m": 0.8994483148133418,
+              "maximum_3d_m": 7.862588398499893
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 5.2642156619695015,
+        "resource_log": "nagoya-run3-1C2L-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-raw-float": {
+        "input_epochs": 5201,
+        "status_counts": {
+          "PPP_FLOAT": 19,
+          "INVALID": 5182
+        },
+        "successful_fraction": 0.003653143626225726,
+        "longest_successful_epoch_streak": 19,
+        "maximum_success_to_success_gap_s": 0.2000000000698492,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 134,
+          "initial PPP: Filter(InnovationRejected)": 2892,
+          "initial PPP: InsufficientPhase { available: 3 }": 587,
+          "initial PPP: InsufficientPhase { available: 0 }": 14,
+          "initial PPP: InsufficientPhase { available: 2 }": 312,
+          "initial PPP: InsufficientPhase { available: 1 }": 45,
+          "initial PPP: InsufficientCode { available: 4 }": 744,
+          "initial PPP: InsufficientCode { available: 3 }": 376,
+          "initial PPP: InsufficientCode { available: 2 }": 78
+        },
+        "initial_success_time": [
+          "2325",
+          "553800.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "4.656613E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 19,
+              "horizontal_rms_m": 0.700105955064171,
+              "vertical_rms_m": 6.91447680118769,
+              "three_dimensional_rms_m": 6.949830054215647,
+              "horizontal_p50_m": 0.7485607918808536,
+              "horizontal_p95_m": 0.7930126420718197,
+              "maximum_3d_m": 9.10412361317236
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 19,
+              "horizontal_rms_m": 0.6397857829786627,
+              "vertical_rms_m": 5.745980327670595,
+              "three_dimensional_rms_m": 5.781489062004624,
+              "horizontal_p50_m": 0.5927935241381527,
+              "horizontal_p95_m": 0.8994483162994065,
+              "maximum_3d_m": 7.862588408472873
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 4.8188697380246595,
+        "resource_log": "nagoya-run3-1C2L-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      }
+    },
+    "tokyo-run1": {
+      "1C2W-calibrated": {
+        "input_epochs": 11928,
+        "status_counts": {
+          "PPP_FLOAT": 8,
+          "INVALID": 11920
+        },
+        "successful_fraction": 0.0006706908115358819,
+        "longest_successful_epoch_streak": 6,
+        "maximum_success_to_success_gap_s": 1891.5999999999767,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 5,
+          "initial PPP: PostfitRejected": 7,
+          "initial PPP: Filter(InnovationRejected)": 5547,
+          "initial PPP: InsufficientCode { available: 4 }": 2560,
+          "initial PPP: InsufficientCode { available: 3 }": 1566,
+          "initial PPP: InsufficientPhase { available: 3 }": 81,
+          "initial PPP: InsufficientCode { available: 2 }": 1139,
+          "initial PPP: InsufficientPhase { available: 2 }": 29,
+          "initial PPP: InsufficientCode { available: 1 }": 861,
+          "initial PPP: InsufficientPhase { available: 1 }": 9,
+          "initial PPP: InsufficientCode { available: 0 }": 116
+        },
+        "initial_success_time": [
+          "2324",
+          "187470.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 8,
+              "horizontal_rms_m": 4.430417482332611,
+              "vertical_rms_m": 3.0552199560125324,
+              "three_dimensional_rms_m": 5.381725378294181,
+              "horizontal_p50_m": 4.907891859306005,
+              "horizontal_p95_m": 5.436847645776877,
+              "maximum_3d_m": 6.336880261259022
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 8,
+              "horizontal_rms_m": 4.385592509311572,
+              "vertical_rms_m": 2.7494734981554805,
+              "three_dimensional_rms_m": 5.176198042462161,
+              "horizontal_p50_m": 4.835658684013657,
+              "horizontal_p95_m": 5.404394233348931,
+              "maximum_3d_m": 5.793926450235747
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 8,
+              "horizontal_rms_m": 4.923528293822256,
+              "vertical_rms_m": 2.5121470319751307,
+              "three_dimensional_rms_m": 5.52738759002205,
+              "horizontal_p50_m": 5.443906339956312,
+              "horizontal_p95_m": 6.056601958429361,
+              "maximum_3d_m": 6.287736998905551
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 8.491329595039133,
+        "resource_log": "tokyo-run1-1C2W-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2W-raw-float": {
+        "input_epochs": 11928,
+        "status_counts": {
+          "PPP_FLOAT": 8,
+          "INVALID": 11920
+        },
+        "successful_fraction": 0.0006706908115358819,
+        "longest_successful_epoch_streak": 6,
+        "maximum_success_to_success_gap_s": 1891.5999999999767,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 5,
+          "initial PPP: PostfitRejected": 7,
+          "initial PPP: Filter(InnovationRejected)": 5547,
+          "initial PPP: InsufficientCode { available: 4 }": 2560,
+          "initial PPP: InsufficientCode { available: 3 }": 1566,
+          "initial PPP: InsufficientPhase { available: 3 }": 81,
+          "initial PPP: InsufficientCode { available: 2 }": 1139,
+          "initial PPP: InsufficientPhase { available: 2 }": 29,
+          "initial PPP: InsufficientCode { available: 1 }": 861,
+          "initial PPP: InsufficientPhase { available: 1 }": 9,
+          "initial PPP: InsufficientCode { available: 0 }": 116
+        },
+        "initial_success_time": [
+          "2324",
+          "187470.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 8,
+              "horizontal_rms_m": 4.430417475191809,
+              "vertical_rms_m": 3.055219955680989,
+              "three_dimensional_rms_m": 5.381725372227415,
+              "horizontal_p50_m": 4.90789185206231,
+              "horizontal_p95_m": 5.436847636627239,
+              "maximum_3d_m": 6.336880259724744
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 8,
+              "horizontal_rms_m": 4.385592501892551,
+              "vertical_rms_m": 2.749473496634925,
+              "three_dimensional_rms_m": 5.176198035368627,
+              "horizontal_p50_m": 4.835658676348732,
+              "horizontal_p95_m": 5.404394223952406,
+              "maximum_3d_m": 5.79392644881931
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 8,
+              "horizontal_rms_m": 4.923528286133183,
+              "vertical_rms_m": 2.512147028795952,
+              "three_dimensional_rms_m": 5.527387581728089,
+              "horizontal_p50_m": 5.44390633175871,
+              "horizontal_p95_m": 6.056601948809148,
+              "maximum_3d_m": 6.28773698636831
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 8.680531325982884,
+        "resource_log": "tokyo-run1-1C2W-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-calibrated": {
+        "input_epochs": 11928,
+        "status_counts": {
+          "INVALID": 11926,
+          "PPP_FLOAT": 2
+        },
+        "successful_fraction": 0.00016767270288397049,
+        "longest_successful_epoch_streak": 1,
+        "maximum_success_to_success_gap_s": 1940.0,
+        "epochs_before_any_commit": 2,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 9,
+          "initial PPP: Filter(InnovationRejected)": 3815,
+          "initial PPP: InsufficientCode { available: 4 }": 2689,
+          "initial PPP: InsufficientPhase { available: 3 }": 878,
+          "initial PPP: InsufficientPhase { available: 2 }": 426,
+          "initial PPP: InsufficientPhase { available: 1 }": 198,
+          "initial PPP: InsufficientCode { available: 3 }": 1406,
+          "initial PPP: InsufficientCode { available: 2 }": 1645,
+          "initial PPP: InsufficientPhase { available: 0 }": 25,
+          "initial PPP: InsufficientCode { available: 1 }": 762,
+          "initial PPP: InsufficientCode { available: 0 }": 70,
+          "initial PPP: PostfitRejected": 3
+        },
+        "initial_success_time": [
+          "2324",
+          "187470.39999999999417923"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 2,
+              "horizontal_rms_m": 1.8313992521919784,
+              "vertical_rms_m": 5.232114922472722,
+              "three_dimensional_rms_m": 5.543378913883759,
+              "horizontal_p50_m": 1.7673766264788409,
+              "horizontal_p95_m": 2.1993795150056927,
+              "maximum_3d_m": 5.692766529117496
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 2,
+              "horizontal_rms_m": 1.8423636834445443,
+              "vertical_rms_m": 4.668520584546076,
+              "three_dimensional_rms_m": 5.018903106297809,
+              "horizontal_p50_m": 1.7907289923778116,
+              "horizontal_p95_m": 2.1805377025494117,
+              "maximum_3d_m": 5.161389043016076
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 2,
+              "horizontal_rms_m": 1.8399276263648778,
+              "vertical_rms_m": 4.001279188165646,
+              "three_dimensional_rms_m": 4.404040055665732,
+              "horizontal_p50_m": 1.8223703008197116,
+              "horizontal_p95_m": 2.050587581344835,
+              "maximum_3d_m": 4.778482591344797
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 6.850676906004082,
+        "resource_log": "tokyo-run1-1C2L-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-raw-float": {
+        "input_epochs": 11928,
+        "status_counts": {
+          "INVALID": 11926,
+          "PPP_FLOAT": 2
+        },
+        "successful_fraction": 0.00016767270288397049,
+        "longest_successful_epoch_streak": 1,
+        "maximum_success_to_success_gap_s": 1940.0,
+        "epochs_before_any_commit": 2,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 9,
+          "initial PPP: Filter(InnovationRejected)": 3815,
+          "initial PPP: InsufficientCode { available: 4 }": 2689,
+          "initial PPP: InsufficientPhase { available: 3 }": 878,
+          "initial PPP: InsufficientPhase { available: 2 }": 426,
+          "initial PPP: InsufficientPhase { available: 1 }": 198,
+          "initial PPP: InsufficientCode { available: 3 }": 1406,
+          "initial PPP: InsufficientCode { available: 2 }": 1645,
+          "initial PPP: InsufficientPhase { available: 0 }": 25,
+          "initial PPP: InsufficientCode { available: 1 }": 762,
+          "initial PPP: InsufficientCode { available: 0 }": 70,
+          "initial PPP: PostfitRejected": 3
+        },
+        "initial_success_time": [
+          "2324",
+          "187470.39999999999417923"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 2,
+              "horizontal_rms_m": 1.8313992521919784,
+              "vertical_rms_m": 5.232114922472722,
+              "three_dimensional_rms_m": 5.543378913883759,
+              "horizontal_p50_m": 1.7673766264788409,
+              "horizontal_p95_m": 2.1993795150056927,
+              "maximum_3d_m": 5.692766529117496
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 2,
+              "horizontal_rms_m": 1.8423636834445443,
+              "vertical_rms_m": 4.668520584546076,
+              "three_dimensional_rms_m": 5.018903106297809,
+              "horizontal_p50_m": 1.7907289923778116,
+              "horizontal_p95_m": 2.1805377025494117,
+              "maximum_3d_m": 5.161389043016076
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 2,
+              "horizontal_rms_m": 1.8399276263648778,
+              "vertical_rms_m": 4.001279188165646,
+              "three_dimensional_rms_m": 4.404040055665732,
+              "horizontal_p50_m": 1.8223703008197116,
+              "horizontal_p95_m": 2.050587581344835,
+              "maximum_3d_m": 4.778482591344797
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 7.143917709006928,
+        "resource_log": "tokyo-run1-1C2L-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      }
+    },
+    "tokyo-run2": {
+      "1C2W-calibrated": {
+        "input_epochs": 9151,
+        "status_counts": {
+          "INVALID": 9146,
+          "PPP_FLOAT": 5
+        },
+        "successful_fraction": 0.0005463883728554257,
+        "longest_successful_epoch_streak": 5,
+        "maximum_success_to_success_gap_s": 0.20000000001164153,
+        "epochs_before_any_commit": 1,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 11,
+          "initial PPP: Filter(InnovationRejected)": 5097,
+          "initial PPP: InsufficientCode { available: 4 }": 2171,
+          "initial PPP: InsufficientPhase { available: 3 }": 19,
+          "initial PPP: InsufficientCode { available: 3 }": 761,
+          "initial PPP: InsufficientCode { available: 2 }": 722,
+          "initial PPP: InsufficientCode { available: 1 }": 261,
+          "initial PPP: InsufficientPhase { available: 1 }": 1,
+          "initial PPP: InsufficientPhase { available: 2 }": 3,
+          "initial PPP: InsufficientCode { available: 0 }": 100
+        },
+        "initial_success_time": [
+          "2324",
+          "177000.20000000001164153"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 5,
+              "horizontal_rms_m": 1.26562525556001,
+              "vertical_rms_m": 1.1392210487711472,
+              "three_dimensional_rms_m": 1.7028305510163286,
+              "horizontal_p50_m": 1.2698131529311856,
+              "horizontal_p95_m": 1.2931287527696331,
+              "maximum_3d_m": 1.8939074990900515
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 5,
+              "horizontal_rms_m": 0.9936896245726603,
+              "vertical_rms_m": 0.5938140257185843,
+              "three_dimensional_rms_m": 1.1575984481345274,
+              "horizontal_p50_m": 0.9979332451805505,
+              "horizontal_p95_m": 1.0183583629816961,
+              "maximum_3d_m": 1.3083272204197613
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 5,
+              "horizontal_rms_m": 1.2042654924568243,
+              "vertical_rms_m": 0.2279340400981438,
+              "three_dimensional_rms_m": 1.2256464836802412,
+              "horizontal_p50_m": 1.208768841152074,
+              "horizontal_p95_m": 1.213381214349315,
+              "maximum_3d_m": 1.2541789526653773
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 8.972020371002145,
+        "resource_log": "tokyo-run2-1C2W-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2W-raw-float": {
+        "input_epochs": 9151,
+        "status_counts": {
+          "INVALID": 9146,
+          "PPP_FLOAT": 5
+        },
+        "successful_fraction": 0.0005463883728554257,
+        "longest_successful_epoch_streak": 5,
+        "maximum_success_to_success_gap_s": 0.20000000001164153,
+        "epochs_before_any_commit": 1,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 11,
+          "initial PPP: Filter(InnovationRejected)": 5097,
+          "initial PPP: InsufficientCode { available: 4 }": 2171,
+          "initial PPP: InsufficientPhase { available: 3 }": 19,
+          "initial PPP: InsufficientCode { available: 3 }": 761,
+          "initial PPP: InsufficientCode { available: 2 }": 722,
+          "initial PPP: InsufficientCode { available: 1 }": 261,
+          "initial PPP: InsufficientPhase { available: 1 }": 1,
+          "initial PPP: InsufficientPhase { available: 2 }": 3,
+          "initial PPP: InsufficientCode { available: 0 }": 100
+        },
+        "initial_success_time": [
+          "2324",
+          "177000.20000000001164153"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 5,
+              "horizontal_rms_m": 1.265625256706549,
+              "vertical_rms_m": 1.1392210444641242,
+              "three_dimensional_rms_m": 1.7028305489870235,
+              "horizontal_p50_m": 1.2698131551952865,
+              "horizontal_p95_m": 1.293128752496751,
+              "maximum_3d_m": 1.8939074990900515
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 5,
+              "horizontal_rms_m": 0.9936896256147433,
+              "vertical_rms_m": 0.5938140217519824,
+              "three_dimensional_rms_m": 1.1575984469943075,
+              "horizontal_p50_m": 0.9979332473973227,
+              "horizontal_p95_m": 1.0183583626828048,
+              "maximum_3d_m": 1.3083272204197613
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 5,
+              "horizontal_rms_m": 1.2042654924977023,
+              "vertical_rms_m": 0.22793404291029365,
+              "three_dimensional_rms_m": 1.225646484243383,
+              "horizontal_p50_m": 1.208768842498453,
+              "horizontal_p95_m": 1.2133812129562798,
+              "maximum_3d_m": 1.2541789496216722
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 7.81889042200055,
+        "resource_log": "tokyo-run2-1C2W-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-calibrated": {
+        "input_epochs": 9151,
+        "status_counts": {
+          "PPP_FLOAT": 107,
+          "INVALID": 9044
+        },
+        "successful_fraction": 0.011692711179106108,
+        "longest_successful_epoch_streak": 107,
+        "maximum_success_to_success_gap_s": 0.20000000001164153,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 7,
+          "initial PPP: Filter(InnovationRejected)": 4394,
+          "initial PPP: InsufficientPhase { available: 3 }": 829,
+          "initial PPP: InsufficientCode { available: 4 }": 1640,
+          "initial PPP: InsufficientPhase { available: 2 }": 113,
+          "initial PPP: InsufficientCode { available: 3 }": 1513,
+          "initial PPP: InsufficientCode { available: 2 }": 368,
+          "initial PPP: InsufficientPhase { available: 0 }": 2,
+          "initial PPP: InsufficientPhase { available: 1 }": 20,
+          "initial PPP: InsufficientCode { available: 1 }": 124,
+          "initial PPP: InsufficientCode { available: 0 }": 34
+        },
+        "initial_success_time": [
+          "2324",
+          "177000.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 107,
+              "horizontal_rms_m": 1.7557531061333782,
+              "vertical_rms_m": 3.0238069012924167,
+              "three_dimensional_rms_m": 3.496580779275756,
+              "horizontal_p50_m": 1.8087424844813278,
+              "horizontal_p95_m": 2.1056697348370266,
+              "maximum_3d_m": 4.206446781592991
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 107,
+              "horizontal_rms_m": 1.6230689465147974,
+              "vertical_rms_m": 2.6954518211494074,
+              "three_dimensional_rms_m": 3.146396879810033,
+              "horizontal_p50_m": 1.6865616967770132,
+              "horizontal_p95_m": 1.9973326113546552,
+              "maximum_3d_m": 4.300272598110177
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 107,
+              "horizontal_rms_m": 2.158891793427739,
+              "vertical_rms_m": 2.4227610142043887,
+              "three_dimensional_rms_m": 3.24508624040692,
+              "horizontal_p50_m": 2.266375085990127,
+              "horizontal_p95_m": 2.590688297028324,
+              "maximum_3d_m": 4.937390493894686
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 7.5291216089972295,
+        "resource_log": "tokyo-run2-1C2L-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-raw-float": {
+        "input_epochs": 9151,
+        "status_counts": {
+          "PPP_FLOAT": 107,
+          "INVALID": 9044
+        },
+        "successful_fraction": 0.011692711179106108,
+        "longest_successful_epoch_streak": 107,
+        "maximum_success_to_success_gap_s": 0.20000000001164153,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 7,
+          "initial PPP: Filter(InnovationRejected)": 4394,
+          "initial PPP: InsufficientPhase { available: 3 }": 829,
+          "initial PPP: InsufficientCode { available: 4 }": 1640,
+          "initial PPP: InsufficientPhase { available: 2 }": 113,
+          "initial PPP: InsufficientCode { available: 3 }": 1513,
+          "initial PPP: InsufficientCode { available: 2 }": 368,
+          "initial PPP: InsufficientPhase { available: 0 }": 2,
+          "initial PPP: InsufficientPhase { available: 1 }": 20,
+          "initial PPP: InsufficientCode { available: 1 }": 124,
+          "initial PPP: InsufficientCode { available: 0 }": 34
+        },
+        "initial_success_time": [
+          "2324",
+          "177000.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 107,
+              "horizontal_rms_m": 1.7557530994077468,
+              "vertical_rms_m": 3.0238068638159743,
+              "three_dimensional_rms_m": 3.496580743489346,
+              "horizontal_p50_m": 1.8087424763008912,
+              "horizontal_p95_m": 2.10566973942496,
+              "maximum_3d_m": 4.206446771833791
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 107,
+              "horizontal_rms_m": 1.62306893924816,
+              "vertical_rms_m": 2.695451787323422,
+              "three_dimensional_rms_m": 3.14639684708353,
+              "horizontal_p50_m": 1.6865616852811816,
+              "horizontal_p95_m": 1.9973326152560982,
+              "maximum_3d_m": 4.300272593137589
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 107,
+              "horizontal_rms_m": 2.1588917855226666,
+              "vertical_rms_m": 2.4227609873045877,
+              "three_dimensional_rms_m": 3.245086215064609,
+              "horizontal_p50_m": 2.2663750757825176,
+              "horizontal_p95_m": 2.5906882998130305,
+              "maximum_3d_m": 4.9373904888339295
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 8.091650262009352,
+        "resource_log": "tokyo-run2-1C2L-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      }
+    },
+    "tokyo-run3": {
+      "1C2W-calibrated": {
+        "input_epochs": 15301,
+        "status_counts": {
+          "PPP_FLOAT": 4,
+          "INVALID": 15297
+        },
+        "successful_fraction": 0.00026142082216848575,
+        "longest_successful_epoch_streak": 4,
+        "maximum_success_to_success_gap_s": 0.20000000001164153,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 2,
+          "initial PPP: PostfitRejected": 5,
+          "initial PPP: Filter(InnovationRejected)": 9975,
+          "initial PPP: InsufficientCode { available: 4 }": 2158,
+          "initial PPP: InsufficientCode { available: 3 }": 1648,
+          "initial PPP: InsufficientPhase { available: 3 }": 120,
+          "initial PPP: InsufficientPhase { available: 2 }": 27,
+          "initial PPP: InsufficientCode { available: 2 }": 868,
+          "initial PPP: InsufficientCode { available: 1 }": 301,
+          "initial PPP: InsufficientCode { available: 0 }": 180,
+          "initial PPP: InsufficientPhase { available: 0 }": 1,
+          "initial PPP: InsufficientPhase { available: 1 }": 12
+        },
+        "initial_success_time": [
+          "2324",
+          "179460.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 4,
+              "horizontal_rms_m": 1.221164853740314,
+              "vertical_rms_m": 4.445959415705649,
+              "three_dimensional_rms_m": 4.61061804166343,
+              "horizontal_p50_m": 1.2204806365462457,
+              "horizontal_p95_m": 1.277225212897361,
+              "maximum_3d_m": 5.8666658895092905
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 4,
+              "horizontal_rms_m": 1.506047270512926,
+              "vertical_rms_m": 3.912146724442969,
+              "three_dimensional_rms_m": 4.192024615217484,
+              "horizontal_p50_m": 1.5056670327569592,
+              "horizontal_p95_m": 1.56211186255271,
+              "maximum_3d_m": 5.394328098435261
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 4,
+              "horizontal_rms_m": 1.9309470887458753,
+              "vertical_rms_m": 3.299819924418767,
+              "three_dimensional_rms_m": 3.8232666913422677,
+              "horizontal_p50_m": 1.9386673540583663,
+              "horizontal_p95_m": 2.001776745810874,
+              "maximum_3d_m": 4.929893761340401
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 15.97859667299781,
+        "resource_log": "tokyo-run3-1C2W-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2W-raw-float": {
+        "input_epochs": 15301,
+        "status_counts": {
+          "PPP_FLOAT": 4,
+          "INVALID": 15297
+        },
+        "successful_fraction": 0.00026142082216848575,
+        "longest_successful_epoch_streak": 4,
+        "maximum_success_to_success_gap_s": 0.20000000001164153,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 2,
+          "initial PPP: PostfitRejected": 5,
+          "initial PPP: Filter(InnovationRejected)": 9975,
+          "initial PPP: InsufficientCode { available: 4 }": 2158,
+          "initial PPP: InsufficientCode { available: 3 }": 1648,
+          "initial PPP: InsufficientPhase { available: 3 }": 120,
+          "initial PPP: InsufficientPhase { available: 2 }": 27,
+          "initial PPP: InsufficientCode { available: 2 }": 868,
+          "initial PPP: InsufficientCode { available: 1 }": 301,
+          "initial PPP: InsufficientCode { available: 0 }": 180,
+          "initial PPP: InsufficientPhase { available: 0 }": 1,
+          "initial PPP: InsufficientPhase { available: 1 }": 12
+        },
+        "initial_success_time": [
+          "2324",
+          "179460.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 4,
+              "horizontal_rms_m": 1.2211648534104191,
+              "vertical_rms_m": 4.445959419872178,
+              "three_dimensional_rms_m": 4.610618045593784,
+              "horizontal_p50_m": 1.2204806362898841,
+              "horizontal_p95_m": 1.2772252119485277,
+              "maximum_3d_m": 5.8666659004116095
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 4,
+              "horizontal_rms_m": 1.5060472702028886,
+              "vertical_rms_m": 3.9121467287625715,
+              "three_dimensional_rms_m": 4.192024619137305,
+              "horizontal_p50_m": 1.5056670325315231,
+              "horizontal_p95_m": 1.5621118616021783,
+              "maximum_3d_m": 5.394328109072569
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 4,
+              "horizontal_rms_m": 1.9309470879835726,
+              "vertical_rms_m": 3.2998199289634873,
+              "three_dimensional_rms_m": 3.8232666948797642,
+              "horizontal_p50_m": 1.9386673527764622,
+              "horizontal_p95_m": 2.0017767448942703,
+              "maximum_3d_m": 4.92989377152874
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 15.157036895980127,
+        "resource_log": "tokyo-run3-1C2W-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-calibrated": {
+        "input_epochs": 15301,
+        "status_counts": {
+          "PPP_FLOAT": 17,
+          "INVALID": 15284
+        },
+        "successful_fraction": 0.0011110384942160643,
+        "longest_successful_epoch_streak": 17,
+        "maximum_success_to_success_gap_s": 0.20000000001164153,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 5,
+          "initial PPP: Filter(InnovationRejected)": 7739,
+          "initial PPP: InsufficientCode { available: 4 }": 3086,
+          "initial PPP: InsufficientPhase { available: 3 }": 1767,
+          "initial PPP: InsufficientCode { available: 3 }": 1361,
+          "initial PPP: InsufficientPhase { available: 2 }": 485,
+          "initial PPP: InsufficientCode { available: 2 }": 475,
+          "initial PPP: InsufficientCode { available: 1 }": 138,
+          "initial PPP: InsufficientPhase { available: 0 }": 39,
+          "initial PPP: InsufficientPhase { available: 1 }": 133,
+          "initial PPP: InsufficientCode { available: 0 }": 56
+        },
+        "initial_success_time": [
+          "2324",
+          "179460.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 17,
+              "horizontal_rms_m": 1.264908786628012,
+              "vertical_rms_m": 3.391067093214957,
+              "three_dimensional_rms_m": 3.61929969319675,
+              "horizontal_p50_m": 1.3122242405628766,
+              "horizontal_p95_m": 1.4807387888863255,
+              "maximum_3d_m": 5.426157713669574
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 17,
+              "horizontal_rms_m": 1.4779890363811978,
+              "vertical_rms_m": 2.8705577263990936,
+              "three_dimensional_rms_m": 3.228707675255311,
+              "horizontal_p50_m": 1.5304121021533683,
+              "horizontal_p95_m": 1.6983946122327485,
+              "maximum_3d_m": 4.952224628781188
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 17,
+              "horizontal_rms_m": 2.1429251077634213,
+              "vertical_rms_m": 2.287202138419542,
+              "three_dimensional_rms_m": 3.1342338201662296,
+              "horizontal_p50_m": 2.196268548802439,
+              "horizontal_p95_m": 2.3643395182069114,
+              "maximum_3d_m": 4.613826517397012
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 13.279743978986517,
+        "resource_log": "tokyo-run3-1C2L-calibrated.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2L-raw-float": {
+        "input_epochs": 15301,
+        "status_counts": {
+          "PPP_FLOAT": 17,
+          "INVALID": 15284
+        },
+        "successful_fraction": 0.0011110384942160643,
+        "longest_successful_epoch_streak": 17,
+        "maximum_success_to_success_gap_s": 0.20000000001164153,
+        "epochs_before_any_commit": 0,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 5,
+          "initial PPP: Filter(InnovationRejected)": 7739,
+          "initial PPP: InsufficientCode { available: 4 }": 3086,
+          "initial PPP: InsufficientPhase { available: 3 }": 1767,
+          "initial PPP: InsufficientCode { available: 3 }": 1361,
+          "initial PPP: InsufficientPhase { available: 2 }": 485,
+          "initial PPP: InsufficientCode { available: 2 }": 475,
+          "initial PPP: InsufficientCode { available: 1 }": 138,
+          "initial PPP: InsufficientPhase { available: 0 }": 39,
+          "initial PPP: InsufficientPhase { available: 1 }": 133,
+          "initial PPP: InsufficientCode { available: 0 }": 56
+        },
+        "initial_success_time": [
+          "2324",
+          "179460.00000000000000000"
+        ],
+        "reference_time_rounding_maximum_s": "1.164153E-11",
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 17,
+              "horizontal_rms_m": 1.2649087852110368,
+              "vertical_rms_m": 3.3910670951405755,
+              "three_dimensional_rms_m": 3.6192996945057203,
+              "horizontal_p50_m": 1.3122242367186137,
+              "horizontal_p95_m": 1.4807387862299193,
+              "maximum_3d_m": 5.426157713669574
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 17,
+              "horizontal_rms_m": 1.4779890349160205,
+              "vertical_rms_m": 2.870557726747008,
+              "three_dimensional_rms_m": 3.228707674893926,
+              "horizontal_p50_m": 1.5304120977048654,
+              "horizontal_p95_m": 1.6983946094539843,
+              "maximum_3d_m": 4.952224628781188
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 17,
+              "horizontal_rms_m": 2.1429251065479926,
+              "vertical_rms_m": 2.2872021360265196,
+              "three_dimensional_rms_m": 3.134233817588918,
+              "horizontal_p50_m": 2.1962685451488304,
+              "horizontal_p95_m": 2.3643395155972886,
+              "maximum_3d_m": 4.613826517397012
+            }
+          }
+        },
+        "wall_seconds_including_load_and_CSV": 12.428237101004925,
+        "resource_log": "tokyo-run3-1C2L-raw-float.resource.json",
+        "runtime_memory_acceptance": false
+      }
+    }
+  },
+  "common_success_comparisons": {
+    "nagoya-run1-1C2W": {
+      "common_epochs": 5,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 1.166943841254494e-08,
+      "position_difference_maximum_m": 1.5811926542175604e-08
+    },
+    "nagoya-run1-1C2L": {
+      "common_epochs": 6,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 3.7454628431997484e-08,
+      "position_difference_maximum_m": 8.119749633384241e-08
+    },
+    "nagoya-run2-1C2W": {
+      "common_epochs": 1,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 0.0,
+      "position_difference_maximum_m": 0.0
+    },
+    "nagoya-run2-1C2L": {
+      "common_epochs": 1,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 0.0,
+      "position_difference_maximum_m": 0.0
+    },
+    "nagoya-run3-1C2W": {
+      "common_epochs": 118,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 2.1613403697773944e-07,
+      "position_difference_maximum_m": 6.185785719205222e-07
+    },
+    "nagoya-run3-1C2L": {
+      "common_epochs": 19,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 1.238039707590181e-07,
+      "position_difference_maximum_m": 2.7685903487222556e-07
+    },
+    "tokyo-run1-1C2W": {
+      "common_epochs": 8,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 1.4087697032285709e-08,
+      "position_difference_maximum_m": 2.1651998045971003e-08
+    },
+    "tokyo-run1-1C2L": {
+      "common_epochs": 2,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 0.0,
+      "position_difference_maximum_m": 0.0
+    },
+    "tokyo-run2-1C2W": {
+      "common_epochs": 5,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 1.1463215225461098e-08,
+      "position_difference_maximum_m": 1.7510350492748588e-08
+    },
+    "tokyo-run2-1C2L": {
+      "common_epochs": 107,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 5.6224181843190246e-08,
+      "position_difference_maximum_m": 1.5012287260303538e-07
+    },
+    "tokyo-run3-1C2W": {
+      "common_epochs": 4,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 8.516638147724738e-09,
+      "position_difference_maximum_m": 1.1368240803232139e-08
+    },
+    "tokyo-run3-1C2L": {
+      "common_epochs": 17,
+      "calibrated_only": 0,
+      "raw_only": 0,
+      "position_difference_3D_RMS_m": 5.690288129636994e-08,
+      "position_difference_maximum_m": 1.1879839931263304e-07
+    }
+  },
+  "whole_native_PPP_executed": false,
+  "practical_parity_accepted": false
+}

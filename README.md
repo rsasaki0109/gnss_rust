@@ -20,7 +20,9 @@ PPP向けには[相対DSBの時計基準変換](docs/comparison/2026-10-21-dsb-c
 [実数位相基準](docs/comparison/2026-10-21-ppp-raw-phase/README.md)も明示的に選べます。
 合成64点の位置差は位相OSB適用時と最大0.66 µm、既存21条件の全CSVも一致しました。
 PPC用のCODE精密製品27ファイルとIGS20衛星校正を取得・読み込み確認済みです。
-実PPCへのPPP接続と性能比較は未完です。
+[PPC全6走行で初回PPPを実行](docs/comparison/2026-10-21-ppc-ppp-first/README.md)しましたが、
+各58,634エポック中のFLOATは1C/2Wで141点、1C/2Lで152点にとどまっています。
+初期化・継続・棄却後の復帰と、元C++全体との性能比較が次の課題です。
 
 [移動FIX](docs/comparison/2026-10-21-kinematic-fix/README.md)、
 [ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)、

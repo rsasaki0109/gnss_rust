@@ -1634,7 +1634,8 @@ unrounded observables. Code/phase quantization controls preserve the original
 rounded full-trace 2 mm failures; unrounded phase passes that bound. Native
 prediction parity, synthetic tracking and real PPC accuracy remain distinct.
 See [`2026-10-21-kinematic-ppp`](../../docs/comparison/2026-10-21-kinematic-ppp/README.md).
-# Explicit raw-carrier FLOAT gauge (2026-10-21)
+
+## Explicit raw-carrier FLOAT gauge (2026-10-21)
 
 `synthetic_ppp_raw_phase_dsb.bsx` and `upstream_ppp_raw_phase.csv` are generated
 by `scripts/upstream_ppp_raw_phase.cpp` with the pinned libgnss++ IF constants

@@ -1,0 +1,39 @@
+{
+  "checks": [
+    {
+      "name": "examples",
+      "command": "cargo build --locked --offline --release --examples",
+      "returncode": 0,
+      "log": "examples.qualification.log.gz",
+      "uncompressed_sha256": "222a02ed477d249a21359df8cae975864a62d848f4739cadc5b00b6190a963c6"
+    },
+    {
+      "name": "fmt",
+      "command": "cargo fmt --check",
+      "returncode": 0,
+      "log": "fmt.qualification.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": "cargo clippy --locked --offline -j2 --all-targets -- -D warnings",
+      "returncode": 0,
+      "log": "clippy.qualification.log.gz",
+      "uncompressed_sha256": "8c233a54790c4800d3dd585436af679aa838da259bfdb129412e2d51cdb75cdc"
+    },
+    {
+      "name": "release",
+      "command": "cargo build --locked --offline --release",
+      "returncode": 0,
+      "log": "release.qualification.log.gz",
+      "uncompressed_sha256": "92434e198f27984c035c376ec77a7cf9e6ebdde782f8ccb1336ae3329b66ddb7"
+    }
+  ],
+  "predeclared_inputs_sha256": "910538ad78f52d679f99b06f7c2e090396955e97f4cef15a96d36ff3ba671d34",
+  "unchanged_library_tests": {
+    "archive": "docs/comparison/2026-10-21-ppp-raw-phase",
+    "qualification_sha256": "7090787d82270609c0ed51e37d4efc709ba66dee4062ed147fa10958bd05da7e",
+    "passed_tests": 406,
+    "source_changed": false
+  }
+}
