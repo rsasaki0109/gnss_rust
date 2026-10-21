@@ -142,6 +142,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     }
     let requested_mode = args[1].to_str().ok_or("non-UTF8 positioning mode")?;
+    let native_variance = requested_mode.ends_with("-nativevar");
+    let requested_mode = requested_mode
+        .strip_suffix("-nativevar")
+        .unwrap_or(requested_mode);
     let mixed_spp = requested_mode.ends_with("-ggspp");
     let requested_mode = requested_mode
         .strip_suffix("-ggspp")
@@ -150,6 +154,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mode = requested_mode
         .strip_suffix("-align")
         .unwrap_or(requested_mode);
+    if native_variance && !mixed_spp {
+        return Err("-nativevar requires an explicit -ggspp mode".into());
+    }
     let position_mode = match Some(mode) {
         Some("static") => RtkPositionMode::Static,
         Some(
@@ -250,6 +257,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 RtkConstellations::GpsGalileo
             } else {
                 RtkConstellations::Gps
+            },
+            kinematic_spp_variance: if native_variance {
+                gnss_rust::spp_quality::SppVarianceModel::NativeSnrAtmosphere
+            } else {
+                gnss_rust::spp_quality::SppVarianceModel::ElevationOnly
             },
             slip_detection,
             max_prefit_residual_m: use_prefit.then_some(3.0),
@@ -541,6 +553,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     }
     if use_spp_seed {
+        if native_variance {
+            eprintln!(
+                "SPP_variance=NativeSnrAtmosphere SNR_reference_dbhz=45 iono_sigma_scale=0.5 trop_sigma_scale=0.1 default_changed=false"
+            );
+        }
         if mixed_spp {
             eprintln!(
                 "kinematic_spp_seed=GPS_1C_Galileo_E1 independent_clocks=true legacy_primary_BGD=true default_SppConfig no_SPP_covariance_fusion=true"

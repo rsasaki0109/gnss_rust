@@ -39,6 +39,7 @@ pub struct BroadcastCodeEvidence {
     /// pinned default SPP path. No I/NAV/F/NAV source-specific switch is made.
     pub primary_group_delay_s: f64,
     pub secondary_group_delay_s: Option<f64>,
+    pub variance_m2: f64,
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct MultiClockSppSolution {
@@ -52,6 +53,7 @@ pub struct MultiClockSppSolution {
     pub broadcast_models: Vec<BroadcastCodeEvidence>,
     pub input_epoch_flag: u8,
     pub input_receiver_clock_offset_s: Option<f64>,
+    pub variance_model: crate::spp_quality::SppVarianceModel,
 }
 
 fn fit(rows: &[spp::Row], systems: &[GnssSystem]) -> Result<ClockLinearFit, Error> {
@@ -75,6 +77,22 @@ pub fn solve_gps_galileo_epoch(
     epoch: &ObservationEpoch,
     navigation: &NavigationData,
     config: SppConfig,
+) -> Result<MultiClockSppSolution, Error> {
+    solve_gps_galileo_epoch_with_variance_model(
+        epoch,
+        navigation,
+        config,
+        crate::spp_quality::SppVarianceModel::ElevationOnly,
+    )
+}
+
+/// Explicit alternative measurement variance; orbit, clock and correction
+/// models are unchanged. The default API above remains elevation-only.
+pub fn solve_gps_galileo_epoch_with_variance_model(
+    epoch: &ObservationEpoch,
+    navigation: &NavigationData,
+    config: SppConfig,
+    variance_model: crate::spp_quality::SppVarianceModel,
 ) -> Result<MultiClockSppSolution, Error> {
     config.validate()?;
     if let Some(offset) = epoch.receiver_clock_offset_s {
@@ -134,13 +152,14 @@ pub fn solve_gps_galileo_epoch(
     }
     let mut clocks = BTreeMap::<GnssSystem, f64>::new();
     for iteration in 1..=config.max_iterations {
-        let (rows, _) = spp::build_rows_by_clock(
+        let (rows, _) = spp::build_rows_with_variance(
             epoch,
             navigation,
             &selected,
             position,
             |s| clocks.get(&s).copied().unwrap_or(0.0),
             config,
+            variance_model,
         )?;
         let systems: Vec<_> = rows
             .iter()
@@ -168,13 +187,14 @@ pub fn solve_gps_galileo_epoch(
         if !converged {
             continue;
         }
-        let (rows, rejected) = spp::build_rows_by_clock(
+        let (rows, rejected) = spp::build_rows_with_variance(
             epoch,
             navigation,
             &selected,
             position,
             |s| clocks.get(&s).copied().unwrap_or(0.0),
             config,
+            variance_model,
         )?;
         let final_systems: Vec<_> = rows
             .iter()
@@ -234,6 +254,7 @@ pub fn solve_gps_galileo_epoch(
                     data_source: eph.data_source,
                     primary_group_delay_s: eph.clock.tgd,
                     secondary_group_delay_s: eph.clock.secondary_tgd,
+                    variance_m2: 1.0 / (r.weight * r.weight),
                 })
             })
             .collect::<Result<Vec<_>, Error>>()?;
@@ -267,6 +288,7 @@ pub fn solve_gps_galileo_epoch(
             broadcast_models: models,
             input_epoch_flag: epoch.flag,
             input_receiver_clock_offset_s: epoch.receiver_clock_offset_s,
+            variance_model,
         });
     }
     Err(Error::NonConvergent)

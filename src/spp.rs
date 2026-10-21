@@ -213,6 +213,26 @@ pub(crate) fn build_rows_by_clock(
     clock_m: impl Fn(GnssSystem) -> f64,
     config: SppConfig,
 ) -> Result<(Vec<Row>, RejectedObservations), Error> {
+    build_rows_with_variance(
+        epoch,
+        navigation,
+        selected,
+        position,
+        clock_m,
+        config,
+        crate::spp_quality::SppVarianceModel::ElevationOnly,
+    )
+}
+
+pub(crate) fn build_rows_with_variance(
+    epoch: &ObservationEpoch,
+    navigation: &NavigationData,
+    selected: &BTreeMap<SatelliteId, &Observation>,
+    position: EcefCoord,
+    clock_m: impl Fn(GnssSystem) -> f64,
+    config: SppConfig,
+    variance_model: crate::spp_quality::SppVarianceModel,
+) -> Result<(Vec<Row>, RejectedObservations), Error> {
     let geo = ecef_to_geodetic(position).ok();
     let ionosphere = navigation
         .gps_ionosphere
@@ -257,12 +277,18 @@ pub(crate) fn build_rows_by_clock(
             }
         }
         let mut atmosphere = 0.0;
+        let (mut trop_delay, mut iono_delay) = (0.0, 0.0);
+        let (mut trop_corrected, mut iono_corrected) = (false, false);
         if let Some(geo) = geo {
             if config.use_troposphere {
-                atmosphere += saastamoinen(geo, elevation)?;
+                trop_delay = saastamoinen(geo, elevation)?;
+                atmosphere += trop_delay;
+                trop_corrected = true;
             }
             if config.use_ionosphere && elevation >= 0.0 {
-                atmosphere += klobuchar(geo, azimuth, elevation, epoch.time.tow(), ionosphere)?;
+                iono_delay = klobuchar(geo, azimuth, elevation, epoch.time.tow(), ionosphere)?;
+                atmosphere += iono_delay;
+                iono_corrected = true;
             }
         }
         let predicted = geometric_distance(sat_pos, position)? + clock_m(satellite.system())
@@ -276,7 +302,26 @@ pub(crate) fn build_rows_by_clock(
             -difference.z / distance,
             1.0,
         ];
-        let weight = elevation.sin().max(0.1) / config.pseudorange_sigma_m;
+        let weight = match variance_model {
+            crate::spp_quality::SppVarianceModel::ElevationOnly => {
+                elevation.sin().max(0.1) / config.pseudorange_sigma_m
+            }
+            crate::spp_quality::SppVarianceModel::NativeSnrAtmosphere => {
+                1.0 / crate::spp_quality::measurement_variance(
+                    crate::spp_quality::MeasurementVarianceInputs {
+                        elevation_rad: elevation,
+                        snr_db_hz: obs.snr_db_hz,
+                        pseudorange_sigma_m: config.pseudorange_sigma_m,
+                        ionosphere_delay_m: iono_delay,
+                        troposphere_delay_m: trop_delay,
+                        ionosphere_corrected: iono_corrected,
+                        troposphere_corrected: trop_corrected,
+                        ..Default::default()
+                    },
+                )?
+                .sqrt()
+            }
+        };
         let residual = pseudorange - predicted;
         if !residual.is_finite() {
             return Err(Error::NonFinite);

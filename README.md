@@ -6,11 +6,13 @@
 
 
 **開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
-2026-10-21時点で371テストと標準チェックが通過しています。
+2026-10-21時点で376テストと標準チェックが通過しています。
 
-[GPS/Galileo別時計SPP](docs/comparison/2026-10-21-multiclock-spp/README.md)をRTKの種位置へ
-選択式で接続しました。PPC全6走行でFLOATは9,705→9,728点、スリップ検出併用で9,834→9,856点。
-初期位置の参考RMSは下がりましたが、条件によって大外れが悪化するため既定設定は維持しています。
+[GPS/Galileo別時計SPP](docs/comparison/2026-10-21-multiclock-spp/README.md)をRTKの種位置へ接続し、
+[元C++の観測分散モデル](docs/comparison/2026-10-21-spp-variance/README.md)も選択できるようにしました。
+PPC全6走行で初期位置の参考RMSが下がり、3 m事前ゲート併用のFLOATは3,880→4,976点。
+位置誤差が悪化する条件もあり、既定設定は維持しています。外れ値マスクとRAIM候補選択は部品までで、
+SPPの再計算への接続が残っています。
 
 [移動FIX](docs/comparison/2026-10-21-kinematic-fix/README.md)、
 [ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)、

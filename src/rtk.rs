@@ -70,6 +70,9 @@ pub struct RtkFloatConfig {
     /// Explicit SPP seed scope, independent of RTK phase selection. Default
     /// GPS 1C preserves the previous path; mixed uses separate GPS/Galileo clocks.
     pub kinematic_spp_constellations: RtkConstellations,
+    /// Optional native code/CN0/atmosphere measurement variance for the SPP
+    /// seed. The default retains the old elevation-only weighting.
+    pub kinematic_spp_variance: crate::spp_quality::SppVarianceModel,
     /// Optional SD code/phase and Doppler continuity tests. Only accepted
     /// epochs enter their history; detected slips reset that satellite's SD
     /// ambiguity without discarding its current measurements.
@@ -104,6 +107,7 @@ impl Default for RtkFloatConfig {
             align_ambiguity_datums: false,
             kinematic_spp_seed: None,
             kinematic_spp_constellations: RtkConstellations::Gps,
+            kinematic_spp_variance: crate::spp_quality::SppVarianceModel::ElevationOnly,
             slip_detection: None,
             max_prefit_residual_m: None,
             max_geometry_gdop: None,
@@ -806,14 +810,31 @@ impl RtkFloatFilter {
                     seed_epoch.observations.retain(|o| {
                         o.satellite.system() == GnssSystem::Gps && o.tracking_code == "1C"
                     });
-                    spp::solve_epoch(&seed_epoch, nav, config).map(|s| {
-                        let clocks = vec![(GnssSystem::Gps, s.position.receiver_clock_bias)];
-                        (s, clocks)
-                    })
+                    if self.config.kinematic_spp_variance
+                        == crate::spp_quality::SppVarianceModel::ElevationOnly
+                    {
+                        spp::solve_epoch(&seed_epoch, nav, config).map(|s| {
+                            let clocks = vec![(GnssSystem::Gps, s.position.receiver_clock_bias)];
+                            (s, clocks)
+                        })
+                    } else {
+                        crate::spp_multiclock::solve_gps_galileo_epoch_with_variance_model(
+                            &seed_epoch,
+                            nav,
+                            config,
+                            self.config.kinematic_spp_variance,
+                        )
+                        .map(|s| (s.spp, s.clock_biases_s))
+                    }
                 }
                 RtkConstellations::GpsGalileo => {
-                    crate::spp_multiclock::solve_gps_galileo_epoch(&seed_epoch, nav, config)
-                        .map(|s| (s.spp, s.clock_biases_s))
+                    crate::spp_multiclock::solve_gps_galileo_epoch_with_variance_model(
+                        &seed_epoch,
+                        nav,
+                        config,
+                        self.config.kinematic_spp_variance,
+                    )
+                    .map(|s| (s.spp, s.clock_biases_s))
                 }
             };
             match result {

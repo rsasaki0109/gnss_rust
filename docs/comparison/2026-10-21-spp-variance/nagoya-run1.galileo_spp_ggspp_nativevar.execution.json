@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_float",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1",
+    "kinematic-galileo-spp-ggspp-nativevar",
+    "-3817680.730073338,3562839.5233945786,3650159.241788432"
+  ],
+  "returncode": 0,
+  "csv_sha256": "fcbba283388439a29309023240f9ddb31e4967d3778a09e86e5509dd55ba9e6e",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "8c9403cddac91c0cd72e8bacc728d43b597900b7ac2cd7fd872555173d23c8f4"
+}

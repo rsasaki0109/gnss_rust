@@ -1575,3 +1575,18 @@ SPP output comparison. The QR shared with Doppler remains covered by its
 existing eleven native and sixteen independent mixed-clock fixtures; its body
 transfer is recorded in
 [`2026-10-21-multiclock-spp`](../../docs/comparison/2026-10-21-multiclock-spp/README.md).
+
+## Native SPP variance and quality utilities (2026-10-21)
+
+`upstream_spp_quality.csv` is emitted by `scripts/upstream_spp_quality.cpp`,
+which calls the pinned, unmodified `spp_utils` helpers linked from the same
+four native libraries used by the whole-filter PPC baseline. Its 80 cases
+cover 32 code/elevation/CN0/atmospheric variances, 24 MAD residual masks and
+24 RAIM leave-one-out RMS selections, including threshold boundaries and ties.
+Two regenerations are byte-identical; build/source/library hashes are in
+[`2026-10-21-spp-variance`](../../docs/comparison/2026-10-21-spp-variance/README.md).
+Rust intentionally errors on invalid active corrections or overflowing variance
+instead of the native optimistic base-variance fallback, and skips negative
+candidate RMS. The finite physical-domain utility checks are separate from
+synthetic position truth and whole-filter PPC accuracy. MAD and FDE refits
+are not connected to SPP in this milestone.

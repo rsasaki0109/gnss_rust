@@ -1,0 +1,59 @@
+{
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "scripts/upstream_spp_quality.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-Wl,--end-group",
+    "-o",
+    "/workspace/.cloud-setup/solver-reference-20261021/upstream_spp_quality"
+  ],
+  "returncode": 0,
+  "build_log_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+  "source_sha256": "b08981b004991da039fc82c3ad6bc4b1759ba49dc3445b8bf7290e5a5fb8c338",
+  "binary_sha256": "4cbc5f914302fe0f5fe833f7fed05c8351d80d31d15890d40f816bcd653a1e4a",
+  "native_library_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "repeat_runs": [
+    {
+      "command": [
+        "/workspace/.cloud-setup/solver-reference-20261021/upstream_spp_quality",
+        "/tmp/spp-quality-native-0.csv"
+      ],
+      "returncode": 0,
+      "fixture_sha256": "a385042082b9ef95d3c1febbad37ac873ae607b657d350f4d24df59e7322b09f",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/workspace/.cloud-setup/solver-reference-20261021/upstream_spp_quality",
+        "/tmp/spp-quality-native-1.csv"
+      ],
+      "returncode": 0,
+      "fixture_sha256": "a385042082b9ef95d3c1febbad37ac873ae607b657d350f4d24df59e7322b09f",
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "cases": {
+    "variance": 32,
+    "MAD_mask": 24,
+    "RAIM_selector": 24
+  }
+}

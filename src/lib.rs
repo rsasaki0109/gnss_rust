@@ -68,6 +68,7 @@ pub mod rtk_reference;
 pub mod rtk_slip;
 pub mod spp;
 pub mod spp_multiclock;
+pub mod spp_quality;
 pub mod tides;
 pub mod time;
 pub mod types;
