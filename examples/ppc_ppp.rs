@@ -39,6 +39,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if retain_arcs {
         args.pop();
     }
+    let pva = args.last().is_some_and(|s| s == "-pva");
+    if pva {
+        args.pop();
+    }
     let epoch_clock = args.last().is_some_and(|s| s == "-epoch-clock");
     if epoch_clock {
         args.pop();
@@ -52,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "native-variances" | "climatology" | "native-head"
             ))
     {
-        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-retain-arcs] [-timing]".into());
+        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-retain-arcs] [-timing]".into());
     }
     let open = |name: &str| File::open(name).map(BufReader::new);
     let orbit = read_sp3(open(&args[1])?)?;
@@ -168,7 +172,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         transmit: Default::default(),
         arcs: Default::default(),
         filter: PppFilterSettings {
-            position_model: PppPositionModel::ConstantVelocity(Default::default()),
+            position_model: if pva {
+                PppPositionModel::ConstantAcceleration(Default::default())
+            } else {
+                PppPositionModel::ConstantVelocity(Default::default())
+            },
             phase_bias_mode: if raw {
                 PhaseBiasMode::UncalibratedFloat
             } else {
@@ -219,7 +227,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut out = BufWriter::new(std::io::stdout().lock());
     writeln!(
         out,
-        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}",
+        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}{}",
         if timing {
             ",filter_ms,epoch_stage_ms"
         } else {
@@ -227,6 +235,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         if retain_arcs {
             ",retained_arcs,retained_satellites"
+        } else {
+            ""
+        },
+        if pva {
+            ",ax_mps2,ay_mps2,az_mps2,acceleration_qxx_m2_s4,acceleration_qyy_m2_s4,acceleration_qzz_m2_s4"
         } else {
             ""
         }
@@ -263,7 +276,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .count();
         let corrections = SignalCorrections::new(corrections)?;
         let mut row =
-            vec![String::new(); 29 + 2 * usize::from(timing) + 2 * usize::from(retain_arcs)];
+            vec![
+                String::new();
+                29 + 2 * usize::from(timing) + 2 * usize::from(retain_arcs) + 6 * usize::from(pva)
+            ];
         row[0] = epoch.time.week().to_string();
         row[1] = format!("{:.17}", epoch.time.tow());
         row[20] = format!(
@@ -308,6 +324,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 row[9] = format!("{:.17e}", s.position.receiver_clock_bias);
                 row[10] = format!("{:.17e}", s.zenith_delay_m);
+                if pva {
+                    let index = 29 + 2 * usize::from(timing) + 2 * usize::from(retain_arcs);
+                    let acceleration = s.acceleration_ecef_mps2.unwrap();
+                    let covariance = s.acceleration_covariance_m2_s4.unwrap();
+                    for i in 0..3 {
+                        row[index + i] = format!("{:.17e}", acceleration[i]);
+                        row[index + 3 + i] = format!("{:.17e}", covariance[i][i]);
+                    }
+                }
                 let p = s.position.position_covariance.unwrap();
                 row[11] = format!("{:.17e}", p[0][0] + p[1][1] + p[2][2]);
                 let p = s.position.velocity_covariance.unwrap();

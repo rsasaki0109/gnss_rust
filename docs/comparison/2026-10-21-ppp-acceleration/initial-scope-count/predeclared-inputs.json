@@ -1,0 +1,243 @@
+{
+  "base_commit": "c1941ab49b75237fad27e8ea34a5346d890a31a4",
+  "source_sha256": {
+    "src/antenna.rs": "816447af7cd62f67a73c2cbc54c076454ae97f27f74bf35dfa4fa4f4c65ccf77",
+    "src/bias.rs": "02f3eed1e6978610dc1a1af8f6b853dfad60f492e59e896b8b6867a288e6b26b",
+    "src/constants.rs": "fe73314fb2be9c9a184793f2927def20d72b164eb475fb748a430ea816798237",
+    "src/coordinates.rs": "af281e4bd44b3b96be97c26321be07ca13e192830cd4deffc7ba98c96fdae1cc",
+    "src/dual_frequency.rs": "d8b1d4b85db3e6f05653424d34fabaeaf709660d81504d9f1145d31978e99678",
+    "src/earth_rotation.rs": "2736a8596929dec8a9f97d19c43540b566dcb94f59bcf9c9b5d7253e5d3addf7",
+    "src/filter.rs": "31fe26a27f04a5138df4a6c92e2027d6d7f2c665929a40a9da7340669eb8a0bc",
+    "src/iers2010.rs": "29f266c47778aef329aac189d476ad413f2cc18fec5a3eb2c432e526f050787c",
+    "src/lambda.rs": "e4d9ff497a22d291a1409824e0769a894a793d2c8e3d8233e9d50577412cee0f",
+    "src/lib.rs": "24526c2ff346a0fe1270eec3c8ff35e640de0d812ffd16256f878f559cf65aa9",
+    "src/models.rs": "c00098c9b3be7870387b1b80b5a49e848419767774cbaa94d187b78b96f061b9",
+    "src/navigation.rs": "367f857fbfede358a3e022e06a6fd7a13bec20acd636daaf824a03a961ee84d2",
+    "src/observation.rs": "35ea8e683bdbce366247c0062891252665938ae224b240a0a4c911a01852995e",
+    "src/phase_arc.rs": "00cca8c1f35ef21a21794a849bbbc2545eb688658d2908bc748d196255a4111e",
+    "src/ppp.rs": "5d3b97d3579d0207dbbebf3ed8780deda704ac06fa9262ea279430571557de18",
+    "src/precise.rs": "3a6a5850819a9cf44f87c5a9fe272248fe5f4bd26ba2278ee6e3b49555e78674",
+    "src/precise_spp.rs": "30391616f027f51d20be9bf1b1a481aa9209234052e406b9a84021e01b15449c",
+    "src/precise_transmit.rs": "aee6f7a85438770506650bd451f535bc73de5e45dde17656cafb46aba3eb8327",
+    "src/rinex.rs": "b32259bb56dd33ed3b4fa3326a6491c0e7ce5a0872a0c6a501273919b37f7bce",
+    "src/rtk.rs": "629dd59afc41de4e877494def77fed44831735304364844c7ab9fb629c181af2",
+    "src/rtk_fix.rs": "4dac3b6a403b79f2bcc358e9e61ce28bb8de496e33ff87116472bd4b824c0250",
+    "src/spp.rs": "6e6446bd1f72786c0873a1eebb6b40390f5c3b39cc20857f9ac0a64613dab56d",
+    "src/tides.rs": "c74bc4284aae7999dc7c30abfd03bfaea03cc619ec68a814e2766f083c011454",
+    "src/time.rs": "79654eace47779444e436e6238f855c62b8029c2bf020e7a6f0f02323cd0bebb",
+    "src/types.rs": "178f7573ff8d63b71f8d006cdd2fe335766409c583f2322137770e24969ccbb7",
+    "src/windup.rs": "6c7bf9be11eef7c67e925d29f8aac372bcf4e9d1ecde09c333afa4e0b3a329b8",
+    "src/spp_qc.rs": "a35109fbf92f8a8ea3971a14e4947909d6b8721b2111fc655c36cd4cc13c9227",
+    "src/clock_fit.rs": "d72b7f1568096c71e37647124b3209b10a5d3893ef16a19c12129b9ab74979e2",
+    "src/rtk_ambiguity.rs": "df82b65d70660ebe3c2278732fd24f4a22e149bb2e4aecfc47101e43da51003f",
+    "src/rtk_slip.rs": "1e488848d610cdb58ccac0cc82523398c41ea0709ed2a9f7994a7df6588795ad",
+    "src/spp_multiclock.rs": "e90f869eda78c421c66965f960b421d7bfe8a3c904feebb96828a007eb8d6b86",
+    "src/dsb_clock.rs": "8f6dd40fc956ce0e5655626e00f49bd7d23649f36160531201850936e03993ff",
+    "src/spp_quality.rs": "b7007ae741d48a5e866aae763c7af624c6b99c7636ab4d83d5a08f601bf4b4ec",
+    "src/velocity.rs": "abffa12b2047054a6091b65dfb1b3156fad89f88d4936f578de1443842992c2f",
+    "src/epoch_match.rs": "460d48489996f092a10a4b2210b1804c02a525f0d4337f708429954bfddae048",
+    "src/rtk_quality.rs": "bb62feb84c13c1c78d954935453afe830e6678d0f12987765a91a6c815cb6c49",
+    "src/rtk_locked_subset_tests.rs": "573cf03266d70f21041dd2a4e7a3b18174a72afe23f52db450b76af824968a81",
+    "src/rtk_reference.rs": "22889bff9eb63aeafd0d352bc7aba833343439921eb7893d4c14933824737a30",
+    "src/geometry.rs": "8897dbbbb5465e9000fb7812e4ebee8076b9a87545d1f7877de36c56e25ca373",
+    "src/rtk_ar_selection.rs": "88ee27eab69aa43ecca51cd027ba3b04d6e173e3c32dd52e80b9929b73ecf541",
+    "src/bin/gnss.rs": "20d1c9cb3797cab630cd3cd38919a6a2b4bfb6a7ed51a498d8fae5aad5236a92",
+    "examples/ppc_ppp.rs": "6bd87c03b7f9740e2bca532a6d2100a3530453147ccd5ac05bc08cc062b4f80f",
+    "examples/ppp_kinematic.rs": "49ea1252546e6c640668b5583cb255641a554cc32b1ef1f74c0e564b206d1989",
+    "tests/ppp_kinematic.rs": "7611f6902454a0e7d0cf0c9ff83864cd5467b67d5d95a842363132c2d5fdd541",
+    "scripts/run_ppp_acceleration.py": "85fbf86313917051613c20b1a7887f84e0f20630b48c02f3be7d0ea1bfdf30ea",
+    "scripts/build_ppp_acceleration_fixtures.py": "b2f83a54008d208cd459bcb76e3f4c45ffb317be3d7cb2e69b43074066ed0cac",
+    "scripts/upstream_ppp_acceleration.cpp": "299f29a891258930e7aac47eec31b12a3428bb67144492a70a7d124ca1e84eb4",
+    "scripts/upstream_precise_transmit.cpp": "3b2dacc68d4705142de78578a54f4fb28e9b96670f77c4469960014856eb5be1",
+    "scripts/upstream_precise.cpp": "1891e8bcd2ce9d3ce8be09070a7fdd750e8b6bc975d8c8a6fa383dc43e9962b9",
+    "scripts/upstream_navigation.cpp": "82dd53a255187def0cbac562b94bf798e9030353728e5ab2562a0333fde35214",
+    "scripts/run_ppc_ppp.py": "0cfd43f7676b139bfff3412a60a34a3665cafa3643c93e16e337e9b41ff11c15",
+    "scripts/run_ppc_ppp_initial_prior.py": "9b9615553d9f65a0bfdb1da7f276bea1ff40da0f0d37a15455eb132770f89e0c",
+    "scripts/run_ppc_rtk_float.py": "cbf6676506c99f64e170dbe6d98e5b8ff506f116cb34aa8196abd3661f68c2d2",
+    "scripts/run_native_ppc_comparison.py": "05b5acaef483a445440452ecbd41dbd1a1d9b266c03b5181c5cf4502bff7a911",
+    "scripts/run_ppp_kinematic.py": "922eea386f333a8aaa3d3b9274f344d4e7d52037b623c1ddb505f8017c114464",
+    "scripts/measure_ppp_process.py": "f9990480358dfbe5f99304e0eaf8578102312340ea3ccaf40b7e1bd30bb2473b",
+    "docs/ppp-acceleration.md": "e2fd2dfe9420db96329b33785963404da046847cc325977ab1e63f91859e9ab9",
+    "Cargo.toml": "a75dfc295e396c45cf14edde4a7a4c80c868eac21e5b47a7bec21d8bd6dc8036",
+    "Cargo.lock": "a42fa27792b22f650bd632df017329b7c4c0c1dd29c93c8e37b55d029e26d713",
+    "rust-toolchain.toml": "2ad6f15416572b4836585087f1d4abc53b8fa2dbd616f8dacfaa587ed6714228",
+    "tests/fixtures/upstream_ppp_acceleration_unrounded.csv": "8316b90e88376b0edc883c0195549cbe70abc349466fe9a490b57a65a20e293b",
+    "tests/fixtures/synthetic_ppp_acceleration_truth.csv": "fbd9de45726325382de2bbbf79a25705aeabac8b7f47b7c8bf998c7f7e8448e1",
+    "tests/fixtures/upstream_ppp_acceleration_predict.csv": "8b87c25f8b2f0c13776aa469d398c0af63e0ec452347341966cff65cd93e71c7",
+    "tests/fixtures/synthetic_ppp_acceleration.obs": "a78a89aa70638895f8b773263ac04da103ef0e887069e7b980520532c7563c85",
+    "tests/fixtures/upstream_ppp_acceleration_initial.csv": "2012f8cb0932d18d983824896513216073417a701f09043d23353875cdf7b126",
+    "tests/fixtures/synthetic_ppp_acceleration_noisy.obs": "98baa0ed35a3733f6a305c51cb5beb31d0560bd935f055d8c85a04196c3a514a"
+  },
+  "binary_sha256": {
+    "ppc_ppp": "51211e83e28585c5d9b938722b353d44ccaa0e82a1ae2991cab436fa0ea8f235",
+    "ppp_kinematic": "dd0e2c42cb2ed3ca6cd5200148b5e491f43cefd1214bfdc802d2c851806e82aa"
+  },
+  "input_sha256": {
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1/reference.csv": "804f7b1d6845c2c5c717fe7868b7637a4a40bfb2e4a9f6811042b18d5ef00e0d",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1/rover.obs": "d9ee4e38c857f109cb430dab34e7958867060edb99e5f8b1c020abdd29d345cb",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2/reference.csv": "21bfeefda4a2977192ea91dc7fde2be2ad0b1c042cd627b1086356aeb40fa99e",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2/rover.obs": "e838a42e9a9ea5e982807949e66b8fcd6c33de1202568ff47a656a3c5392edc6",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3/reference.csv": "574cca92f00d6cdc1b88badc07fb08d9587eb108aa0185e82d2146a2eb72e564",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3/rover.obs": "41e6a6c886abca3034f570dbfdc6fe070e76427dd8e46fbfdc0e9b0aa3e67c46",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1/reference.csv": "8e468a6a959cd47144f4ad1f1dc0129e7ee160011f4d236e4ffdb63b203373e9",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1/rover.obs": "97e7b370d381a64760cd07d251bcf5df2dc2b3b6dd2444323ff8d6f35e4689e5",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2/reference.csv": "e43ff28e01becf2f50a3fff3b326e61179cd722b9b4a8d0b70998af991fa5f53",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2/rover.obs": "e53eb349617edf22d1df677d1c40348108c7eba97dd0fadbdc8f1b3bff035098",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3/reference.csv": "a0872e258e3728c5bd07ef169565124b4434fc9601bcfc3c01f8c0b6cdd9ce49",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3/rover.obs": "ea8e16a7b0093e6a4d108cb5baea2ac8b1986bf274f0bba5612a6fba23a4f3a3",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/gps-subset/gps-satellite-igs20.atx": "9a1ed94778b7ca521a0f485ef73a39883711bdab04bafa4b4e359a94ad108b14",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242020000_01D_01D_OSB.BIA": "184851473dea52beaa454915d213a9109d8f8d3a0f29b64be0110722c4181ba2",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242020000_01D_05M_ORB.SP3": "765d0c27a773fbe15c78fd522b7e60c1023adc3588600e9493ff9d89a8bca118",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242020000_01D_30S_CLK.CLK": "cd17e6437909bbaea8ec4c90c3a955f6338f4e1036fb6f4d894446f9d1e471f4",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_01D_OSB.BIA": "e97d6d704a4c4856ae9e105c016bc81f035725c712330ddb781246484e4d7e30",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_05M_ORB.SP3": "9c84129580e01c57c572664d6af8b018a48f017afefee463ff4ebecbb2dc94a7",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_30S_CLK.CLK": "e62226ffbde86ff08c642eaf35e364f9506b1dd3ceaa6f74b90dfe162f26d239",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_01D_OSB.BIA": "eab4f8c5c98e5ea4841a94f970398c75df7efcabf4641cf6c7c806d4135e1bc7",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_05M_ORB.SP3": "95f7c41cd562fdbdda57bff9c4359472e6109e81e762658cffe831f2f95c949f",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_30S_CLK.CLK": "4302530c1ed6a061952b82ebfd2458f6491c13e830c59cf93096d946d396aa77"
+  },
+  "cases": {
+    "nagoya-run1": {
+      "city": "nagoya",
+      "rover": "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1/rover.obs",
+      "reference": "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1/reference.csv",
+      "orbit": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_05M_ORB.SP3",
+      "clock": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_30S_CLK.CLK",
+      "bias": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_01D_OSB.BIA"
+    },
+    "nagoya-run2": {
+      "city": "nagoya",
+      "rover": "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2/rover.obs",
+      "reference": "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2/reference.csv",
+      "orbit": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242020000_01D_05M_ORB.SP3",
+      "clock": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242020000_01D_30S_CLK.CLK",
+      "bias": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242020000_01D_01D_OSB.BIA"
+    },
+    "nagoya-run3": {
+      "city": "nagoya",
+      "rover": "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3/rover.obs",
+      "reference": "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3/reference.csv",
+      "orbit": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_05M_ORB.SP3",
+      "clock": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_30S_CLK.CLK",
+      "bias": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_01D_OSB.BIA"
+    },
+    "tokyo-run1": {
+      "city": "tokyo",
+      "rover": "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1/rover.obs",
+      "reference": "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1/reference.csv",
+      "orbit": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_05M_ORB.SP3",
+      "clock": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_30S_CLK.CLK",
+      "bias": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_01D_OSB.BIA"
+    },
+    "tokyo-run2": {
+      "city": "tokyo",
+      "rover": "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2/rover.obs",
+      "reference": "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2/reference.csv",
+      "orbit": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_05M_ORB.SP3",
+      "clock": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_30S_CLK.CLK",
+      "bias": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_01D_OSB.BIA"
+    },
+    "tokyo-run3": {
+      "city": "tokyo",
+      "rover": "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3/rover.obs",
+      "reference": "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3/reference.csv",
+      "orbit": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_05M_ORB.SP3",
+      "clock": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_30S_CLK.CLK",
+      "bias": "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_01D_OSB.BIA"
+    }
+  },
+  "pairs": [
+    "1C2W",
+    "1C2L"
+  ],
+  "profiles": {
+    "default-random-walk-CV": {
+      "head": "default",
+      "clock": "random-walk",
+      "motion": "CV",
+      "arguments": []
+    },
+    "default-random-walk-PVA": {
+      "head": "default",
+      "clock": "random-walk",
+      "motion": "PVA",
+      "arguments": [
+        "-pva"
+      ]
+    },
+    "default-independent-CV": {
+      "head": "default",
+      "clock": "independent",
+      "motion": "CV",
+      "arguments": [
+        "-epoch-clock"
+      ]
+    },
+    "default-independent-PVA": {
+      "head": "default",
+      "clock": "independent",
+      "motion": "PVA",
+      "arguments": [
+        "-epoch-clock",
+        "-pva"
+      ]
+    },
+    "native-head-random-walk-CV": {
+      "head": "native-head",
+      "clock": "random-walk",
+      "motion": "CV",
+      "arguments": [
+        "native-head"
+      ]
+    },
+    "native-head-random-walk-PVA": {
+      "head": "native-head",
+      "clock": "random-walk",
+      "motion": "PVA",
+      "arguments": [
+        "native-head",
+        "-pva"
+      ]
+    },
+    "native-head-independent-CV": {
+      "head": "native-head",
+      "clock": "independent",
+      "motion": "CV",
+      "arguments": [
+        "native-head",
+        "-epoch-clock"
+      ]
+    },
+    "native-head-independent-PVA": {
+      "head": "native-head",
+      "clock": "independent",
+      "motion": "PVA",
+      "arguments": [
+        "native-head",
+        "-epoch-clock",
+        "-pva"
+      ]
+    }
+  },
+  "prior_archive": "docs/comparison/2026-10-21-ppp-rejected-arcs",
+  "prior_evidence_sha256": "9bc01bfc6c64bb2fd82e6ccc8488597ddba7a9bbfb7de6ad1c24d5b8c6f17153",
+  "native_generator_sha256": "877258c7c87b3984814ca67d1ef5aaba9aaaf2e3ee769d44e61529050057ff76",
+  "full_raw_rover_epochs": true,
+  "thresholds_changed": false,
+  "default_position_model_changed": false,
+  "ambiguity_prior_changed": false,
+  "SPP_or_Doppler_fused": false,
+  "truth_used_by_solver": false,
+  "whole_native_PPP_executed": false,
+  "practical_parity_accepted": false,
+  "retention_enabled": false,
+  "native_head_velocity_variance_by_motion": {
+    "CV": 25,
+    "PVA": 100
+  },
+  "synthetic_position_bound_m": {
+    "clean": 0.01,
+    "noisy": 1.0
+  },
+  "synthetic_velocity_after_eight_bound_mps": 1.0
+}

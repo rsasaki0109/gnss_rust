@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp_kinematic",
+    "kinematic",
+    "car-noisy"
+  ],
+  "returncode": 0,
+  "csv_sha256": "abf0f3947d8de51215f49f015daf2b46d92a2c82d03524865915d939e3a201b9",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "dc38a51c410e6ffb90989d455369b595e8934697affd5ecf43856660c319df18"
+}

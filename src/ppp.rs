@@ -60,6 +60,29 @@ impl Default for PppKinematicConfig {
         }
     }
 }
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PppAccelerationConfig {
+    pub initial_velocity_mps: [f64; 3],
+    pub initial_velocity_variance_m2_s2: f64,
+    pub initial_acceleration_mps2: [f64; 3],
+    pub initial_acceleration_variance_m2_s4: f64,
+    /// Local east/north acceleration random-walk sigma in m/s² per sqrt(s).
+    pub horizontal_sigma_mps2_per_sqrt_s: f64,
+    /// Local up acceleration random-walk sigma in m/s² per sqrt(s).
+    pub vertical_sigma_mps2_per_sqrt_s: f64,
+}
+impl Default for PppAccelerationConfig {
+    fn default() -> Self {
+        Self {
+            initial_velocity_mps: [0.0; 3],
+            initial_velocity_variance_m2_s2: 100.0,
+            initial_acceleration_mps2: [0.0; 3],
+            initial_acceleration_variance_m2_s4: 100.0,
+            horizontal_sigma_mps2_per_sqrt_s: 1.0,
+            vertical_sigma_mps2_per_sqrt_s: 0.1,
+        }
+    }
+}
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum PppPositionModel {
     #[default]
@@ -67,12 +90,27 @@ pub enum PppPositionModel {
     /// Ordinary precise-PPP F(position,velocity)=dt and diagonal velocity Q.
     /// Does not fuse Doppler, SPP seeds, acceleration, inertial data or truth.
     ConstantVelocity(PppKinematicConfig),
+    /// Native PVA F and local acceleration Q only; no SPP/Doppler fusion,
+    /// reseeding or inertia input. XYZ/velocity process noise is unused.
+    ConstantAcceleration(PppAccelerationConfig),
 }
 impl PppPositionModel {
     fn head_len(self) -> usize {
         match self {
             Self::Static => 5,
             Self::ConstantVelocity(_) => 8,
+            Self::ConstantAcceleration(_) => 11,
+        }
+    }
+    fn initial_velocity(self) -> Option<([f64; 3], f64)> {
+        match self {
+            Self::Static => None,
+            Self::ConstantVelocity(c) => {
+                Some((c.initial_velocity_mps, c.initial_velocity_variance_m2_s2))
+            }
+            Self::ConstantAcceleration(c) => {
+                Some((c.initial_velocity_mps, c.initial_velocity_variance_m2_s2))
+            }
         }
     }
     fn validate(self) -> bool {
@@ -84,6 +122,24 @@ impl PppPositionModel {
                     && c.initial_velocity_variance_m2_s2 > 0.0
                     && c.velocity_process_noise_m2_s3.is_finite()
                     && c.velocity_process_noise_m2_s3 >= 0.0
+            }
+            Self::ConstantAcceleration(c) => {
+                c.initial_velocity_mps
+                    .iter()
+                    .chain(&c.initial_acceleration_mps2)
+                    .all(|v| v.is_finite())
+                    && [
+                        c.initial_velocity_variance_m2_s2,
+                        c.initial_acceleration_variance_m2_s4,
+                    ]
+                    .iter()
+                    .all(|v| v.is_finite() && *v > 0.0)
+                    && [
+                        c.horizontal_sigma_mps2_per_sqrt_s,
+                        c.vertical_sigma_mps2_per_sqrt_s,
+                    ]
+                    .iter()
+                    .all(|v| v.is_finite() && *v >= 0.0 && (v * v).is_finite())
             }
         }
     }
@@ -241,7 +297,8 @@ impl PppConfig {
     /// Position and clock seed means remain caller supplied; ZTD is seeded
     /// from native climatology. XYZ/clock/ZTD variances become 100/1e8/25 m².
     /// Constant-velocity mode starts at rest with 25 (m/s)², matching native
-    /// non-PVA initialization. Ambiguity priors, noise, gates, correction
+    /// non-PVA initialization. PVA starts V/A at zero with variances 100 each.
+    /// Ambiguity priors, noise, gates, correction
     /// settings and subsequent dynamics remain independent and unchanged.
     /// This is not a whole-native PPP initialization or recovery policy.
     pub fn with_native_precise_head_prior(mut self, time: GnssTime) -> Result<Self, PppError> {
@@ -251,9 +308,18 @@ impl PppConfig {
         )?
         .total_delay_m();
         self.filter.initial_head_variance_m2 = [100.0, 100.0, 100.0, 1e8, 25.0];
-        if let PppPositionModel::ConstantVelocity(ref mut model) = self.filter.position_model {
-            model.initial_velocity_mps = [0.0; 3];
-            model.initial_velocity_variance_m2_s2 = 25.0;
+        match &mut self.filter.position_model {
+            PppPositionModel::ConstantVelocity(model) => {
+                model.initial_velocity_mps = [0.0; 3];
+                model.initial_velocity_variance_m2_s2 = 25.0;
+            }
+            PppPositionModel::ConstantAcceleration(model) => {
+                model.initial_velocity_mps = [0.0; 3];
+                model.initial_velocity_variance_m2_s2 = 100.0;
+                model.initial_acceleration_mps2 = [0.0; 3];
+                model.initial_acceleration_variance_m2_s4 = 100.0;
+            }
+            PppPositionModel::Static => (),
         }
         Ok(self)
     }
@@ -474,6 +540,8 @@ pub struct PppSolution {
     pub position: PositionSolution,
     pub zenith_delay_m: f64,
     pub zenith_variance_m2: f64,
+    pub acceleration_ecef_mps2: Option<[f64; 3]>,
+    pub acceleration_covariance_m2_s4: Option<[[f64; 3]; 3]>,
     pub ambiguities: Vec<PppAmbiguity>,
     pub measurements: Vec<PppMeasurement>,
     pub arc_decisions: BTreeMap<SatelliteId, PhaseArcDecision>,
@@ -522,10 +590,16 @@ impl PppFilter {
             config.initial_receiver_clock_s * c::SPEED_OF_LIGHT,
             config.initial_zenith_delay_m,
         ];
-        if let PppPositionModel::ConstantVelocity(c) = config.filter.position_model {
-            mean.extend(c.initial_velocity_mps);
-            for (i, row) in covariance.iter_mut().enumerate().skip(5) {
-                row[i] = c.initial_velocity_variance_m2_s2;
+        if let Some((velocity, variance)) = config.filter.position_model.initial_velocity() {
+            mean.extend(velocity);
+            for (i, row) in covariance.iter_mut().enumerate().skip(5).take(3) {
+                row[i] = variance;
+            }
+        }
+        if let PppPositionModel::ConstantAcceleration(c) = config.filter.position_model {
+            mean.extend(c.initial_acceleration_mps2);
+            for (i, row) in covariance.iter_mut().enumerate().skip(8).take(3) {
+                row[i] = c.initial_acceleration_variance_m2_s4;
             }
         }
         Ok(Self {
@@ -653,20 +727,24 @@ impl PppFilter {
                     })),
                     num_satellites: measurements.len(),
                     receiver_clock_bias: posterior.mean[3] / c::SPEED_OF_LIGHT,
-                    velocity_ecef: matches!(
-                        self.config.filter.position_model,
-                        PppPositionModel::ConstantVelocity(_)
-                    )
-                    .then(|| std::array::from_fn(|i| posterior.mean[5 + i])),
-                    velocity_covariance: matches!(
-                        self.config.filter.position_model,
-                        PppPositionModel::ConstantVelocity(_)
-                    )
-                    .then(|| {
-                        std::array::from_fn(|i| {
-                            std::array::from_fn(|j| posterior.covariance[5 + i][5 + j])
-                        })
-                    }),
+                    velocity_ecef: self
+                        .config
+                        .filter
+                        .position_model
+                        .initial_velocity()
+                        .is_some()
+                        .then(|| std::array::from_fn(|i| posterior.mean[5 + i])),
+                    velocity_covariance: self
+                        .config
+                        .filter
+                        .position_model
+                        .initial_velocity()
+                        .is_some()
+                        .then(|| {
+                            std::array::from_fn(|i| {
+                                std::array::from_fn(|j| posterior.covariance[5 + i][5 + j])
+                            })
+                        }),
                 };
                 let ambiguities = layout
                     .iter()
@@ -699,6 +777,20 @@ impl PppFilter {
                     position,
                     zenith_delay_m: posterior.mean[4],
                     zenith_variance_m2: posterior.covariance[4][4],
+                    acceleration_ecef_mps2: matches!(
+                        self.config.filter.position_model,
+                        PppPositionModel::ConstantAcceleration(_)
+                    )
+                    .then(|| std::array::from_fn(|i| posterior.mean[8 + i])),
+                    acceleration_covariance_m2_s4: matches!(
+                        self.config.filter.position_model,
+                        PppPositionModel::ConstantAcceleration(_)
+                    )
+                    .then(|| {
+                        std::array::from_fn(|i| {
+                            std::array::from_fn(|j| posterior.covariance[8 + i][8 + j])
+                        })
+                    }),
                     ambiguities,
                     measurements,
                     arc_decisions: decisions,
@@ -799,6 +891,20 @@ impl PppFilter {
                 self.config.filter.ambiguity_process_noise_m2_per_s,
             );
         }
+        if let PppPositionModel::ConstantAcceleration(c) = self.config.filter.position_model {
+            let mut head_noise = self.config.filter.head_process_noise_m2_per_s;
+            if self.config.filter.clock_model == PppClockModel::IndependentEpoch {
+                head_noise[3] = 0.0;
+            }
+            predict_acceleration_state(
+                &mut mean,
+                &mut covariance,
+                dt,
+                c,
+                head_noise,
+                self.config.filter.ambiguity_process_noise_m2_per_s,
+            )?;
+        }
         if self.config.filter.clock_model == PppClockModel::IndependentEpoch {
             reset_epoch_clock_covariance(
                 &mut covariance,
@@ -821,10 +927,13 @@ impl PppFilter {
         decisions: &BTreeMap<SatelliteId, PhaseArcDecision>,
     ) -> Result<UpdateResult, PppError> {
         let mut admission_receiver = receiver(&self.state.mean);
-        if matches!(
-            self.config.filter.position_model,
-            PppPositionModel::ConstantVelocity(_)
-        ) {
+        if self
+            .config
+            .filter
+            .position_model
+            .initial_velocity()
+            .is_some()
+        {
             let dt = self
                 .state_time
                 .map_or(0.0, |t| epoch.time.difference_seconds(t));
@@ -833,6 +942,14 @@ impl PppFilter {
                 admission_receiver.y + dt * self.state.mean[6],
                 admission_receiver.z + dt * self.state.mean[7],
             );
+            if matches!(
+                self.config.filter.position_model,
+                PppPositionModel::ConstantAcceleration(_)
+            ) {
+                admission_receiver.x += 0.5 * dt * dt * self.state.mean[8];
+                admission_receiver.y += 0.5 * dt * dt * self.state.mean[9];
+                admission_receiver.z += 0.5 * dt * dt * self.state.mean[10];
+            }
             if !admission_receiver.is_finite() {
                 return Err(Error::NonFinite.into());
             }
@@ -1156,6 +1273,60 @@ fn predict_kinematic_state(
     }
 }
 
+fn predict_acceleration_state(
+    mean: &mut [f64],
+    covariance: &mut Matrix,
+    dt: f64,
+    config: PppAccelerationConfig,
+    head_noise: [f64; 5],
+    ambiguity_noise: f64,
+) -> Result<(), PppError> {
+    let n = mean.len();
+    let mut transition = zeros(n, n);
+    for (i, row) in transition.iter_mut().enumerate() {
+        row[i] = 1.0;
+    }
+    for i in 0..3 {
+        mean[i] += dt * mean[5 + i] + 0.5 * dt * dt * mean[8 + i];
+        mean[5 + i] += dt * mean[8 + i];
+        transition[i][5 + i] = dt;
+        transition[i][8 + i] = 0.5 * dt * dt;
+        transition[5 + i][8 + i] = dt;
+    }
+    *covariance = crate::filter::multiply(
+        &crate::filter::multiply(&transition, covariance),
+        &crate::filter::transpose(&transition),
+    );
+    let geo = ecef_to_geodetic(receiver(mean))?;
+    let rotation = [
+        crate::EnuCoord::new(1.0, 0.0, 0.0),
+        crate::EnuCoord::new(0.0, 1.0, 0.0),
+        crate::EnuCoord::new(0.0, 0.0, 1.0),
+    ]
+    .map(|e| crate::coordinates::enu_to_ecef(e, geo))
+    .into_iter()
+    .collect::<Result<Vec<_>, _>>()?;
+    let sigmas = [
+        config.horizontal_sigma_mps2_per_sqrt_s,
+        config.horizontal_sigma_mps2_per_sqrt_s,
+        config.vertical_sigma_mps2_per_sqrt_s,
+    ];
+    for (axis, sigma) in rotation.iter().zip(sigmas) {
+        let v = [axis.x, axis.y, axis.z];
+        for i in 0..3 {
+            for j in 0..3 {
+                covariance[8 + i][8 + j] += v[i] * v[j] * sigma * sigma * dt;
+            }
+        }
+    }
+    covariance[3][3] += head_noise[3] * dt;
+    covariance[4][4] += head_noise[4] * dt;
+    for (i, row) in covariance.iter_mut().enumerate().skip(11) {
+        row[i] += ambiguity_noise * dt;
+    }
+    Ok(())
+}
+
 /// Pinned native reinitializeScalarState covariance operation, applied to
 /// the clock slot while retaining its last committed seed mean.
 fn reset_epoch_clock_covariance(covariance: &mut Matrix, variance: f64) {
@@ -1210,6 +1381,91 @@ fn ensure_geometry(rows: &[[f64; 5]]) -> Result<(), PppError> {
 #[cfg(test)]
 mod kinematic_prediction_tests {
     use super::*;
+    #[test]
+    fn acceleration_prediction_matches_48_actual_native_pva_calls() {
+        let mut count = 0;
+        for line in include_str!("../tests/fixtures/upstream_ppp_acceleration_predict.csv")
+            .lines()
+            .skip(1)
+        {
+            let d: Vec<f64> = line.split(',').map(|s| s.parse().unwrap()).collect();
+            let n = d[1] as usize;
+            assert_eq!(d.len(), 8 + 2 * n + 2 * n * n);
+            let mut mean = d[8..8 + n].to_vec();
+            let mut covariance: Matrix = d[8 + n..8 + n + n * n]
+                .chunks(n)
+                .map(|r| r.to_vec())
+                .collect();
+            predict_acceleration_state(
+                &mut mean,
+                &mut covariance,
+                d[2],
+                PppAccelerationConfig {
+                    horizontal_sigma_mps2_per_sqrt_s: d[6],
+                    vertical_sigma_mps2_per_sqrt_s: d[7],
+                    ..Default::default()
+                },
+                [d[3], d[3], d[3], 100.0, d[4]],
+                d[5],
+            )
+            .unwrap();
+            let expected_mean = &d[8 + n + n * n..8 + 2 * n + n * n];
+            let expected_covariance = &d[8 + 2 * n + n * n..];
+            for (a, b) in mean
+                .iter()
+                .zip(expected_mean)
+                .chain(covariance.iter().flatten().zip(expected_covariance))
+            {
+                assert!(
+                    (a - b).abs() <= 1e-10 * b.abs().max(1.0),
+                    "native case {}: {a} versus {b}",
+                    d[0]
+                );
+            }
+            crate::filter::cholesky(&covariance).unwrap();
+            count += 1;
+        }
+        assert_eq!(count, 48);
+    }
+
+    #[test]
+    fn pva_local_noise_rotates_variances_and_does_not_add_position_or_velocity_noise() {
+        let mut mean = vec![0.0; 12];
+        mean[0] = c::WGS84_A;
+        mean[4] = 2.3;
+        let mut covariance = zeros(12, 12);
+        for (i, row) in covariance.iter_mut().enumerate() {
+            row[i] = 1.0;
+        }
+        predict_acceleration_state(
+            &mut mean,
+            &mut covariance,
+            2.0,
+            PppAccelerationConfig {
+                horizontal_sigma_mps2_per_sqrt_s: 2.0,
+                vertical_sigma_mps2_per_sqrt_s: 0.5,
+                ..Default::default()
+            },
+            [1000.0, 1000.0, 1000.0, 2.0, 0.01],
+            0.03,
+        )
+        .unwrap();
+        for i in 0..3 {
+            assert_eq!(covariance[i][i], 9.0);
+            assert_eq!(covariance[5 + i][5 + i], 5.0);
+            assert_eq!(covariance[i][5 + i], 6.0);
+            assert_eq!(covariance[i][8 + i], 2.0);
+            assert_eq!(covariance[5 + i][8 + i], 2.0);
+        }
+        assert_eq!(
+            [covariance[8][8], covariance[9][9], covariance[10][10]],
+            [1.5, 9.0, 9.0]
+        );
+        assert_eq!(covariance[3][3], 5.0);
+        assert_eq!(covariance[4][4], 1.02);
+        assert_eq!(covariance[11][11], 1.06);
+        crate::filter::cholesky(&covariance).unwrap();
+    }
     #[test]
     fn clock_covariance_reset_matches_all_16_actual_native_scalar_reinitializations() {
         let mut count = 0;

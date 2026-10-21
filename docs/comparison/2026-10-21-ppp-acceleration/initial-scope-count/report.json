@@ -1,0 +1,1044 @@
+{
+  "synthetic": {
+    "synthetic-car-clean-kinematic": {
+      "input_epochs": 64,
+      "status_counts": {
+        "PPP_FLOAT": 9,
+        "INVALID": 55
+      },
+      "position_3D_m": {
+        "epochs": 9,
+        "RMS": 0.8115147420650328,
+        "maximum": 1.8447333181983965
+      },
+      "velocity_3D_mps": {
+        "epochs": 9,
+        "RMS": 7.1267052842765475,
+        "maximum": 21.081851067789195
+      },
+      "velocity_after_eight_epochs_mps": {
+        "epochs": 3,
+        "RMS": 1.9047381994763135,
+        "maximum": 2.26329385721175
+      },
+      "acceleration_3D_mps2": null,
+      "position_bound_m": 0.01,
+      "velocity_after_eight_bound_mps": 1.0,
+      "position_bound_failures": [
+        {
+          "epoch": 3,
+          "error_m": 0.018237096152596288
+        },
+        {
+          "epoch": 5,
+          "error_m": 0.1691926838262721
+        },
+        {
+          "epoch": 7,
+          "error_m": 0.43520891252123733
+        },
+        {
+          "epoch": 9,
+          "error_m": 0.8098686989835487
+        },
+        {
+          "epoch": 11,
+          "error_m": 1.2843946373844761
+        },
+        {
+          "epoch": 13,
+          "error_m": 1.8447333181983965
+        }
+      ],
+      "velocity_bound_failures": [
+        {
+          "epoch": 9,
+          "error_mps": 1.488677757517512
+        },
+        {
+          "epoch": 11,
+          "error_mps": 1.8829291744016807
+        },
+        {
+          "epoch": 13,
+          "error_mps": 2.26329385721175
+        }
+      ],
+      "predeclared_targets_met": false,
+      "terminal_error_reasons": {
+        "initial PPP: Filter(InnovationRejected)": 55
+      }
+    },
+    "synthetic-car-clean-pva": {
+      "input_epochs": 64,
+      "status_counts": {
+        "PPP_FLOAT": 64
+      },
+      "position_3D_m": {
+        "epochs": 64,
+        "RMS": 8.059619582718688e-05,
+        "maximum": 0.00037563813936552137
+      },
+      "velocity_3D_mps": {
+        "epochs": 64,
+        "RMS": 2.6352728311609432,
+        "maximum": 21.081851067789195
+      },
+      "velocity_after_eight_epochs_mps": {
+        "epochs": 56,
+        "RMS": 0.0012696930107501197,
+        "maximum": 0.002046127493563085
+      },
+      "acceleration_3D_mps2": {
+        "epochs": 64,
+        "RMS": 0.19357120724875143,
+        "maximum": 1.173825442373528
+      },
+      "position_bound_m": 0.01,
+      "velocity_after_eight_bound_mps": 1.0,
+      "position_bound_failures": [],
+      "velocity_bound_failures": [],
+      "predeclared_targets_met": true,
+      "terminal_error_reasons": {}
+    },
+    "synthetic-car-noisy-kinematic": {
+      "input_epochs": 64,
+      "status_counts": {
+        "PPP_FLOAT": 9,
+        "INVALID": 55
+      },
+      "position_3D_m": {
+        "epochs": 9,
+        "RMS": 1.0261061694424647,
+        "maximum": 1.8560973225619792
+      },
+      "velocity_3D_mps": {
+        "epochs": 9,
+        "RMS": 7.1264990132222445,
+        "maximum": 21.081851067789195
+      },
+      "velocity_after_eight_epochs_mps": {
+        "epochs": 3,
+        "RMS": 1.9031055646648256,
+        "maximum": 2.261524794590518
+      },
+      "acceleration_3D_mps2": null,
+      "position_bound_m": 1.0,
+      "velocity_after_eight_bound_mps": 1.0,
+      "position_bound_failures": [
+        {
+          "epoch": 11,
+          "error_m": 1.3153091197761102
+        },
+        {
+          "epoch": 13,
+          "error_m": 1.8560973225619792
+        }
+      ],
+      "velocity_bound_failures": [
+        {
+          "epoch": 9,
+          "error_mps": 1.4871016044402303
+        },
+        {
+          "epoch": 11,
+          "error_mps": 1.881347068538467
+        },
+        {
+          "epoch": 13,
+          "error_mps": 2.261524794590518
+        }
+      ],
+      "predeclared_targets_met": false,
+      "terminal_error_reasons": {
+        "initial PPP: Filter(InnovationRejected)": 55
+      }
+    },
+    "synthetic-car-noisy-pva": {
+      "input_epochs": 64,
+      "status_counts": {
+        "PPP_FLOAT": 64
+      },
+      "position_3D_m": {
+        "epochs": 64,
+        "RMS": 0.267524253810006,
+        "maximum": 0.8094996110652773
+      },
+      "velocity_3D_mps": {
+        "epochs": 64,
+        "RMS": 2.635278087696334,
+        "maximum": 21.081851067789195
+      },
+      "velocity_after_eight_epochs_mps": {
+        "epochs": 56,
+        "RMS": 0.004793141201717339,
+        "maximum": 0.007573751764370821
+      },
+      "acceleration_3D_mps2": {
+        "epochs": 64,
+        "RMS": 0.19367699074387784,
+        "maximum": 1.1740090033652741
+      },
+      "position_bound_m": 1.0,
+      "velocity_after_eight_bound_mps": 1.0,
+      "position_bound_failures": [],
+      "velocity_bound_failures": [],
+      "predeclared_targets_met": true,
+      "terminal_error_reasons": {}
+    },
+    "synthetic-car-unrounded-kinematic": {
+      "input_epochs": 64,
+      "status_counts": {
+        "PPP_FLOAT": 9,
+        "INVALID": 55
+      },
+      "position_3D_m": {
+        "epochs": 9,
+        "RMS": 0.8115176021038647,
+        "maximum": 1.8447381083457113
+      },
+      "velocity_3D_mps": {
+        "epochs": 9,
+        "RMS": 7.126705030836704,
+        "maximum": 21.081851067789195
+      },
+      "velocity_after_eight_epochs_mps": {
+        "epochs": 3,
+        "RMS": 1.9047376551671398,
+        "maximum": 2.263293588998908
+      },
+      "acceleration_3D_mps2": null,
+      "position_bound_m": 0.01,
+      "velocity_after_eight_bound_mps": 1.0,
+      "position_bound_failures": [
+        {
+          "epoch": 3,
+          "error_m": 0.018242568922535105
+        },
+        {
+          "epoch": 5,
+          "error_m": 0.16919652592242493
+        },
+        {
+          "epoch": 7,
+          "error_m": 0.43521368551033424
+        },
+        {
+          "epoch": 9,
+          "error_m": 0.809873389456993
+        },
+        {
+          "epoch": 11,
+          "error_m": 1.284398873748939
+        },
+        {
+          "epoch": 13,
+          "error_m": 1.8447381083457113
+        }
+      ],
+      "velocity_bound_failures": [
+        {
+          "epoch": 9,
+          "error_mps": 1.4886768097676057
+        },
+        {
+          "epoch": 11,
+          "error_mps": 1.88292859426252
+        },
+        {
+          "epoch": 13,
+          "error_mps": 2.263293588998908
+        }
+      ],
+      "predeclared_targets_met": false,
+      "terminal_error_reasons": {
+        "initial PPP: Filter(InnovationRejected)": 55
+      }
+    },
+    "synthetic-car-unrounded-pva": {
+      "input_epochs": 64,
+      "status_counts": {
+        "PPP_FLOAT": 64
+      },
+      "position_3D_m": {
+        "epochs": 64,
+        "RMS": 6.892175239982745e-05,
+        "maximum": 0.00041642266348071254
+      },
+      "velocity_3D_mps": {
+        "epochs": 64,
+        "RMS": 2.6352728775073486,
+        "maximum": 21.081851067789195
+      },
+      "velocity_after_eight_epochs_mps": {
+        "epochs": 56,
+        "RMS": 0.0012450485459501814,
+        "maximum": 0.0017537335453924803
+      },
+      "acceleration_3D_mps2": {
+        "epochs": 64,
+        "RMS": 0.19357033750793096,
+        "maximum": 1.1738330484047657
+      },
+      "position_bound_m": 0.01,
+      "velocity_after_eight_bound_mps": 1.0,
+      "position_bound_failures": [],
+      "velocity_bound_failures": [],
+      "predeclared_targets_met": true,
+      "terminal_error_reasons": {}
+    }
+  },
+  "old_synthetic_controls": {
+    "old-synthetic-clean": {
+      "all_CSV_bytes_identical": true,
+      "previous": "docs/comparison/2026-10-21-ppp-epoch-clock/synthetic-clean-random-walk.stdout.csv.gz",
+      "epochs": 64
+    },
+    "old-synthetic-noisy": {
+      "all_CSV_bytes_identical": true,
+      "previous": "docs/comparison/2026-10-21-ppp-epoch-clock/synthetic-noisy-random-walk.stdout.csv.gz",
+      "epochs": 64
+    }
+  },
+  "cases": {
+    "nagoya-run1": {
+      "1C2W-default-random-walk-CV": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7597,
+          "PPP_FLOAT": 5
+        },
+        "successful_fraction": 0.0006577216521967903,
+        "longest_successful_epoch_streak": 4,
+        "maximum_success_to_success_gap_s": 0.40000000002328306,
+        "epochs_before_any_commit": 248,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 303,
+          "initial PPP: PostfitRejected": 60,
+          "initial PPP: Filter(InnovationRejected)": 5081,
+          "initial PPP: InsufficientCode { available: 4 }": 895,
+          "initial PPP: InsufficientCode { available: 3 }": 580,
+          "initial PPP: InsufficientCode { available: 1 }": 140,
+          "initial PPP: InsufficientCode { available: 0 }": 120,
+          "initial PPP: InsufficientCode { available: 2 }": 403,
+          "initial PPP: InsufficientPhase { available: 3 }": 15
+        },
+        "initial_success_time": [
+          "2325",
+          "550429.59999999997671694"
+        ],
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 5,
+              "horizontal_rms_m": 2.8045615210055512,
+              "vertical_rms_m": 11.280449175092537,
+              "three_dimensional_rms_m": 11.623859037210957,
+              "horizontal_p50_m": 2.8065509439478915,
+              "horizontal_p95_m": 2.8344836585470574,
+              "maximum_3d_m": 11.958109693604744
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 5,
+              "horizontal_rms_m": 1.989144146317139,
+              "vertical_rms_m": 10.046168930869468,
+              "three_dimensional_rms_m": 10.241201327109763,
+              "horizontal_p50_m": 1.9906471643741954,
+              "horizontal_p95_m": 2.0057552362118405,
+              "maximum_3d_m": 10.570352110028443
+            }
+          }
+        },
+        "resource_log": "nagoya-run1-1C2W-default-random-walk-CV.resource.json",
+        "runtime_memory_acceptance": false,
+        "all_prior_CSV_bytes_identical": true
+      },
+      "1C2W-default-random-walk-PVA": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7597,
+          "PPP_FLOAT": 5
+        },
+        "successful_fraction": 0.0006577216521967903,
+        "longest_successful_epoch_streak": 4,
+        "maximum_success_to_success_gap_s": 0.40000000002328306,
+        "epochs_before_any_commit": 248,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 303,
+          "initial PPP: PostfitRejected": 106,
+          "initial PPP: Filter(InnovationRejected)": 5035,
+          "initial PPP: InsufficientCode { available: 4 }": 895,
+          "initial PPP: InsufficientCode { available: 3 }": 580,
+          "initial PPP: InsufficientCode { available: 1 }": 140,
+          "initial PPP: InsufficientCode { available: 0 }": 120,
+          "initial PPP: InsufficientCode { available: 2 }": 403,
+          "initial PPP: InsufficientPhase { available: 3 }": 15
+        },
+        "initial_success_time": [
+          "2325",
+          "550429.59999999997671694"
+        ],
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 5,
+              "horizontal_rms_m": 2.80388322996875,
+              "vertical_rms_m": 11.291503760555804,
+              "three_dimensional_rms_m": 11.634423850880879,
+              "horizontal_p50_m": 2.807656155963912,
+              "horizontal_p95_m": 2.834483868795939,
+              "maximum_3d_m": 11.958109693604744
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 5,
+              "horizontal_rms_m": 1.9876805971727618,
+              "vertical_rms_m": 10.057180340093625,
+              "three_dimensional_rms_m": 10.251719394791431,
+              "horizontal_p50_m": 1.9914861574412532,
+              "horizontal_p95_m": 2.004037102797625,
+              "maximum_3d_m": 10.570352110028443
+            }
+          }
+        },
+        "resource_log": "nagoya-run1-1C2W-default-random-walk-PVA.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2W-default-independent-CV": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7592,
+          "PPP_FLOAT": 10
+        },
+        "successful_fraction": 0.0013154433043935806,
+        "longest_successful_epoch_streak": 4,
+        "maximum_success_to_success_gap_s": 934.0,
+        "epochs_before_any_commit": 248,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 711,
+          "initial PPP: PostfitRejected": 645,
+          "initial PPP: Filter(InnovationRejected)": 4083,
+          "initial PPP: InsufficientCode { available: 4 }": 895,
+          "initial PPP: InsufficientCode { available: 3 }": 580,
+          "initial PPP: InsufficientCode { available: 1 }": 140,
+          "initial PPP: InsufficientCode { available: 0 }": 120,
+          "initial PPP: InsufficientCode { available: 2 }": 403,
+          "initial PPP: InsufficientPhase { available: 3 }": 15
+        },
+        "initial_success_time": [
+          "2325",
+          "550429.59999999997671694"
+        ],
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 10,
+              "horizontal_rms_m": 2.1608812963633426,
+              "vertical_rms_m": 8.91731057638832,
+              "three_dimensional_rms_m": 9.175392955767066,
+              "horizontal_p50_m": 2.333747163264232,
+              "horizontal_p95_m": 2.8326488680609367,
+              "maximum_3d_m": 11.958109693604744
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 10,
+              "horizontal_rms_m": 1.695491361239932,
+              "vertical_rms_m": 7.763562263998848,
+              "three_dimensional_rms_m": 7.946545789399703,
+              "horizontal_p50_m": 1.770184192908998,
+              "horizontal_p95_m": 2.006882343996094,
+              "maximum_3d_m": 10.570352110028443
+            }
+          }
+        },
+        "resource_log": "nagoya-run1-1C2W-default-independent-CV.resource.json",
+        "runtime_memory_acceptance": false,
+        "all_prior_CSV_bytes_identical": true
+      },
+      "1C2W-default-independent-PVA": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 6925,
+          "PPP_FLOAT": 677
+        },
+        "successful_fraction": 0.08905551170744541,
+        "longest_successful_epoch_streak": 214,
+        "maximum_success_to_success_gap_s": 60.0,
+        "epochs_before_any_commit": 248,
+        "terminal_error_reasons": {
+          "initial PPP: NonPhysicalState": 303,
+          "initial PPP: PostfitRejected": 86,
+          "initial PPP: Filter(InvalidCovariance)": 1,
+          "initial PPP: InsufficientCode { available: 4 }": 1108,
+          "initial PPP: InsufficientCode { available: 3 }": 1012,
+          "initial PPP: InsufficientCode { available: 1 }": 470,
+          "initial PPP: InsufficientCode { available: 0 }": 1920,
+          "initial PPP: InsufficientCode { available: 2 }": 507,
+          "initial PPP: Filter(InnovationRejected)": 1510,
+          "initial PPP: InsufficientPhase { available: 3 }": 8
+        },
+        "initial_success_time": [
+          "2325",
+          "550429.59999999997671694"
+        ],
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 677,
+              "horizontal_rms_m": 1.1130644136246355,
+              "vertical_rms_m": 2.958185474185541,
+              "three_dimensional_rms_m": 3.1606603247675773,
+              "horizontal_p50_m": 0.6491328070343908,
+              "horizontal_p95_m": 2.643591096102237,
+              "maximum_3d_m": 11.958109693604744
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 677,
+              "horizontal_rms_m": 1.0092151538165572,
+              "vertical_rms_m": 2.376197476907411,
+              "three_dimensional_rms_m": 2.5816331412410483,
+              "horizontal_p50_m": 0.7563918695845312,
+              "horizontal_p95_m": 1.7699524528656814,
+              "maximum_3d_m": 10.570352110028443
+            }
+          }
+        },
+        "resource_log": "nagoya-run1-1C2W-default-independent-PVA.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2W-native-head-random-walk-CV": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7595,
+          "PPP_FLOAT": 7
+        },
+        "successful_fraction": 0.0009208103130755065,
+        "longest_successful_epoch_streak": 5,
+        "maximum_success_to_success_gap_s": 21.400000000023283,
+        "epochs_before_any_commit": 137,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 135,
+          "initial PPP: NonPhysicalState": 218,
+          "initial PPP: Filter(InnovationRejected)": 5089,
+          "initial PPP: InsufficientCode { available: 4 }": 895,
+          "initial PPP: InsufficientCode { available: 3 }": 580,
+          "initial PPP: InsufficientCode { available: 1 }": 140,
+          "initial PPP: InsufficientCode { available: 0 }": 120,
+          "initial PPP: InsufficientCode { available: 2 }": 403,
+          "initial PPP: InsufficientPhase { available: 3 }": 15
+        },
+        "initial_success_time": [
+          "2325",
+          "550407.40000000002328306"
+        ],
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 7,
+              "horizontal_rms_m": 3.6703301335183682,
+              "vertical_rms_m": 9.615668899422584,
+              "three_dimensional_rms_m": 10.292347238231699,
+              "horizontal_p50_m": 3.581921988420189,
+              "horizontal_p95_m": 4.166275451635587,
+              "maximum_3d_m": 13.057329640074352
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 7,
+              "horizontal_rms_m": 2.8573191528176793,
+              "vertical_rms_m": 8.44563440728214,
+              "three_dimensional_rms_m": 8.915885445794306,
+              "horizontal_p50_m": 2.734633595627632,
+              "horizontal_p95_m": 3.407247265788807,
+              "maximum_3d_m": 11.65004367390453
+            }
+          }
+        },
+        "resource_log": "nagoya-run1-1C2W-native-head-random-walk-CV.resource.json",
+        "runtime_memory_acceptance": false,
+        "all_prior_CSV_bytes_identical": true
+      },
+      "1C2W-native-head-random-walk-PVA": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7597,
+          "PPP_FLOAT": 5
+        },
+        "successful_fraction": 0.0006577216521967903,
+        "longest_successful_epoch_streak": 5,
+        "maximum_success_to_success_gap_s": 0.2000000000698492,
+        "epochs_before_any_commit": 137,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 91,
+          "initial PPP: NonPhysicalState": 192,
+          "initial PPP: Filter(InnovationRejected)": 5161,
+          "initial PPP: InsufficientCode { available: 4 }": 895,
+          "initial PPP: InsufficientCode { available: 3 }": 580,
+          "initial PPP: InsufficientCode { available: 1 }": 140,
+          "initial PPP: InsufficientCode { available: 0 }": 120,
+          "initial PPP: InsufficientCode { available: 2 }": 403,
+          "initial PPP: InsufficientPhase { available: 3 }": 15
+        },
+        "initial_success_time": [
+          "2325",
+          "550407.40000000002328306"
+        ],
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 5,
+              "horizontal_rms_m": 3.470044669849222,
+              "vertical_rms_m": 8.3351990232111,
+              "three_dimensional_rms_m": 9.028662844922733,
+              "horizontal_p50_m": 3.4988741582374585,
+              "horizontal_p95_m": 3.6383345385383996,
+              "maximum_3d_m": 11.465702535831776
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 5,
+              "horizontal_rms_m": 2.6273652539833865,
+              "vertical_rms_m": 7.167561007402626,
+              "three_dimensional_rms_m": 7.633936007897742,
+              "horizontal_p50_m": 2.653462737062226,
+              "horizontal_p95_m": 2.7916960390805006,
+              "maximum_3d_m": 10.041271860440386
+            }
+          }
+        },
+        "resource_log": "nagoya-run1-1C2W-native-head-random-walk-PVA.resource.json",
+        "runtime_memory_acceptance": false
+      },
+      "1C2W-native-head-independent-CV": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 7597,
+          "PPP_FLOAT": 5
+        },
+        "successful_fraction": 0.0006577216521967903,
+        "longest_successful_epoch_streak": 5,
+        "maximum_success_to_success_gap_s": 0.2000000000698492,
+        "epochs_before_any_commit": 137,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 662,
+          "initial PPP: NonPhysicalState": 725,
+          "initial PPP: Filter(InnovationRejected)": 4057,
+          "initial PPP: InsufficientCode { available: 4 }": 895,
+          "initial PPP: InsufficientCode { available: 3 }": 580,
+          "initial PPP: InsufficientCode { available: 1 }": 140,
+          "initial PPP: InsufficientCode { available: 0 }": 120,
+          "initial PPP: InsufficientCode { available: 2 }": 403,
+          "initial PPP: InsufficientPhase { available: 3 }": 15
+        },
+        "initial_success_time": [
+          "2325",
+          "550407.40000000002328306"
+        ],
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 5,
+              "horizontal_rms_m": 3.470208433061495,
+              "vertical_rms_m": 8.334823709659872,
+              "three_dimensional_rms_m": 9.02837930306428,
+              "horizontal_p50_m": 3.498721315207466,
+              "horizontal_p95_m": 3.6390103843625288,
+              "maximum_3d_m": 11.465937481395004
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 5,
+              "horizontal_rms_m": 2.6274741790364913,
+              "vertical_rms_m": 7.16719799122004,
+              "three_dimensional_rms_m": 7.633632661246681,
+              "horizontal_p50_m": 2.653224874416026,
+              "horizontal_p95_m": 2.7923007174618975,
+              "maximum_3d_m": 10.041450679270858
+            }
+          }
+        },
+        "resource_log": "nagoya-run1-1C2W-native-head-independent-CV.resource.json",
+        "runtime_memory_acceptance": false,
+        "all_prior_CSV_bytes_identical": true
+      },
+      "1C2W-native-head-independent-PVA": {
+        "input_epochs": 7602,
+        "status_counts": {
+          "INVALID": 6921,
+          "PPP_FLOAT": 681
+        },
+        "successful_fraction": 0.08958168902920284,
+        "longest_successful_epoch_streak": 214,
+        "maximum_success_to_success_gap_s": 60.0,
+        "epochs_before_any_commit": 137,
+        "terminal_error_reasons": {
+          "initial PPP: PostfitRejected": 178,
+          "initial PPP: NonPhysicalState": 207,
+          "initial PPP: Filter(InvalidCovariance)": 1,
+          "initial PPP: InsufficientCode { available: 4 }": 1107,
+          "initial PPP: InsufficientCode { available: 3 }": 1013,
+          "initial PPP: InsufficientCode { available: 1 }": 470,
+          "initial PPP: InsufficientCode { available: 0 }": 1920,
+          "initial PPP: InsufficientCode { available: 2 }": 507,
+          "initial PPP: Filter(InnovationRejected)": 1510,
+          "initial PPP: InsufficientPhase { available: 3 }": 8
+        },
+        "initial_success_time": [
+          "2325",
+          "550407.40000000002328306"
+        ],
+        "reference_errors": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 681,
+              "horizontal_rms_m": 1.1374338424494048,
+              "vertical_rms_m": 3.1311161631538473,
+              "three_dimensional_rms_m": 3.331312680177663,
+              "horizontal_p50_m": 0.6306383777083466,
+              "horizontal_p95_m": 2.5490326396815437,
+              "maximum_3d_m": 12.226382596023765
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 681,
+              "horizontal_rms_m": 1.0255954565019392,
+              "vertical_rms_m": 2.690708643417589,
+              "three_dimensional_rms_m": 2.879541464219528,
+              "horizontal_p50_m": 0.816608751677871,
+              "horizontal_p95_m": 1.6740464545382423,
+              "maximum_3d_m": 10.83979507339847
+            }
+          }
+        },
+        "resource_log": "nagoya-run1-1C2W-native-head-independent-PVA.resource.json",
+        "runtime_memory_acceptance": false
+      }
+    }
+  },
+  "comparisons": {
+    "nagoya-run1-1C2W-default-random-walk-PVA": {
+      "common_epochs": 5,
+      "newly_accepted_epochs": 0,
+      "lost_epochs": 0,
+      "common_position_difference_RMS_m": 0.02443639403689954,
+      "common_position_difference_maximum_m": 0.05431598594886046,
+      "common_control_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 5,
+            "horizontal_rms_m": 2.8045615210055512,
+            "vertical_rms_m": 11.280449175092537,
+            "three_dimensional_rms_m": 11.623859037210957,
+            "horizontal_p50_m": 2.8065509439478915,
+            "horizontal_p95_m": 2.8344836585470574,
+            "maximum_3d_m": 11.958109693604744
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 5,
+            "horizontal_rms_m": 1.989144146317139,
+            "vertical_rms_m": 10.046168930869468,
+            "three_dimensional_rms_m": 10.241201327109763,
+            "horizontal_p50_m": 1.9906471643741954,
+            "horizontal_p95_m": 2.0057552362118405,
+            "maximum_3d_m": 10.570352110028443
+          }
+        }
+      },
+      "common_current_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 5,
+            "horizontal_rms_m": 2.80388322996875,
+            "vertical_rms_m": 11.291503760555804,
+            "three_dimensional_rms_m": 11.634423850880879,
+            "horizontal_p50_m": 2.807656155963912,
+            "horizontal_p95_m": 2.834483868795939,
+            "maximum_3d_m": 11.958109693604744
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 5,
+            "horizontal_rms_m": 1.9876805971727618,
+            "vertical_rms_m": 10.057180340093625,
+            "three_dimensional_rms_m": 10.251719394791431,
+            "horizontal_p50_m": 1.9914861574412532,
+            "horizontal_p95_m": 2.004037102797625,
+            "maximum_3d_m": 10.570352110028443
+          }
+        }
+      },
+      "newly_accepted_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {}
+      },
+      "lost_control_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {}
+      }
+    },
+    "nagoya-run1-1C2W-default-independent-PVA": {
+      "common_epochs": 5,
+      "newly_accepted_epochs": 672,
+      "lost_epochs": 5,
+      "common_position_difference_RMS_m": 0.012204401614830395,
+      "common_position_difference_maximum_m": 0.026632069449919367,
+      "common_control_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 5,
+            "horizontal_rms_m": 2.805218673142718,
+            "vertical_rms_m": 11.281056433503668,
+            "three_dimensional_rms_m": 11.62460692066803,
+            "horizontal_p50_m": 2.807151167262735,
+            "horizontal_p95_m": 2.8349066084797543,
+            "maximum_3d_m": 11.958109693604744
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 5,
+            "horizontal_rms_m": 1.989876437362894,
+            "vertical_rms_m": 10.046775796744182,
+            "three_dimensional_rms_m": 10.24193888607117,
+            "horizontal_p50_m": 1.9913020670493078,
+            "horizontal_p95_m": 2.0071025795680826,
+            "maximum_3d_m": 10.570352110028443
+          }
+        }
+      },
+      "common_current_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 5,
+            "horizontal_rms_m": 2.8064941148088245,
+            "vertical_rms_m": 11.287184958128986,
+            "three_dimensional_rms_m": 11.63086211316555,
+            "horizontal_p50_m": 2.808255878289254,
+            "horizontal_p95_m": 2.834906859742457,
+            "maximum_3d_m": 11.958109693604744
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 5,
+            "horizontal_rms_m": 1.9907303623423358,
+            "vertical_rms_m": 10.052882059365924,
+            "three_dimensional_rms_m": 10.248094704630365,
+            "horizontal_p50_m": 1.9921404531903657,
+            "horizontal_p95_m": 2.00943459455075,
+            "maximum_3d_m": 10.570352110028443
+          }
+        }
+      },
+      "newly_accepted_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 672,
+            "horizontal_rms_m": 1.0906540477014655,
+            "vertical_rms_m": 2.80500466282448,
+            "three_dimensional_rms_m": 3.0095809359833914,
+            "horizontal_p50_m": 0.6448688365435016,
+            "horizontal_p95_m": 2.635757335305078,
+            "maximum_3d_m": 9.590510559119306
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 672,
+            "horizontal_rms_m": 0.9983019598129367,
+            "vertical_rms_m": 2.221798356508174,
+            "three_dimensional_rms_m": 2.4357739509135024,
+            "horizontal_p50_m": 0.7546534795007547,
+            "horizontal_p95_m": 1.763599760555336,
+            "maximum_3d_m": 8.328734643827083
+          }
+        }
+      },
+      "lost_control_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 5,
+            "horizontal_rms_m": 1.2122558103788368,
+            "vertical_rms_m": 5.6368982229271705,
+            "three_dimensional_rms_m": 5.765777113749433,
+            "horizontal_p50_m": 0.9530149258429234,
+            "horizontal_p95_m": 1.740770546082926,
+            "maximum_3d_m": 7.338388115901612
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 5,
+            "horizontal_rms_m": 1.3378242321420373,
+            "vertical_rms_m": 4.428102770253772,
+            "three_dimensional_rms_m": 4.625782941301456,
+            "horizontal_p50_m": 1.2920599626936922,
+            "horizontal_p95_m": 1.5237130826950416,
+            "maximum_3d_m": 6.072142699965519
+          }
+        }
+      }
+    },
+    "nagoya-run1-1C2W-native-head-random-walk-PVA": {
+      "common_epochs": 5,
+      "newly_accepted_epochs": 0,
+      "lost_epochs": 2,
+      "common_position_difference_RMS_m": 0.00046165431052694317,
+      "common_position_difference_maximum_m": 0.0007963737398352275,
+      "common_control_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 5,
+            "horizontal_rms_m": 3.470052803473404,
+            "vertical_rms_m": 8.335218679254247,
+            "three_dimensional_rms_m": 9.028684117294311,
+            "horizontal_p50_m": 3.498533861481155,
+            "horizontal_p95_m": 3.6387886898890334,
+            "maximum_3d_m": 11.46566552996648
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 5,
+            "horizontal_rms_m": 2.6273663495706163,
+            "vertical_rms_m": 7.167580279522616,
+            "three_dimensional_rms_m": 7.633954479708243,
+            "horizontal_p50_m": 2.6531027150281727,
+            "horizontal_p95_m": 2.792127112877851,
+            "maximum_3d_m": 10.041197917018616
+          }
+        }
+      },
+      "common_current_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 5,
+            "horizontal_rms_m": 3.470044669849222,
+            "vertical_rms_m": 8.3351990232111,
+            "three_dimensional_rms_m": 9.028662844922733,
+            "horizontal_p50_m": 3.4988741582374585,
+            "horizontal_p95_m": 3.6383345385383996,
+            "maximum_3d_m": 11.465702535831776
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 5,
+            "horizontal_rms_m": 2.6273652539833865,
+            "vertical_rms_m": 7.167561007402626,
+            "three_dimensional_rms_m": 7.633936007897742,
+            "horizontal_p50_m": 2.653462737062226,
+            "horizontal_p95_m": 2.7916960390805006,
+            "maximum_3d_m": 10.041271860440386
+          }
+        }
+      },
+      "newly_accepted_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {}
+      },
+      "lost_control_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 2,
+            "horizontal_rms_m": 4.128736533651826,
+            "vertical_rms_m": 12.244351075665758,
+            "three_dimensional_rms_m": 12.921710360028525,
+            "horizontal_p50_m": 4.127604492313711,
+            "horizontal_p95_m": 4.214614150787931,
+            "maximum_3d_m": 13.057329640074352
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 2,
+            "horizontal_rms_m": 3.3641224348357976,
+            "vertical_rms_m": 11.009771761332482,
+            "three_dimensional_rms_m": 11.512271452376359,
+            "horizontal_p50_m": 3.3622402599249757,
+            "horizontal_p95_m": 3.4635060231185957,
+            "maximum_3d_m": 11.65004367390453
+          }
+        }
+      }
+    },
+    "nagoya-run1-1C2W-native-head-independent-PVA": {
+      "common_epochs": 5,
+      "newly_accepted_epochs": 676,
+      "lost_epochs": 0,
+      "common_position_difference_RMS_m": 0.00046157889892089077,
+      "common_position_difference_maximum_m": 0.0007962211250189458,
+      "common_control_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 5,
+            "horizontal_rms_m": 3.470208433061495,
+            "vertical_rms_m": 8.334823709659872,
+            "three_dimensional_rms_m": 9.02837930306428,
+            "horizontal_p50_m": 3.498721315207466,
+            "horizontal_p95_m": 3.6390103843625288,
+            "maximum_3d_m": 11.465937481395004
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 5,
+            "horizontal_rms_m": 2.6274741790364913,
+            "vertical_rms_m": 7.16719799122004,
+            "three_dimensional_rms_m": 7.633632661246681,
+            "horizontal_p50_m": 2.653224874416026,
+            "horizontal_p95_m": 2.7923007174618975,
+            "maximum_3d_m": 10.041450679270858
+          }
+        }
+      },
+      "common_current_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 5,
+            "horizontal_rms_m": 3.4702007438629408,
+            "vertical_rms_m": 8.334800384586135,
+            "three_dimensional_rms_m": 9.028354814339325,
+            "horizontal_p50_m": 3.4990621289198875,
+            "horizontal_p95_m": 3.638556466826241,
+            "maximum_3d_m": 11.465975106804429
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 5,
+            "horizontal_rms_m": 2.6274732790696538,
+            "vertical_rms_m": 7.167175185387977,
+            "three_dimensional_rms_m": 7.633610939147097,
+            "horizontal_p50_m": 2.6535851149925858,
+            "horizontal_p95_m": 2.7918698184153667,
+            "maximum_3d_m": 10.041525228350112
+          }
+        }
+      },
+      "newly_accepted_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 676,
+            "horizontal_rms_m": 1.101932270721401,
+            "vertical_rms_m": 3.0598331962415926,
+            "three_dimensional_rms_m": 3.252204470521382,
+            "horizontal_p50_m": 0.6296208863799777,
+            "horizontal_p95_m": 2.5457764311824542,
+            "maximum_3d_m": 12.226382596023765
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 676,
+            "horizontal_rms_m": 1.004272731608277,
+            "vertical_rms_m": 2.62935712069577,
+            "three_dimensional_rms_m": 2.81461943921474,
+            "horizontal_p50_m": 0.8154092246711183,
+            "horizontal_p95_m": 1.669751691812581,
+            "maximum_3d_m": 10.83979507339847
+          }
+        }
+      },
+      "lost_control_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {}
+      }
+    }
+  },
+  "practical_parity_accepted": false
+}

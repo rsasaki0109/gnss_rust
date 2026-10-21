@@ -293,6 +293,227 @@ fn distance(a: EcefCoord, t: &[f64]) -> f64 {
     (a.x - t[0]).hypot(a.y - t[1]).hypot(a.z - t[2])
 }
 
+fn acceleration_epochs(noisy: bool) -> Vec<gnss_rust::observation::ObservationEpoch> {
+    RinexObservationReader::new(Cursor::new(if noisy {
+        include_str!("fixtures/synthetic_ppp_acceleration_noisy.obs")
+    } else {
+        include_str!("fixtures/synthetic_ppp_acceleration.obs")
+    }))
+    .unwrap()
+    .collect::<Result<_, _>>()
+    .unwrap()
+}
+fn acceleration_truth() -> Vec<Vec<f64>> {
+    include_str!("fixtures/synthetic_ppp_acceleration_truth.csv")
+        .lines()
+        .skip(1)
+        .map(|l| l.split(',').map(|v| v.parse().unwrap()).collect())
+        .collect()
+}
+fn acceleration_config() -> PppConfig {
+    let mut c = config();
+    c.filter.position_model = PppPositionModel::ConstantAcceleration(Default::default());
+    c
+}
+
+#[test]
+fn optional_pva_head_prior_matches_six_native_initializations_and_preserves_noise() {
+    for line in include_str!("fixtures/upstream_ppp_acceleration_initial.csv")
+        .lines()
+        .skip(1)
+    {
+        let f: Vec<_> = line.split(',').collect();
+        let d: Vec<f64> = f[1..].iter().map(|s| s.parse().unwrap()).collect();
+        assert_eq!(d.len(), 18);
+        let time = gnss_rust::GnssTime::new(d[0] as i32, d[1]).unwrap();
+        let mut c = acceleration_config();
+        c.initial_position = EcefCoord::new(d[2], d[3], d[4]);
+        let original = c.clone();
+        let changed = c.with_native_precise_head_prior(time).unwrap();
+        let f = PppFilter::new(changed.clone()).unwrap();
+        assert!((f.state().mean[4] - d[6]).abs() < 1e-10);
+        assert_eq!(f.state().mean[3], d[5]);
+        assert_eq!(&f.state().mean[5..], &d[12..]);
+        let expected = [
+            d[7], d[7], d[7], d[10], d[11], d[8], d[8], d[8], d[9], d[9], d[9],
+        ];
+        for (i, row) in f.state().covariance.iter().enumerate() {
+            for (j, v) in row.iter().enumerate() {
+                assert_eq!(*v, if i == j { expected[i] } else { 0.0 });
+            }
+        }
+        let mut restored = changed;
+        restored.initial_zenith_delay_m = original.initial_zenith_delay_m;
+        restored.filter.initial_head_variance_m2 = original.filter.initial_head_variance_m2;
+        assert_eq!(restored, original);
+    }
+}
+
+#[test]
+fn independent_five_hz_car_trace_tracks_acceleration_under_predeclared_accuracy_bounds() {
+    let p = products();
+    let s = selections();
+    let truth = acceleration_truth();
+    for noisy in [false, true] {
+        let mut f = PppFilter::new(acceleration_config()).unwrap();
+        for (i, e) in acceleration_epochs(noisy).iter().enumerate() {
+            let r = solution(f.process_epoch(e, &p, &biases(e.time), &s).unwrap());
+            assert!(
+                distance(r.position.position_ecef.unwrap(), &truth[i][3..6])
+                    < if noisy { 1.0 } else { 0.01 },
+                "car position epoch {i}"
+            );
+            assert_eq!(
+                r.position_model,
+                acceleration_config().filter.position_model
+            );
+            assert!(
+                r.acceleration_ecef_mps2
+                    .unwrap()
+                    .iter()
+                    .all(|v| v.is_finite())
+            );
+            assert_eq!(f.state().mean.len(), 11 + r.ambiguities.len());
+            if i >= 8 {
+                let v = r.position.velocity_ecef.unwrap();
+                let delta = (v[0] - truth[i][6])
+                    .hypot(v[1] - truth[i][7])
+                    .hypot(v[2] - truth[i][8]);
+                assert!(delta < 1.0, "car velocity epoch {i}: {delta}");
+            }
+            if i == 0 {
+                assert_eq!(r.position.velocity_ecef, Some([0.0; 3]));
+                assert_eq!(r.acceleration_ecef_mps2, Some([0.0; 3]));
+                for j in 0..3 {
+                    assert_eq!(r.acceleration_covariance_m2_s4.unwrap()[j][j], 100.0);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn pva_rejection_keeps_full_numeric_state_and_recovery_predicts_over_the_full_gap() {
+    let p = products();
+    let s = selections();
+    let mut ee = acceleration_epochs(false);
+    let mut c = acceleration_config();
+    c.filter.clock_model = PppClockModel::IndependentEpoch;
+    c.filter.rejected_update_policy = PppRejectedUpdatePolicy::RetainContinuousArcs;
+    let mut f = PppFilter::new(c.clone()).unwrap();
+    let mut skipped = PppFilter::new(c).unwrap();
+    for e in &ee[..12] {
+        f.process_epoch(e, &p, &biases(e.time), &s).unwrap();
+        skipped.process_epoch(e, &p, &biases(e.time), &s).unwrap();
+    }
+    let old = f.state().clone();
+    let time = f.state_time();
+    inject_receiver_clock_metres(&mut ee[12], 1e7);
+    // Even an independent finite clock prior rejects an enormous common jump.
+    assert_eq!(
+        f.process_epoch(&ee[12], &p, &biases(ee[12].time), &s),
+        Err(PppError::Filter(
+            gnss_rust::filter::FilterError::InnovationRejected
+        ))
+    );
+    assert_eq!(f.state(), &old);
+    assert_eq!(f.state_time(), time);
+    let r = solution(
+        f.process_epoch(&ee[13], &p, &biases(ee[13].time), &s)
+            .unwrap(),
+    );
+    skipped
+        .process_epoch(&ee[13], &p, &biases(ee[13].time), &s)
+        .unwrap();
+    assert_eq!(f.state(), skipped.state());
+    assert!(
+        distance(
+            r.position.position_ecef.unwrap(),
+            &acceleration_truth()[13][3..6]
+        ) < 0.01
+    );
+    assert_eq!(
+        r.acceleration_covariance_m2_s4.unwrap(),
+        std::array::from_fn(|i| std::array::from_fn(|j| f.state().covariance[8 + i][8 + j]))
+    );
+}
+
+#[test]
+fn pva_phase_outage_remaps_ambiguities_after_eleven_head_states_and_events_reset_arcs() {
+    let p = products();
+    let s = selections();
+    let mut ee = acceleration_epochs(false);
+    let mut f = PppFilter::new(acceleration_config()).unwrap();
+    for e in &ee[..8] {
+        f.process_epoch(e, &p, &biases(e.time), &s).unwrap();
+    }
+    let sat = ee[8].observations[0].satellite;
+    let id = f.phase_arc(sat).unwrap().id;
+    for o in &mut ee[8].observations {
+        if o.satellite == sat {
+            o.carrier_phase_cycles = None;
+        }
+    }
+    let r = solution(
+        f.process_epoch(&ee[8], &p, &biases(ee[8].time), &s)
+            .unwrap(),
+    );
+    assert!(r.ambiguities.iter().all(|a| a.satellite != sat));
+    assert_eq!(f.state().mean.len(), 11 + r.ambiguities.len());
+    let r = solution(
+        f.process_epoch(&ee[9], &p, &biases(ee[9].time), &s)
+            .unwrap(),
+    );
+    assert_ne!(r.arc_commit.accepted[&sat].id, id);
+    assert_eq!(r.arc_commit.accepted[&sat].accepted_epochs, 1);
+    ee[10].flag = 6;
+    let state = f.state().clone();
+    assert!(matches!(
+        f.process_epoch(&ee[10], &p, &biases(ee[10].time), &s)
+            .unwrap(),
+        PppEpoch::Event(_)
+    ));
+    assert_eq!(f.state(), &state);
+    let r = solution(
+        f.process_epoch(&ee[11], &p, &biases(ee[11].time), &s)
+            .unwrap(),
+    );
+    assert!(
+        r.arc_commit
+            .accepted
+            .values()
+            .all(|a| a.accepted_epochs == 1)
+    );
+}
+
+#[test]
+fn pva_requires_finite_initial_states_positive_variances_and_finite_squared_noise() {
+    assert_eq!(
+        PppFilterSettings::default().position_model,
+        PppPositionModel::Static
+    );
+    for case in 0..8 {
+        let mut pva = PppAccelerationConfig::default();
+        match case {
+            0 => pva.initial_velocity_mps[0] = f64::NAN,
+            1 => pva.initial_acceleration_mps2[1] = f64::INFINITY,
+            2 => pva.initial_velocity_variance_m2_s2 = 0.0,
+            3 => pva.initial_acceleration_variance_m2_s4 = -1.0,
+            4 => pva.horizontal_sigma_mps2_per_sqrt_s = -0.1,
+            5 => pva.vertical_sigma_mps2_per_sqrt_s = f64::NAN,
+            6 => pva.horizontal_sigma_mps2_per_sqrt_s = 1e308,
+            7 => pva.initial_acceleration_variance_m2_s4 = f64::INFINITY,
+            _ => unreachable!(),
+        }
+        let mut c = acceleration_config();
+        c.filter.position_model = PppPositionModel::ConstantAcceleration(pva);
+        assert!(matches!(
+            PppFilter::new(c),
+            Err(PppError::InvalidConfiguration)
+        ));
+    }
+}
+
 #[test]
 fn retained_moving_arcs_keep_exact_state_and_only_successful_lock_counts() {
     let p = products();

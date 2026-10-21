@@ -1,0 +1,8 @@
+{
+  "intentional_interruption": true,
+  "exit_code": 130,
+  "reason": "Correct arithmetic description from 48/24 to actual declared grid 96/48; rerun full grid with identical solver binaries and gates",
+  "completed_PPC_profiles": 8,
+  "numerical_solver_changed": false,
+  "thresholds_changed": false
+}

@@ -1,0 +1,94 @@
+{
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/src/core",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "/workspace/gnss_rust/scripts/upstream_ppp_acceleration.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-Wl,--end-group",
+    "-o",
+    "/workspace/.cloud-setup/ppp-acceleration-fixtures-ENU-20261021/native"
+  ],
+  "returncode": 0,
+  "source_sha256": {
+    "scripts/upstream_ppp_acceleration.cpp": "299f29a891258930e7aac47eec31b12a3428bb67144492a70a7d124ca1e84eb4",
+    "scripts/upstream_precise_transmit.cpp": "3b2dacc68d4705142de78578a54f4fb28e9b96670f77c4469960014856eb5be1",
+    "scripts/upstream_precise.cpp": "1891e8bcd2ce9d3ce8be09070a7fdd750e8b6bc975d8c8a6fa383dc43e9962b9",
+    "scripts/upstream_navigation.cpp": "82dd53a255187def0cbac562b94bf798e9030353728e5ab2562a0333fde35214",
+    "scripts/build_ppp_acceleration_fixtures.py": "b2f83a54008d208cd459bcb76e3f4c45ffb317be3d7cb2e69b43074066ed0cac"
+  },
+  "input_sha256": {
+    "/workspace/gnss_rust/tests/fixtures/synthetic_ppp.sp3": "c6ebf5ed0d57bd3ef30dfe23d7856d7242e8c82f48c4656cd64b26f38fb0bdcf",
+    "/workspace/gnss_rust/tests/fixtures/synthetic_ppp.clk": "c61a7a2996623bda7b22921ab889755b595e92318da7fa44cd8c663a48fe755e",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1/rover.obs": "d9ee4e38c857f109cb430dab34e7958867060edb99e5f8b1c020abdd29d345cb",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2/rover.obs": "e838a42e9a9ea5e982807949e66b8fcd6c33de1202568ff47a656a3c5392edc6",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3/rover.obs": "41e6a6c886abca3034f570dbfdc6fe070e76427dd8e46fbfdc0e9b0aa3e67c46",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1/rover.obs": "97e7b370d381a64760cd07d251bcf5df2dc2b3b6dd2444323ff8d6f35e4689e5",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2/rover.obs": "e53eb349617edf22d1df677d1c40348108c7eba97dd0fadbdc8f1b3bff035098",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3/rover.obs": "ea8e16a7b0093e6a4d108cb5baea2ac8b1986bf274f0bba5612a6fba23a4f3a3"
+  },
+  "native_library_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "pinned_upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "prior_proof": "docs/comparison/2026-10-21-ppc-ppp-first/native-initial.json",
+  "prior_proof_sha256": "f39e9a063da4e0b3c8ede183b7a6a6573138f85114d2b4106c9e5b3fa3503d65",
+  "upstream_source_patched": false,
+  "whole_native_PPP_executed": false,
+  "actual_PVA_prediction_calls_per_repeat": 48,
+  "actual_PVA_initialization_calls_per_repeat": 54,
+  "explicit_PPC_header_initializations_per_repeat": 6,
+  "GNSS_environment_removed": [],
+  "repeat_runs": [
+    {
+      "command": [
+        "/workspace/.cloud-setup/ppp-acceleration-fixtures-ENU-20261021/native",
+        "/workspace/gnss_rust/tests/fixtures",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset",
+        "/workspace/.cloud-setup/ppp-acceleration-fixtures-ENU-20261021/0"
+      ],
+      "returncode": 0,
+      "fixture_sha256": {
+        "synthetic_ppp_acceleration.obs": "a78a89aa70638895f8b773263ac04da103ef0e887069e7b980520532c7563c85",
+        "synthetic_ppp_acceleration_noisy.obs": "98baa0ed35a3733f6a305c51cb5beb31d0560bd935f055d8c85a04196c3a514a",
+        "synthetic_ppp_acceleration_truth.csv": "fbd9de45726325382de2bbbf79a25705aeabac8b7f47b7c8bf998c7f7e8448e1",
+        "upstream_ppp_acceleration_initial.csv": "2012f8cb0932d18d983824896513216073417a701f09043d23353875cdf7b126",
+        "upstream_ppp_acceleration_predict.csv": "8b87c25f8b2f0c13776aa469d398c0af63e0ec452347341966cff65cd93e71c7",
+        "upstream_ppp_acceleration_unrounded.csv": "8316b90e88376b0edc883c0195549cbe70abc349466fe9a490b57a65a20e293b"
+      }
+    },
+    {
+      "command": [
+        "/workspace/.cloud-setup/ppp-acceleration-fixtures-ENU-20261021/native",
+        "/workspace/gnss_rust/tests/fixtures",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset",
+        "/workspace/.cloud-setup/ppp-acceleration-fixtures-ENU-20261021/1"
+      ],
+      "returncode": 0,
+      "fixture_sha256": {
+        "synthetic_ppp_acceleration.obs": "a78a89aa70638895f8b773263ac04da103ef0e887069e7b980520532c7563c85",
+        "synthetic_ppp_acceleration_noisy.obs": "98baa0ed35a3733f6a305c51cb5beb31d0560bd935f055d8c85a04196c3a514a",
+        "synthetic_ppp_acceleration_truth.csv": "fbd9de45726325382de2bbbf79a25705aeabac8b7f47b7c8bf998c7f7e8448e1",
+        "upstream_ppp_acceleration_initial.csv": "2012f8cb0932d18d983824896513216073417a701f09043d23353875cdf7b126",
+        "upstream_ppp_acceleration_predict.csv": "8b87c25f8b2f0c13776aa469d398c0af63e0ec452347341966cff65cd93e71c7",
+        "upstream_ppp_acceleration_unrounded.csv": "8316b90e88376b0edc883c0195549cbe70abc349466fe9a490b57a65a20e293b"
+      }
+    }
+  ],
+  "binary_sha256": "29ff7501bcc6fe604799a130424d5f9b945a26380ec456885f59e6071a629f20",
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0"
+}

@@ -35,13 +35,28 @@ fn epochs(noisy: bool) -> Vec<gnss_rust::observation::ObservationEpoch> {
     .unwrap()
 }
 fn input_epochs(kind: &str) -> Vec<gnss_rust::observation::ObservationEpoch> {
-    let mut epochs = epochs(matches!(kind, "noisy" | "jumped-noisy"));
+    let mut epochs = if kind.starts_with("car-") {
+        RinexObservationReader::new(Cursor::new(if kind == "car-noisy" {
+            include_str!("../tests/fixtures/synthetic_ppp_acceleration_noisy.obs")
+        } else {
+            include_str!("../tests/fixtures/synthetic_ppp_acceleration.obs")
+        }))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap()
+    } else {
+        epochs(matches!(kind, "noisy" | "jumped-noisy"))
+    };
     let phase = matches!(kind, "unrounded-phase" | "unrounded-both");
     let code = matches!(kind, "unrounded-code" | "unrounded-both");
-    if phase || code {
-        for line in include_str!("../tests/fixtures/upstream_ppp_kinematic_unrounded.csv")
-            .lines()
-            .skip(1)
+    if phase || code || kind == "car-unrounded" {
+        for line in if kind == "car-unrounded" {
+            include_str!("../tests/fixtures/upstream_ppp_acceleration_unrounded.csv")
+        } else {
+            include_str!("../tests/fixtures/upstream_ppp_kinematic_unrounded.csv")
+        }
+        .lines()
+        .skip(1)
         {
             let v: Vec<_> = line.split(',').collect();
             let i: usize = v[0].parse().unwrap();
@@ -52,10 +67,10 @@ fn input_epochs(kind: &str) -> Vec<gnss_rust::observation::ObservationEpoch> {
                     .iter_mut()
                     .find(|o| o.satellite == sat && o.tracking_code == *tracking)
                     .unwrap();
-                if code {
+                if code || kind == "car-unrounded" {
                     o.pseudorange_m = Some(v[2 + 2 * j].parse().unwrap());
                 }
-                if phase {
+                if phase || kind == "car-unrounded" {
                     o.carrier_phase_cycles = Some(v[3 + 2 * j].parse().unwrap());
                 }
             }
@@ -231,7 +246,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let dsb_code = phase_flag.as_deref() == Some("-raw-dsb");
     let diagnostic = phase_flag.is_some();
     if !matches!(args.len(), 2 | 3)
-        || !matches!(args[0].as_str(), "static" | "kinematic")
+        || !matches!(args[0].as_str(), "static" | "kinematic" | "pva")
         || !matches!(
             args[1].as_str(),
             "clean"
@@ -241,10 +256,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 | "unrounded-both"
                 | "jumped-clean"
                 | "jumped-noisy"
+                | "car-clean"
+                | "car-noisy"
+                | "car-unrounded"
         )
     {
         return Err(
-            "usage: ppp_kinematic static|kinematic clean|noisy|unrounded-phase|unrounded-code|unrounded-both|jumped-clean|jumped-noisy [INITIAL_VELOCITY_VARIANCE_M2_S2] [-phase-diagnostics|-raw-phase|-raw-dsb] [-epoch-clock]"
+            "usage: ppp_kinematic static|kinematic|pva clean|noisy|unrounded-phase|unrounded-code|unrounded-both|jumped-clean|jumped-noisy|car-clean|car-noisy|car-unrounded [INITIAL_VELOCITY_VARIANCE_M2_S2] [-phase-diagnostics|-raw-phase|-raw-dsb] [-epoch-clock]"
                 .into(),
         );
     }
@@ -255,14 +273,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args[0] == "static" {
         c.filter.position_model = PppPositionModel::Static;
     }
+    if args[0] == "pva" {
+        c.filter.position_model = PppPositionModel::ConstantAcceleration(Default::default());
+    }
     if args.len() == 3 {
-        if args[0] != "kinematic" {
-            return Err("velocity variance requires the kinematic model".into());
+        let variance = args[2].parse()?;
+        match &mut c.filter.position_model {
+            PppPositionModel::ConstantVelocity(model) => {
+                model.initial_velocity_variance_m2_s2 = variance
+            }
+            PppPositionModel::ConstantAcceleration(model) => {
+                model.initial_velocity_variance_m2_s2 = variance
+            }
+            PppPositionModel::Static => {
+                return Err("velocity variance requires a moving model".into());
+            }
         }
-        c.filter.position_model = PppPositionModel::ConstantVelocity(PppKinematicConfig {
-            initial_velocity_variance_m2_s2: args[2].parse()?,
-            ..Default::default()
-        });
     }
     let selected_model = c.filter.position_model;
     if raw_phase {
@@ -279,15 +305,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut out = std::io::BufWriter::new(std::io::stdout().lock());
     writeln!(
         out,
-        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error{}",
+        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error{}{}",
         if diagnostic {
             ",phase_bias_mode,phase_reference,code_bias_source,ambiguities_m,applied_phase_OSBs"
+        } else {
+            ""
+        },
+        if args[0] == "pva" {
+            ",ax_mps2,ay_mps2,az_mps2,acceleration_qxx_m2_s4,acceleration_qyy_m2_s4,acceleration_qzz_m2_s4"
         } else {
             ""
         }
     )?;
     for epoch in input_epochs(&args[1]) {
-        let mut row = vec![String::new(); if diagnostic { 25 } else { 20 }];
+        let mut row = vec![
+            String::new();
+            (if diagnostic { 25 } else { 20 }) + 6 * usize::from(args[0] == "pva")
+        ];
         row[0] = epoch.time.week().to_string();
         row[1] = format!("{:.17}", epoch.time.tow());
         let corrections = if raw_phase {
@@ -309,6 +343,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 row[9] = format!("{:.17e}", s.position.receiver_clock_bias);
                 row[10] = format!("{:.17e}", s.zenith_delay_m);
+                if args[0] == "pva" {
+                    let index = if diagnostic { 25 } else { 20 };
+                    let a = s.acceleration_ecef_mps2.unwrap();
+                    let q = s.acceleration_covariance_m2_s4.unwrap();
+                    for i in 0..3 {
+                        row[index + i] = format!("{:.17e}", a[i]);
+                        row[index + 3 + i] = format!("{:.17e}", q[i][i]);
+                    }
+                }
                 let p = s.position.position_covariance.unwrap();
                 row[11] = format!("{:.17e}", p[0][0] + p[1][1] + p[2][2]);
                 if let Some(p) = s.position.velocity_covariance {

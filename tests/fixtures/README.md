@@ -1707,3 +1707,21 @@ both origins and common/new/lost epochs; 48 off controls reproduce the prior
 CSV bytes exactly. Higher counts and explicit arc retention do not accept
 positioning accuracy or whole-native lifecycle parity. See the
 [rejected-arc evidence](../../docs/comparison/2026-10-21-ppp-rejected-arcs/README.md).
+
+## Native PVA prediction and 5 Hz car physics (2026-10-21)
+
+`scripts/upstream_ppp_acceleration.cpp` calls actual pinned `predictState`
+for 48 dense SPD cases in the XYZ/clock/ZTD/V/A/IFN marginal layout, and
+six explicit PPC-header native PVA initializers. Each prediction case also
+initializes its native filter, for 54 initializations per generation. Both
+generations reproduce six fixtures byte-for-byte. Variable ambiguities, dt=0
+and 0.2/1/10/120 s, near poles/hemispheres, ENU noise rotation and ignored
+position noise retain the existing relative 1e-10 component bound. Independent
+native precise/IF physics also generates rounded clean/noisy and unrounded
+64-epoch 5 Hz accelerating/turning ENU car observables and truth. Both PVA
+traces pass predeclared clean 1 cm/noisy 1 m and post-eight-epoch 1 m/s bounds;
+old low-speed 2 mm failures remain visible. Seven additions bring the suite
+to 427. Ninety-six real PPC profiles include 48 byte-identical CV controls;
+larger PPP counts coexist with 134 m outliers. This is prediction-component
+and synthetic evidence, without native SPP/Doppler recovery or practical parity.
+See the [PVA evidence](../../docs/comparison/2026-10-21-ppp-acceleration/README.md).
