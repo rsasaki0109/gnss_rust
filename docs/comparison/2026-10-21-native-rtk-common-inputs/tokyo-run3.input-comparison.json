@@ -1,0 +1,9 @@
+{
+  "rows": 50080,
+  "normalized_sha256": "4558dad1918ca969f8e70e9d6138e60668bdf51fabf87ac3a1cd750db59f77cb",
+  "native_ledger_sha256": "407831cd6fd03bc87a0ab42f41b65212e3ef55aacc576fc93b4d78dfd0ca8c57",
+  "rust_ledger_sha256": "e2b1b28403374a42135ff4892077f8fead1e34ea03be31ab34b307f71e0aba2e",
+  "code_phase_doppler_presence_preserved": true,
+  "missing_SNR_LLI_normalized_to_native_zero": true,
+  "all_decoded_values_and_derived_resets_equal": true
+}

@@ -7,6 +7,16 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[元C++全RTKとのPPC比較](docs/comparison/2026-10-21-native-rtk-common-inputs/README.md)を追加。
+元ソース2,091ファイルを照合して再ビルドし、全6走行の11,733対を両者で実行。
+独立デコーダのGPS 1C観測184,453行は数値・欠測・reset通知が一致した。
+元C++はFLOAT 1,315 / FIX 44 / SPP退避5,765 / INVALID 4,609、RustはFLOAT 8,258。
+今回は両者の直前RTK位置を初期値に使い、元C++の既定SPP初期化とは異なる。
+元C++にもkm級外れと誤ったFIXがあり、この単周波設定を実用比較基準とは扱わない。
+次は元C++の既定SPP初期化との比較で設定の影響を切り分け、移動FIXとQC移植を進める。
+両位置仮定・状態別/共通成功時刻の誤差・全CSVと失敗した表記ガードも保存。
+Rust276・examples・fmt/clippy/release通過。全体18/24（75%）、受け入れ未達を維持。
+
 [PPCのGDOP・共分散診断](docs/comparison/2026-10-21-ppc-geometry-gate/README.md)を追加。
 元C++の16幾何ケースと照合し、既定無効のGDOP上限を実装。全6走行の既存CSV列が
 前回と一致することを確認して、GDOP 50との12実行を保存した。FLOATは8,258→7,984。

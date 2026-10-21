@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_rtk",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2",
+    "-3961905.0275412495",
+    "3348993.752559677",
+    "3698211.783149875",
+    "/tmp/ppc-native-inputs-psm181b4/tokyo-run2.native.csv",
+    "/tmp/ppc-native-inputs-psm181b4/tokyo-run2.native-inputs.csv"
+  ],
+  "returncode": 0,
+  "csv_sha256": "25e35fe0465b6c256c68bbae63a6d8279c8836c1b8992ab01cf7c23eac34166b",
+  "csv_capture": "explicit native output file",
+  "stderr_sha256": "653ec9aa64fc82a6c3c71480765ca5a1863d0f6c15fa2da4f7b48905748f8e75"
+}

@@ -1,0 +1,16 @@
+{
+  "complete": false,
+  "reason": "overly strict Decimal comparison of different lossless f64 formatting",
+  "first_mismatch": {
+    "row": 1,
+    "native_time": "5.50380199999999953e+05",
+    "rust_time": "550380.19999999995343387",
+    "native_float_hex": "0x1.0cbd866666666p+19",
+    "rust_float_hex": "0x1.0cbd866666666p+19",
+    "kind": "unmatched",
+    "side": "rover"
+  },
+  "solver_profiles_changed": false,
+  "native_execution_succeeded": true,
+  "decoded_input_comparison_passed": true
+}

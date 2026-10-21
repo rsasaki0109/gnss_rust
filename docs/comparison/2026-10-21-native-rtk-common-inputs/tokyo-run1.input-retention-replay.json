@@ -1,0 +1,21 @@
+{
+  "native_command": [
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_rtk",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1",
+    "-3961905.0275412495",
+    "3348993.752559677",
+    "3698211.783149875",
+    "/tmp/ppc-retain-ledgers-kpmwlvmq/native.csv",
+    "/tmp/ppc-retain-ledgers-kpmwlvmq/native-inputs.csv"
+  ],
+  "rust_ledger_command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_input_ledger",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1"
+  ],
+  "native_returncode": 0,
+  "rust_ledger_returncode": 0,
+  "native_csv_sha256": "a7b478c01115fc167a75e27b801abb0cd0afa2f62c9abc6270d9b07198d0bb10",
+  "native_output_identical_to_primary": true,
+  "input_ledgers_identical_to_primary": true,
+  "native_stderr_sha256": "c6e3d1fc163d61399ee221bb030a76bb39bf9d572c7723329af8fad562a34f09"
+}

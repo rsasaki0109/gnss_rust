@@ -1,0 +1,34 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_rtk",
+    "/tmp/native-rtk-smoke-20261021/inputs",
+    "-3947481.0649388283",
+    "3431492.9375319984",
+    "3637892.7203177349",
+    "/tmp/native-rtk-fresh-smoke-20261021/native.csv",
+    "/tmp/native-rtk-fresh-smoke-20261021/native-inputs.csv"
+  ],
+  "returncode": 0,
+  "epochs": 64,
+  "statuses": {
+    "FIX": 45,
+    "FLOAT": 19
+  },
+  "maximum_3d_error_m": 0.0008403315541759098,
+  "input_comparison": {
+    "rows": 1152,
+    "normalized_sha256": "f53d404d02555b623b18ce342dc98b531f975919302c9cc40020e90bc3e8b257",
+    "native_ledger_sha256": "5b84a4a3fa0db5bbe479d6cc306de8ab6b7bd4420d29c0815e3c71aabf0df5e7",
+    "rust_ledger_sha256": "28e46be5e853ee976963fcb9f998b1d68d4a424dc1ee0a64df1e25d5bec6967f",
+    "code_phase_doppler_presence_preserved": true,
+    "missing_SNR_LLI_normalized_to_native_zero": true,
+    "all_decoded_values_and_derived_resets_equal": true
+  },
+  "native_csv_sha256": "ee9e665adff7946cd2e30791c46d07794b53b681921798447a385a4bdbf97826",
+  "fixture_sha256": {
+    "tests/fixtures/synthetic_rtk.nav": "f2f6cfabd725baddadbed4b633927a714f61ffb3a1faf83ef26d2e4df31daa0e",
+    "tests/fixtures/synthetic_rtk_moving_rover.obs": "fd7845c903fa911fb6bb70531dbc16a5f3470ea3afb0977e5853b9119b708dc8",
+    "tests/fixtures/synthetic_rtk_moving_base.obs": "fa47fc591dd9be12fc9d6c5604cb3feff93ac3f4a14dd2f3f95136e81353ffcc",
+    "tests/fixtures/synthetic_rtk_moving_truth.csv": "2c2f2259801d7f3f1468283809e26e7f144c1fdf7c087107e8de40d3b86fa934"
+  }
+}
