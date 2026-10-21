@@ -1725,3 +1725,15 @@ to 427. Ninety-six real PPC profiles include 48 byte-identical CV controls;
 larger PPP counts coexist with 134 m outliers. This is prediction-component
 and synthetic evidence, without native SPP/Doppler recovery or practical parity.
 See the [PVA evidence](../../docs/comparison/2026-10-21-ppp-acceleration/README.md).
+
+
+The `upstream_ppp_motion_{reset,velocity,disagreement}.csv` traces call actual
+pinned native PVA `predictState(dt=0, seed)` / velocity-update / position-NIS
+helpers (32 cases each, dense cross-covariance and boundary/failure inputs).
+`python3 -B scripts/build_ppp_motion_fixtures.py --output-dir NEW_DIRECTORY`
+rebuilds the unchanged native code and reproduces all three files twice.
+The relative 1e-10 component bound is unchanged; Rust deliberately checks SPD
+noise and uses Joseph covariance updates. See
+[the motion-seed contract](../../docs/ppp-motion-seeds.md) and
+[the PPC evidence](../../docs/comparison/2026-10-21-ppp-motion-seeds/README.md)
+for provenance, integration tests, limitations and separate PPP/SPP scores.

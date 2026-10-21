@@ -316,6 +316,265 @@ fn acceleration_config() -> PppConfig {
     c
 }
 
+// Independent code-only seed: no truth position/velocity is fed to either solver.
+fn code_motion_seed(e: &gnss_rust::observation::ObservationEpoch) -> PppMotionSeed {
+    use gnss_rust::precise_spp::*;
+    let corrections = biases(e.time);
+    let table = PreciseCodeBiases::new(
+        corrections
+            .entries()
+            .values()
+            .flatten()
+            .filter(|b| b.tracking_code == "1C")
+            .map(|b| PreciseCodeBias {
+                satellite: b.satellite,
+                tracking_code: b.tracking_code.clone(),
+                correction_m: b.code_add_m,
+                clock_source: b.clock_source,
+                clock_reference: b.clock_reference.clone(),
+                valid_from: b.valid_from,
+                valid_until: b.valid_until,
+            })
+            .collect(),
+    )
+    .unwrap();
+    let result = solve_epoch_precise(
+        e,
+        &products(),
+        &table,
+        &PreciseSppConfig {
+            spp: gnss_rust::spp::SppConfig {
+                use_ionosphere: false,
+                ..Default::default()
+            },
+            expected_coordinate_system: "IGS20".into(),
+            expected_reference_point: OrbitReferencePoint::AntennaPhaseCenter,
+            clock_reference: "synthetic-precise-clock-v1".into(),
+            transmit: Default::default(),
+            ionosphere: None,
+        },
+    )
+    .unwrap();
+    PppMotionSeed {
+        solution: result.position,
+        coordinate_system: result.coordinate_system,
+        receiver_reference: ReceiverPositionReference::InstantaneousMarker,
+        provenance: "synthetic-precise-1C-code-SPP-no-truth-no-Doppler".into(),
+    }
+}
+
+#[test]
+fn pva_code_seed_tracks_the_independent_car_without_velocity_or_truth_input() {
+    let p = products();
+    let s = selections();
+    for noisy in [false, true] {
+        let mut c = acceleration_config();
+        c.filter.motion_seed_policy = Some(PppMotionSeedPolicy {
+            update_velocity: false,
+            ..Default::default()
+        });
+        let mut f = PppFilter::new(c).unwrap();
+        for (i, e) in acceleration_epochs(noisy).iter().enumerate() {
+            let seed = code_motion_seed(e);
+            assert_eq!(seed.solution.velocity_ecef, None);
+            let r = solution(
+                f.process_epoch_with_seed(e, &p, &biases(e.time), &s, Some(&seed))
+                    .unwrap(),
+            );
+            assert!(
+                distance(
+                    r.position.position_ecef.unwrap(),
+                    &acceleration_truth()[i][3..6]
+                ) < if noisy { 1.0 } else { 0.01 },
+                "car seed epoch {i}"
+            );
+            let d = r.motion_seed.unwrap();
+            assert_eq!(d.initialized, i == 0);
+            assert!(d.committed);
+            assert_eq!(d.velocity_update, PppSeedVelocityUpdate::Disabled);
+        }
+    }
+}
+
+#[test]
+fn seed_contract_rejects_time_frame_reference_status_and_missing_source_transactionally() {
+    let e = &acceleration_epochs(false)[0];
+    let p = products();
+    let s = selections();
+    let seed = code_motion_seed(e);
+    let mut c = acceleration_config();
+    c.filter.motion_seed_policy = Some(Default::default());
+    for defect in 0..7 {
+        let mut f = PppFilter::new(c.clone()).unwrap();
+        let old = f.state().clone();
+        let mut bad = seed.clone();
+        let reason = match defect {
+            0 => {
+                bad.solution.time = e.time.checked_add_seconds(0.2).unwrap();
+                PppMotionSeedError::TimeMismatch
+            }
+            1 => {
+                bad.coordinate_system = "ITRF?".into();
+                PppMotionSeedError::FrameMismatch
+            }
+            2 => {
+                bad.receiver_reference = ReceiverPositionReference::NominalMarker;
+                PppMotionSeedError::ReceiverReferenceMismatch
+            }
+            3 => {
+                bad.solution.status = SolutionStatus::PppFloat;
+                PppMotionSeedError::InvalidSolution
+            }
+            4 => {
+                bad.provenance = " ".into();
+                PppMotionSeedError::MissingProvenance
+            }
+            5 => {
+                bad.solution.position_ecef = Some(EcefCoord::new(f64::NAN, 0.0, 0.0));
+                PppMotionSeedError::InvalidSolution
+            }
+            _ => {
+                bad.solution.position_ecef = Some(EcefCoord::new(0.0, 0.0, 0.0));
+                PppMotionSeedError::InvalidPosition
+            }
+        };
+        assert_eq!(
+            f.process_epoch_with_seed(e, &p, &biases(e.time), &s, Some(&bad)),
+            Err(PppError::MotionSeed(reason))
+        );
+        assert_eq!(f.state(), &old);
+        assert_eq!(f.state_time(), None);
+        assert_eq!(f.last_motion_seed(), None);
+    }
+    let mut f = PppFilter::new(c).unwrap();
+    assert_eq!(
+        f.process_epoch(e, &p, &biases(e.time), &s),
+        Err(PppError::MissingMotionSeed)
+    );
+    let mut event = e.clone();
+    event.time = e.time.checked_add_seconds(0.1).unwrap();
+    event.flag = 6;
+    assert!(matches!(
+        f.process_epoch(&event, &p, &biases(e.time), &s),
+        Ok(PppEpoch::Event(_))
+    ));
+    let mut f = PppFilter::new(acceleration_config()).unwrap();
+    assert_eq!(
+        f.process_epoch_with_seed(e, &p, &biases(e.time), &s, Some(&seed)),
+        Err(PppError::MotionSeed(PppMotionSeedError::Disabled))
+    );
+}
+
+#[test]
+fn first_velocity_seed_is_fused_once_and_never_imports_seed_clock() {
+    let e = &acceleration_epochs(false)[0];
+    let mut seed = code_motion_seed(e);
+    // Injected unit input for the covariance calculation, not a synthetic Doppler claim.
+    seed.provenance.push_str(";injected-unit-velocity");
+    seed.solution.velocity_ecef = Some([1.0, -2.0, 3.0]);
+    seed.solution.velocity_covariance = Some([[4.0, 0.0, 0.0], [0.0, 4.0, 0.0], [0.0, 0.0, 4.0]]);
+    let mut c = acceleration_config();
+    c.filter.motion_seed_policy = Some(Default::default());
+    let mut left = PppFilter::new(c.clone()).unwrap();
+    let mut right = PppFilter::new(c).unwrap();
+    seed.solution.receiver_clock_bias = 1e100;
+    let r = solution(
+        left.process_epoch_with_seed(e, &products(), &biases(e.time), &selections(), Some(&seed))
+            .unwrap(),
+    );
+    seed.solution.receiver_clock_bias = -1e100;
+    right
+        .process_epoch_with_seed(e, &products(), &biases(e.time), &selections(), Some(&seed))
+        .unwrap();
+    assert_eq!(left.state(), right.state());
+    assert_eq!(r.position.velocity_ecef, seed.solution.velocity_ecef);
+    for i in 5..8 {
+        assert!((left.state().covariance[i][i] - 100.0 * 4.0 / 104.0).abs() < 1e-12);
+    }
+    assert!(matches!(
+        r.motion_seed.unwrap().velocity_update,
+        PppSeedVelocityUpdate::Applied { .. }
+    ));
+}
+
+#[test]
+fn rejected_seeded_gnss_update_does_not_commit_any_motion_update() {
+    let ee = acceleration_epochs(false);
+    let p = products();
+    let s = selections();
+    let mut c = acceleration_config();
+    c.filter.motion_seed_policy = Some(Default::default());
+    let mut f = PppFilter::new(c).unwrap();
+    let seed = code_motion_seed(&ee[0]);
+    f.process_epoch_with_seed(&ee[0], &p, &biases(ee[0].time), &s, Some(&seed))
+        .unwrap();
+    let old = f.state().clone();
+    let old_time = f.state_time();
+    let seed = code_motion_seed(&ee[1]);
+    let mut bad = ee[1].clone();
+    inject_receiver_clock_metres(&mut bad, 1e7);
+    assert!(
+        f.process_epoch_with_seed(&bad, &p, &biases(bad.time), &s, Some(&seed))
+            .is_err()
+    );
+    assert_eq!(f.state(), &old);
+    assert_eq!(f.state_time(), old_time);
+    assert!(!f.last_motion_seed().unwrap().committed);
+    let seed = code_motion_seed(&ee[2]);
+    assert!(
+        f.process_epoch_with_seed(&ee[2], &p, &biases(ee[2].time), &s, Some(&seed))
+            .is_ok()
+    );
+}
+
+#[test]
+fn velocity_gate_and_missing_or_bad_covariance_are_explicit_without_zero_fallback() {
+    let e = &acceleration_epochs(false)[0];
+    let mut c = acceleration_config();
+    c.filter.motion_seed_policy = Some(PppMotionSeedPolicy {
+        initialize_from_seed: false,
+        velocity_nis_gate: Some(16.27),
+        recovery: gnss_rust::ppp_motion::PvaRecoveryConfig {
+            position_variance_m2: 1e7,
+            position_disagreement_gate: None,
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+    let mut baseline = PppFilter::new(acceleration_config()).unwrap();
+    baseline
+        .process_epoch(e, &products(), &biases(e.time), &selections())
+        .unwrap();
+    for defect in 0..4 {
+        let mut seed = code_motion_seed(e);
+        let expected = match defect {
+            0 => PppSeedVelocityUpdate::Unavailable,
+            1 => {
+                seed.solution.velocity_ecef = Some([1.0; 3]);
+                PppSeedVelocityUpdate::MissingCovariance
+            }
+            2 => {
+                seed.solution.velocity_ecef = Some([1.0; 3]);
+                seed.solution.velocity_covariance = Some([[0.0; 3]; 3]);
+                PppSeedVelocityUpdate::Rejected(gnss_rust::filter::FilterError::InvalidCovariance)
+            }
+            _ => {
+                seed.solution.velocity_ecef = Some([10000.0; 3]);
+                seed.solution.velocity_covariance =
+                    Some([[4.0, 0.0, 0.0], [0.0, 4.0, 0.0], [0.0, 0.0, 4.0]]);
+                PppSeedVelocityUpdate::Rejected(gnss_rust::filter::FilterError::InnovationRejected)
+            }
+        };
+        let mut f = PppFilter::new(c.clone()).unwrap();
+        let r = solution(
+            f.process_epoch_with_seed(e, &products(), &biases(e.time), &selections(), Some(&seed))
+                .unwrap(),
+        );
+        assert_eq!(r.motion_seed.unwrap().velocity_update, expected);
+        assert_eq!(f.state(), baseline.state());
+    }
+}
+
 #[test]
 fn optional_pva_head_prior_matches_six_native_initializations_and_preserves_noise() {
     for line in include_str!("fixtures/upstream_ppp_acceleration_initial.csv")

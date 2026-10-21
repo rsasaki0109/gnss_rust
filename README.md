@@ -6,7 +6,7 @@
 
 
 **開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
-2026-10-21時点で427テストと標準チェックが通過しています。
+2026-10-21時点で437テストと標準チェックが通過しています。
 
 [GPS/Galileo別時計SPP](docs/comparison/2026-10-21-multiclock-spp/README.md)をRTKの種位置へ接続し、
 [元C++の観測分散モデル](docs/comparison/2026-10-21-spp-variance/README.md)と
@@ -45,6 +45,13 @@ GPS 1C/2W・全6走行のPPPはRust141点／元C++1,959点、元C++のSPP退避�
 PPC全6走行では、独立時計を固定した比較で1C2WのPPPが418→8,539点、1C2Lが406→4,941点。
 既存48対照の出力は一致していますが、約134 mの外れも残り、性能同等は未達です。
 次はSPP/Dopplerによる初期化・再初期化と観測品質を改善します。
+
+[SPP/DopplerによるPVA復帰](docs/comparison/2026-10-21-ppp-motion-seeds/README.md)を選択式で接続しました。
+元C++の再初期化・速度更新・位置不一致判定を各32ケースで照合し、棄却時は状態を変更しません。
+PPC全6走行36条件で、SPP位置＋Doppler使用時のPPPが1C2Wで8,621→12,634点、1C2Lで4,766→9,013点。
+元のPPP出力35列は12対照すべて一致しています。SPP退避は別の状態で記録していますが、
+PPPに約127 m、SPPに1 km超の外れが残り、実用同等性能は未達です。
+次は観測品質・冗長性と、ZTD/高さの結合を改善します。
 
 [移動FIX](docs/comparison/2026-10-21-kinematic-fix/README.md)、
 [ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)、

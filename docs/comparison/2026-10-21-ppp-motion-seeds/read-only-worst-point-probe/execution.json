@@ -1,0 +1,13 @@
+{
+  "command": [
+    "target/release/examples/ppc_ppp_seed_probe",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3",
+    "2325",
+    "554542.19999999995343387"
+  ],
+  "returncode": 0,
+  "binary_sha256": "129f6cc19a94b2728ad754c54d6112a6570b10d9cceb5bcc4f78009f1afeb020",
+  "source_sha256": "67100b2d0008147f7e4a104a9949b4fc78f78082c1650ad04f16037902b54ee2",
+  "truth_used_by_solver": false,
+  "PPP_filter_updated": false
+}

@@ -1,0 +1,64 @@
+{
+  "predeclared_inputs_sha256": "b855c6f56155ea032b5e9094981e4c59ae9b2d522b872b8b4a73cf60195f4782",
+  "passed_tests": 437,
+  "checks": [
+    {
+      "name": "tests",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo test --locked --offline -j2",
+      "returncode": 0,
+      "log": "qualification-tests.log.gz",
+      "uncompressed_sha256": "c5a31a591962d07e0ca0a234f9750fdb7bd3df31e542648e9fceac5330c3a2c6"
+    },
+    {
+      "name": "fmt",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo fmt --check",
+      "returncode": 0,
+      "log": "qualification-fmt.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo clippy --locked --offline -j2 --all-targets -- -D warnings",
+      "returncode": 0,
+      "log": "qualification-clippy.log.gz",
+      "uncompressed_sha256": "9d8f8776d687c27082326e3a1b7d25e7c125dd43090e3b02c6899a9dfcc2f42b"
+    },
+    {
+      "name": "release",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo build --locked --offline -j2 --release",
+      "returncode": 0,
+      "log": "qualification-release.log.gz",
+      "uncompressed_sha256": "21d21ebd05a60bb927b1ecffdcc1d020f58fa40b997029a3747aee3cd409df05"
+    },
+    {
+      "name": "examples",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo build --locked --offline -j2 --release --examples",
+      "returncode": 0,
+      "log": "qualification-examples.log.gz",
+      "uncompressed_sha256": "2b87b21ff21838c32c0be6eb530b4b7da393835ca4ddd6161d19de224742be63"
+    }
+  ],
+  "no_runtime_acceptance": true,
+  "qualification_may_overlap_descriptive_process_measurements": true,
+  "metadata_fix_checks": [
+    {
+      "name": "fmt",
+      "returncode": 0,
+      "log": "qualification-clock-label-fmt.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "returncode": 0,
+      "log": "qualification-clock-label-clippy.log.gz",
+      "uncompressed_sha256": "0d0f45cbd51d943dad26c736272ca7881cfe8d7df3283cc488367b9e8de3789c"
+    },
+    {
+      "name": "examples",
+      "returncode": 0,
+      "log": "qualification-clock-label-examples.log.gz",
+      "uncompressed_sha256": "6b18956c547b80467aacac41827feaa66f4f15ba6fd260ea4307b6928bf02be0"
+    }
+  ],
+  "library_sources_changed_after_full_tests": false
+}

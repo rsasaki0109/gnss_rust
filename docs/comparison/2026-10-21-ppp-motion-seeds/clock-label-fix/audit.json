@@ -1,0 +1,65 @@
+{
+  "metadata_only_change": true,
+  "GNSS_numeric_processing_changed": false,
+  "library_sources_unchanged": true,
+  "changed_sources": {
+    "examples/support/ppp_seed.rs": {
+      "captured_path": "clock-label-fix/seed-before.rs",
+      "before_sha256": "54ddd55adbd4663f158435d03192328e35978c407e5cd501d1fa709a27e78f36",
+      "after_sha256": "ede584b0a40e2645b09dc90e6b0b315a6739b08d30867cad90c77db0bcfc0f49"
+    },
+    "scripts/run_ppp_motion_seeds.py": {
+      "captured_path": "clock-label-fix/runner-before.py",
+      "before_sha256": "95843eec6b8d7572cdd619895c5e1be3d8919e73c8c2ddb59ebc1d6df450e0de",
+      "after_sha256": "38bcb0896c043930e8f63dada1b15956d2695d19ac77cbcb7eaeeb8a08ee5ab0"
+    }
+  },
+  "current_binary_sha256": "e6231e8eac1a97dfe8720cfb18d60d12690cdb0bd4a7f191725ae2381ed7a306",
+  "source_sha256": "9745f8055b8bcb2b2805fb433ed07d02872fe378ff6ae752f95623232e8ca275",
+  "cases": {
+    "nagoya-run1": {
+      "input_epochs": 7602,
+      "all_72_fields_equal_after_metadata_normalization": true,
+      "first_SPP_clock_system_counts": {
+        "Gps": 7499
+      }
+    },
+    "nagoya-run2": {
+      "input_epochs": 9451,
+      "all_72_fields_equal_after_metadata_normalization": true,
+      "first_SPP_clock_system_counts": {
+        "Gps": 9408
+      }
+    },
+    "nagoya-run3": {
+      "input_epochs": 5201,
+      "all_72_fields_equal_after_metadata_normalization": true,
+      "first_SPP_clock_system_counts": {
+        "Gps": 5189
+      }
+    },
+    "tokyo-run1": {
+      "input_epochs": 11928,
+      "all_72_fields_equal_after_metadata_normalization": true,
+      "first_SPP_clock_system_counts": {
+        "Gps": 11356
+      }
+    },
+    "tokyo-run2": {
+      "input_epochs": 9151,
+      "all_72_fields_equal_after_metadata_normalization": true,
+      "first_SPP_clock_system_counts": {
+        "Gps": 9086
+      }
+    },
+    "tokyo-run3": {
+      "input_epochs": 15301,
+      "all_72_fields_equal_after_metadata_normalization": true,
+      "first_SPP_clock_system_counts": {
+        "Gps": 15244
+      }
+    }
+  },
+  "SPP_clock_imported": false,
+  "truth_used_by_solver": false
+}

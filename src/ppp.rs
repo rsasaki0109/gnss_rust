@@ -150,6 +150,8 @@ pub struct PppFilterSettings {
     pub position_model: PppPositionModel,
     pub clock_model: PppClockModel,
     pub rejected_update_policy: PppRejectedUpdatePolicy,
+    /// Optional caller-admitted SPP/Doppler motion initialization/recovery.
+    pub motion_seed_policy: Option<PppMotionSeedPolicy>,
     /// Strict calibrated phase remains the default. Explicit raw mode retains
     /// absent phase OSBs and absorbs constant biases only into FLOAT ambiguities.
     pub phase_bias_mode: PhaseBiasMode,
@@ -174,6 +176,7 @@ impl Default for PppFilterSettings {
             position_model: PppPositionModel::Static,
             clock_model: PppClockModel::RandomWalk,
             rejected_update_policy: PppRejectedUpdatePolicy::InterruptAllArcs,
+            motion_seed_policy: None,
             phase_bias_mode: PhaseBiasMode::RequireSignalCorrections,
             initial_head_variance_m2: [1e6, 1e6, 1e6, 1e8, 100.0],
             head_process_noise_m2_per_s: [0.0, 0.0, 0.0, 100.0, 1e-8],
@@ -210,6 +213,84 @@ pub enum PppRejectedUpdatePolicy {
     /// Configuration, product, model and arithmetic errors still interrupt all.
     RetainContinuousArcs,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PppMotionSeedPolicy {
+    pub recovery: crate::ppp_motion::PvaRecoveryConfig,
+    pub initialize_from_seed: bool,
+    pub require_seed: bool,
+    pub update_velocity: bool,
+    /// Total 3-D NIS; None matches the native ungated velocity update.
+    pub velocity_nis_gate: Option<f64>,
+}
+impl Default for PppMotionSeedPolicy {
+    fn default() -> Self {
+        Self {
+            recovery: Default::default(),
+            initialize_from_seed: true,
+            require_seed: true,
+            update_velocity: true,
+            velocity_nis_gate: None,
+        }
+    }
+}
+impl PppMotionSeedPolicy {
+    fn valid(self) -> bool {
+        [
+            self.recovery.position_variance_m2,
+            self.recovery.velocity_variance_m2_s2,
+            self.recovery.acceleration_variance_m2_s4,
+        ]
+        .iter()
+        .all(|x| x.is_finite() && *x > 0.0)
+            && [
+                self.recovery.position_disagreement_gate,
+                self.velocity_nis_gate,
+            ]
+            .into_iter()
+            .flatten()
+            .all(|x| x.is_finite() && x > 0.0)
+    }
+}
+#[derive(Debug, Clone, PartialEq)]
+pub struct PppMotionSeed {
+    pub solution: PositionSolution,
+    /// Caller assertion of compatibility, not an automatic frame transform.
+    pub coordinate_system: String,
+    pub receiver_reference: ReceiverPositionReference,
+    pub provenance: String,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PppMotionSeedError {
+    Disabled,
+    InvalidSolution,
+    InvalidPosition,
+    TimeMismatch,
+    FrameMismatch,
+    ReceiverReferenceMismatch,
+    MissingProvenance,
+}
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PppSeedVelocityUpdate {
+    Disabled,
+    Unavailable,
+    MissingCovariance,
+    Applied { normalized_innovation_squared: f64 },
+    Rejected(FilterError),
+}
+#[derive(Debug, Clone, PartialEq)]
+pub struct PppMotionSeedDiagnostic {
+    pub seed_time: GnssTime,
+    pub provenance: String,
+    pub initialized: bool,
+    pub restarted: bool,
+    pub variance_trigger: bool,
+    pub normalized_position_disagreement: Option<f64>,
+    pub seed_covariance_fallback: bool,
+    pub velocity_update: PppSeedVelocityUpdate,
+    /// All operations above act on a proposed prior until GNSS update success.
+    pub committed: bool,
+}
 #[derive(Debug, Clone, PartialEq)]
 pub struct PppConfig {
     /// Independent initial position in the declared SP3 coordinate frame.
@@ -236,6 +317,8 @@ pub struct PppConfig {
 #[derive(Debug, Clone, PartialEq)]
 pub enum PppError {
     InvalidConfiguration,
+    MotionSeed(PppMotionSeedError),
+    MissingMotionSeed,
     ProductFrameMismatch,
     UnsupportedSelection(SatelliteId),
     InsufficientCode { available: usize },
@@ -333,6 +416,9 @@ impl PppConfig {
         ecef_to_geodetic(self.initial_position)?;
         self.transmit.validate()?;
         if !f.position_model.validate()
+            || f.motion_seed_policy.is_some_and(|p| {
+                !p.valid() || !matches!(f.position_model, PppPositionModel::ConstantAcceleration(_))
+            })
             || !self.initial_receiver_clock_s.is_finite()
             || !(self.initial_receiver_clock_s * c::SPEED_OF_LIGHT).is_finite()
             || !self.initial_zenith_delay_m.is_finite()
@@ -542,6 +628,7 @@ pub struct PppSolution {
     pub zenith_variance_m2: f64,
     pub acceleration_ecef_mps2: Option<[f64; 3]>,
     pub acceleration_covariance_m2_s4: Option<[[f64; 3]; 3]>,
+    pub motion_seed: Option<PppMotionSeedDiagnostic>,
     pub ambiguities: Vec<PppAmbiguity>,
     pub measurements: Vec<PppMeasurement>,
     pub arc_decisions: BTreeMap<SatelliteId, PhaseArcDecision>,
@@ -572,6 +659,7 @@ pub struct PppFilter {
     arcs: PhaseArcTracker,
     last_rejections: BTreeMap<SatelliteId, PppRejection>,
     last_retained_phase_arcs: BTreeSet<SatelliteId>,
+    last_motion_seed: Option<PppMotionSeedDiagnostic>,
     windup: BTreeMap<SatelliteId, PppWindupState>,
 }
 impl PppFilter {
@@ -610,6 +698,7 @@ impl PppFilter {
             arcs,
             last_rejections: BTreeMap::new(),
             last_retained_phase_arcs: BTreeSet::new(),
+            last_motion_seed: None,
             windup: BTreeMap::new(),
         })
     }
@@ -631,6 +720,9 @@ impl PppFilter {
     pub fn last_retained_phase_arcs(&self) -> &BTreeSet<SatelliteId> {
         &self.last_retained_phase_arcs
     }
+    pub fn last_motion_seed(&self) -> Option<&PppMotionSeedDiagnostic> {
+        self.last_motion_seed.as_ref()
+    }
     pub fn windup_state(&self, sat: SatelliteId) -> Option<&PppWindupState> {
         self.windup.get(&sat)
     }
@@ -638,6 +730,7 @@ impl PppFilter {
         self.arcs.invalidate_all()?;
         self.windup.clear();
         self.last_retained_phase_arcs.clear();
+        self.last_motion_seed = None;
         Ok(())
     }
 
@@ -653,12 +746,34 @@ impl PppFilter {
         corrections: &SignalCorrections,
         selections: &BTreeMap<SatelliteId, DualFrequencyConfig>,
     ) -> Result<PppEpoch, PppError> {
+        self.process_epoch_with_seed(epoch, products, corrections, selections, None)
+    }
+
+    /// Explicit SPP/Doppler motion seed. A same-epoch restart is a heuristic
+    /// data-dependent prior, not an independent code-measurement factor.
+    /// Seed receiver clock and clock drift are never imported. The legitimate
+    /// full-state correlations of a velocity measurement remain active.
+    pub fn process_epoch_with_seed(
+        &mut self,
+        epoch: &ObservationEpoch,
+        products: &PreciseProducts,
+        corrections: &SignalCorrections,
+        selections: &BTreeMap<SatelliteId, DualFrequencyConfig>,
+        seed: Option<&PppMotionSeed>,
+    ) -> Result<PppEpoch, PppError> {
         if self.arcs.last_epoch().is_some_and(|t| epoch.time <= t) {
             return Err(PhaseArcError::OutOfOrder.into());
         }
         if let Err(error) = self.config.check_products(products) {
             self.invalidate_phase()?;
             return Err(error);
+        }
+        if epoch.flag != 6
+            && let Some(seed) = seed
+            && let Err(reason) = self.check_motion_seed(epoch.time, seed)
+        {
+            self.invalidate_phase()?;
+            return Err(PppError::MotionSeed(reason));
         }
         for sat in selections.keys() {
             if sat.system() != GnssSystem::Gps || sat.prn() > 32 {
@@ -689,20 +804,35 @@ impl PppFilter {
             Err(error) => {
                 self.windup.clear();
                 self.last_retained_phase_arcs.clear();
+                self.last_motion_seed = None;
                 return Err(error.into());
             }
         };
         self.last_rejections.clear();
         self.last_retained_phase_arcs.clear();
+        self.last_motion_seed = None;
         if epoch.flag == 6 {
             self.windup.clear();
             return Ok(PppEpoch::Event(self.arcs.finish_epoch(&BTreeSet::new())?));
         }
-        let result = self.update(epoch, products, &decisions);
+        let result = if seed.is_none()
+            && self
+                .config
+                .filter
+                .motion_seed_policy
+                .is_some_and(|p| p.require_seed)
+        {
+            Err(PppError::MissingMotionSeed)
+        } else {
+            self.update(epoch, products, &decisions, seed)
+        };
         match result {
             Ok((posterior, layout, measurements, iterations, nis)) => {
                 let eligible = layout.keys().copied().collect();
                 let commit = self.arcs.finish_epoch(&eligible)?;
+                if let Some(d) = &mut self.last_motion_seed {
+                    d.committed = true;
+                }
                 self.windup = measurements
                     .iter()
                     .filter_map(|m| {
@@ -791,6 +921,7 @@ impl PppFilter {
                             std::array::from_fn(|j| posterior.covariance[8 + i][8 + j])
                         })
                     }),
+                    motion_seed: self.last_motion_seed.clone(),
                     ambiguities,
                     measurements,
                     arc_decisions: decisions,
@@ -833,6 +964,137 @@ impl PppFilter {
                 Err(error)
             }
         }
+    }
+
+    fn check_motion_seed(
+        &self,
+        time: GnssTime,
+        seed: &PppMotionSeed,
+    ) -> Result<(), PppMotionSeedError> {
+        if self.config.filter.motion_seed_policy.is_none() {
+            return Err(PppMotionSeedError::Disabled);
+        }
+        if seed.solution.status != SolutionStatus::Spp || !seed.solution.is_valid() {
+            return Err(PppMotionSeedError::InvalidSolution);
+        }
+        if ecef_to_geodetic(seed.solution.position_ecef.unwrap()).is_err() {
+            return Err(PppMotionSeedError::InvalidPosition);
+        }
+        if seed.solution.time.difference_seconds(time).abs() > 1e-7 {
+            return Err(PppMotionSeedError::TimeMismatch);
+        }
+        if seed.coordinate_system != self.config.expected_coordinate_system {
+            return Err(PppMotionSeedError::FrameMismatch);
+        }
+        if seed.receiver_reference != self.config.receiver_reference {
+            return Err(PppMotionSeedError::ReceiverReferenceMismatch);
+        }
+        if seed.provenance.trim().is_empty() {
+            return Err(PppMotionSeedError::MissingProvenance);
+        }
+        Ok(())
+    }
+
+    fn apply_motion_seed(
+        &mut self,
+        prior: &mut GaussianState,
+        seed: Option<&PppMotionSeed>,
+    ) -> Result<(), PppError> {
+        let Some(policy) = self.config.filter.motion_seed_policy else {
+            return Ok(());
+        };
+        let Some(seed) = seed else {
+            return Ok(());
+        };
+        let position = seed.solution.position_ecef.unwrap();
+        let mut diagnostic = PppMotionSeedDiagnostic {
+            seed_time: seed.solution.time,
+            provenance: seed.provenance.clone(),
+            initialized: false,
+            restarted: false,
+            variance_trigger: false,
+            normalized_position_disagreement: None,
+            seed_covariance_fallback: false,
+            velocity_update: if policy.update_velocity {
+                PppSeedVelocityUpdate::Unavailable
+            } else {
+                PppSeedVelocityUpdate::Disabled
+            },
+            committed: false,
+        };
+        if self.state_time.is_none() && policy.initialize_from_seed {
+            let PppPositionModel::ConstantAcceleration(model) = self.config.filter.position_model
+            else {
+                return Err(PppError::InvalidConfiguration);
+            };
+            let velocity = seed
+                .solution
+                .velocity_ecef
+                .filter(|v| v.iter().all(|x| x.is_finite()))
+                .unwrap_or([0.0; 3]);
+            for (start, mean, variance) in [
+                (
+                    0,
+                    [position.x, position.y, position.z],
+                    self.config.filter.initial_head_variance_m2[..3]
+                        .try_into()
+                        .unwrap(),
+                ),
+                (5, velocity, [model.initial_velocity_variance_m2_s2; 3]),
+                (8, [0.0; 3], [model.initial_acceleration_variance_m2_s4; 3]),
+            ] {
+                for j in 0..3 {
+                    let i = start + j;
+                    prior.mean[i] = mean[j];
+                    for row in &mut prior.covariance {
+                        row[i] = 0.0;
+                    }
+                    prior.covariance[i].fill(0.0);
+                    prior.covariance[i][i] = variance[j];
+                }
+            }
+            diagnostic.initialized = true;
+        } else {
+            let r = crate::ppp_motion::recover_pva_motion(
+                prior,
+                Some(crate::ppp_motion::MotionSeed {
+                    position_ecef: position,
+                    position_covariance_m2: seed.solution.position_covariance,
+                    velocity_mps: seed.solution.velocity_ecef,
+                }),
+                policy.recovery,
+            )?;
+            diagnostic.restarted = r.reset;
+            diagnostic.variance_trigger = r.variance_trigger;
+            diagnostic.normalized_position_disagreement = r.normalized_position_disagreement;
+            diagnostic.seed_covariance_fallback = r.seed_covariance_fallback;
+            *prior = r.prior;
+        }
+        if policy.update_velocity
+            && let Some(velocity) = seed.solution.velocity_ecef
+        {
+            if let Some(covariance) = seed.solution.velocity_covariance {
+                diagnostic.velocity_update = match crate::ppp_motion::update_velocity(
+                    prior,
+                    5,
+                    velocity,
+                    covariance,
+                    policy.velocity_nis_gate,
+                ) {
+                    Ok(update) => {
+                        *prior = update.posterior;
+                        PppSeedVelocityUpdate::Applied {
+                            normalized_innovation_squared: update.normalized_innovation_squared,
+                        }
+                    }
+                    Err(error) => PppSeedVelocityUpdate::Rejected(error),
+                };
+            } else {
+                diagnostic.velocity_update = PppSeedVelocityUpdate::MissingCovariance;
+            }
+        }
+        self.last_motion_seed = Some(diagnostic);
+        Ok(())
     }
 
     fn predicted_prior(
@@ -925,6 +1187,7 @@ impl PppFilter {
         epoch: &ObservationEpoch,
         products: &PreciseProducts,
         decisions: &BTreeMap<SatelliteId, PhaseArcDecision>,
+        seed: Option<&PppMotionSeed>,
     ) -> Result<UpdateResult, PppError> {
         let mut admission_receiver = receiver(&self.state.mean);
         if self
@@ -953,6 +1216,11 @@ impl PppFilter {
             if !admission_receiver.is_finite() {
                 return Err(Error::NonFinite.into());
             }
+        }
+        if self.config.filter.motion_seed_policy.is_some() && seed.is_some() {
+            let mut preview = self.predicted_prior(epoch.time, &BTreeMap::new())?;
+            self.apply_motion_seed(&mut preview, seed)?;
+            admission_receiver = receiver(&preview.mean);
         }
         let mut observations = BTreeMap::new();
         let mut layout = BTreeMap::new();
@@ -1011,7 +1279,8 @@ impl PppFilter {
                 available: layout.len(),
             });
         }
-        let prior = self.predicted_prior(epoch.time, &layout)?;
+        let mut prior = self.predicted_prior(epoch.time, &layout)?;
+        self.apply_motion_seed(&mut prior, seed)?;
         let windup_context = self.prepare_windup(epoch.time, products, &layout, &prior.mean)?;
         let mut iterate = prior.mean.clone();
         for iteration in 1..=self.config.filter.max_iterations {

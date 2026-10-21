@@ -1,0 +1,16 @@
+--- clock-label-fix/seed-before.rs
++++ examples/support/ppp_seed.rs
+@@ -12 +12 @@
+-pub const HEADER: &str = ",seed_status,seed_source,seed_frame_assertion,seed_receiver_reference,seed_x_m,seed_y_m,seed_z_m,seed_gps_clock_s,seed_position_covariance_trace_m2,seed_satellites,seed_code_rms_m,seed_gdop,seed_MAD_rejected,seed_RAIM_rejected,seed_vx_mps,seed_vy_mps,seed_vz_mps,seed_velocity_covariance_trace_m2_s2,seed_velocity_satellites,seed_velocity_residual_rms_mps,seed_velocity_chi_square_per_dof,seed_velocity_clock_systems,seed_error,seed_initialized,seed_restarted,seed_variance_trigger,seed_position_nis,seed_covariance_fallback,seed_velocity_update,seed_committed,service_status,service_x_m,service_y_m,service_z_m,service_vx_mps,service_vy_mps,service_vz_mps";
++pub const HEADER: &str = ",seed_status,seed_source,seed_frame_assertion,seed_receiver_reference,seed_x_m,seed_y_m,seed_z_m,seed_first_system_clock_s,seed_position_covariance_trace_m2,seed_satellites,seed_code_rms_m,seed_gdop,seed_MAD_rejected,seed_RAIM_rejected,seed_vx_mps,seed_vy_mps,seed_vz_mps,seed_velocity_covariance_trace_m2_s2,seed_velocity_satellites,seed_velocity_residual_rms_mps,seed_velocity_chi_square_per_dof,seed_velocity_clock_systems,seed_error,seed_initialized,seed_restarted,seed_variance_trigger,seed_position_nis,seed_covariance_fallback,seed_velocity_update,seed_committed,service_status,service_x_m,service_y_m,service_z_m,service_vx_mps,service_vy_mps,service_vz_mps";
+@@ -47,0 +48,4 @@
++        fields[1] = format!(
++            "{SOURCE};SPP_first_clock_system={:?}",
++            report.solution.clock_biases_s[0].0
++        );
+--- clock-label-fix/runner-before.py
++++ scripts/run_ppp_motion_seeds.py
+@@ -35 +35,2 @@
+-        if r['seed_status']=='SPP':assert all(math.isfinite(float(r[k])) for k in ['seed_x_m','seed_y_m','seed_z_m','seed_gps_clock_s','seed_position_covariance_trace_m2'])
++        if r['seed_status']=='SPP':assert all(math.isfinite(float(r[k])) for k in ['seed_x_m','seed_y_m','seed_z_m','seed_position_covariance_trace_m2'])
++        if r['seed_status']=='SPP':assert math.isfinite(float(r.get('seed_first_system_clock_s',r.get('seed_gps_clock_s'))))

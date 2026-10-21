@@ -56,6 +56,7 @@ pub mod navigation;
 pub mod observation;
 pub mod phase_arc;
 pub mod ppp;
+pub mod ppp_motion;
 pub mod precise;
 pub mod precise_spp;
 pub mod precise_transmit;

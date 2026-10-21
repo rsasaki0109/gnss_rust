@@ -1,18 +1,20 @@
 //! Diagnostic GPS moving PPP on unmodified PPC observations and matching CODE products.
-//! No reference.csv, base observations, SPP, Doppler or truth enters the filter.
+//! Optional explicit broadcast SPP/Doppler seeds; no reference.csv/IMU/truth input.
+#[path = "support/ppp_seed.rs"]
+mod ppp_seed;
 use gnss_rust::antenna::{SatelliteAntennaBinding, SatelliteAntennaModel, read_antex};
 use gnss_rust::bias::{BiasSignalRequest, OsbBinding, read_satellite_biases_with_byte_comments};
 use gnss_rust::dual_frequency::{
     DualFrequencyConfig, DualFrequencyNoise, PhaseBiasMode, SignalCorrections,
 };
 use gnss_rust::ppp::{
-    PppClockModel, PppConfig, PppEpoch, PppFilter, PppFilterSettings, PppPositionModel,
-    PppRejectedUpdatePolicy,
+    PppClockModel, PppConfig, PppEpoch, PppFilter, PppFilterSettings, PppMotionSeedPolicy,
+    PppPositionModel, PppRejectedUpdatePolicy,
 };
 use gnss_rust::precise::{
     ClockSource, OrbitReferencePoint, PreciseProducts, read_satellite_clocks, read_sp3,
 };
-use gnss_rust::rinex::RinexObservationReader;
+use gnss_rust::rinex::{RinexObservationReader, read_navigation_for_systems};
 use gnss_rust::tides::ReceiverPositionReference;
 use gnss_rust::windup::PppWindupModel;
 use gnss_rust::{GnssSystem, SatelliteId};
@@ -39,6 +41,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if retain_arcs {
         args.pop();
     }
+    let seed_profile = if args.len() >= 2
+        && matches!(
+            args[args.len() - 2].as_str(),
+            "-seed-shadow" | "-seed-position" | "-seed-doppler"
+        ) {
+        let nav = args.pop().unwrap();
+        Some((args.pop().unwrap(), nav))
+    } else {
+        None
+    };
     let pva = args.last().is_some_and(|s| s == "-pva");
     if pva {
         args.pop();
@@ -47,7 +59,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if epoch_clock {
         args.pop();
     }
-    if !matches!(args.len(), 8 | 9)
+    if (seed_profile.is_some() && !pva)
+        || !matches!(args.len(), 8 | 9)
         || !matches!(args[6].as_str(), "1C2W" | "1C2L")
         || !matches!(args[7].as_str(), "calibrated" | "raw-float")
         || (args.len() == 9
@@ -56,7 +69,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "native-variances" | "climatology" | "native-head"
             ))
     {
-        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-retain-arcs] [-timing]".into());
+        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-seed-shadow|-seed-position|-seed-doppler BASE_NAV] [-retain-arcs] [-timing]".into());
     }
     let open = |name: &str| File::open(name).map(BufReader::new);
     let orbit = read_sp3(open(&args[1])?)?;
@@ -206,7 +219,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     if epoch_clock {
         config.filter.clock_model = PppClockModel::IndependentEpoch;
-        eprintln!("clock_model=IndependentEpoch SPP_fused=false thresholds_changed=false");
+        eprintln!("clock_model=IndependentEpoch SPP_clock_imported=false thresholds_changed=false");
     }
     if retain_arcs {
         config.filter.rejected_update_policy = PppRejectedUpdatePolicy::RetainContinuousArcs;
@@ -223,11 +236,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         selected_bias.selection.excluded_receiver_records.len(),
         selected_bias.preserved_free_text.len()
     );
+    let navigation = seed_profile
+        .as_ref()
+        .map(|(_, path)| {
+            read_navigation_for_systems(open(path)?, &[GnssSystem::Gps, GnssSystem::Galileo])
+                .map_err(Box::<dyn std::error::Error>::from)
+        })
+        .transpose()?;
+    if let Some((mode, path)) = &seed_profile {
+        if mode != "-seed-shadow" {
+            config.filter.motion_seed_policy = Some(PppMotionSeedPolicy {
+                update_velocity: mode == "-seed-doppler",
+                ..Default::default()
+            });
+        }
+        eprintln!(
+            "seed_mode={mode} broadcast_navigation={path} same_epoch_data_dependent_prior=true position_factor_independent=false broadcast_WGS84_IGS20_compatibility_is_caller_assertion=true seed_clock_imported=false Doppler_clock_imported=false SPP_fallback_reported_separately=true seed_policy={:?}",
+            config.filter.motion_seed_policy
+        );
+    }
     let mut filter = PppFilter::new(config)?;
     let mut out = BufWriter::new(std::io::stdout().lock());
     writeln!(
         out,
-        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}{}",
+        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}{}{}",
         if timing {
             ",filter_ms,epoch_stage_ms"
         } else {
@@ -240,6 +272,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         if pva {
             ",ax_mps2,ay_mps2,az_mps2,acceleration_qxx_m2_s4,acceleration_qyy_m2_s4,acceleration_qzz_m2_s4"
+        } else {
+            ""
+        },
+        if seed_profile.is_some() {
+            ppp_seed::HEADER
         } else {
             ""
         }
@@ -294,8 +331,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         row[22] = code_count.to_string();
         row[23] = phase_count.to_string();
         row[24] = unavailable.join(";");
+        let seed_record = navigation
+            .as_ref()
+            .map(|nav| ppp_seed::Record::solve(&epoch, &nav.navigation));
+        let mut supplied = seed_record.as_ref().and_then(|r| r.seed.clone());
+        if seed_profile
+            .as_ref()
+            .is_some_and(|(m, _)| m == "-seed-position")
+            && let Some(s) = &mut supplied
+        {
+            s.solution.velocity_ecef = None;
+            s.solution.velocity_covariance = None;
+        }
+        let fuse = seed_profile
+            .as_ref()
+            .is_some_and(|(m, _)| m != "-seed-shadow");
         let filter_started = timing.then(std::time::Instant::now);
-        let result = filter.process_epoch(&epoch, &products, &corrections, &selections);
+        let result = filter.process_epoch_with_seed(
+            &epoch,
+            &products,
+            &corrections,
+            &selections,
+            if fuse { supplied.as_ref() } else { None },
+        );
+        let service_ppp = match &result {
+            Ok(PppEpoch::Solution(s)) => Some(s.position.clone()),
+            _ => None,
+        };
         if let Some(started) = filter_started {
             row[29] = format!("{:.17e}", started.elapsed().as_secs_f64() * 1000.0);
         }
@@ -375,6 +437,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Some(t) = filter.state_time() {
             row[26] = t.week().to_string();
             row[27] = format!("{:.17}", t.tow());
+        }
+        if let Some(r) = seed_record {
+            row.extend(r.append(filter.last_motion_seed(), service_ppp.as_ref(), epoch.time));
         }
         writeln!(
             out,

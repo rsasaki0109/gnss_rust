@@ -1,0 +1,203 @@
+{
+  "post_hoc_only": true,
+  "reference_sha256": "574cca92f00d6cdc1b88badc07fb08d9587eb108aa0185e82d2146a2eb72e564",
+  "raw_solver_rows": [
+    {
+      "profile": "GPS-elevation-no-QC",
+      "week": "2325",
+      "tow": "554542.19999999995343387",
+      "status": "SPP",
+      "x_m": "-3.81124589325311966e6",
+      "y_m": "3.56666907218817994e6",
+      "z_m": "3.65325017159297504e6",
+      "code_rms_m": "2.84424835169075640e0",
+      "position_covariance_trace_m2": "2.99275321604494991e2",
+      "satellites": "6",
+      "gdop": "3.94000352117453634e0",
+      "MAD_rejected": "0",
+      "RAIM_rejected": "0",
+      "vx_mps": "1.51074830421610656e-1",
+      "vy_mps": "-1.70273995193510386e-1",
+      "vz_mps": "-1.41105897801154428e-1",
+      "velocity_covariance_trace_m2_s2": "7.56573489119061492e2",
+      "velocity_satellites": "4",
+      "velocity_residual_rms_mps": "8.70233571526731666e-15",
+      "error": ""
+    },
+    {
+      "profile": "GPS-native-variance-QC",
+      "week": "2325",
+      "tow": "554542.19999999995343387",
+      "status": "SPP",
+      "x_m": "-3.81123738922861638e6",
+      "y_m": "3.56666011350716231e6",
+      "z_m": "3.65324116046530753e6",
+      "code_rms_m": "1.61516491559634079e0",
+      "position_covariance_trace_m2": "4.56908215322647175e3",
+      "satellites": "5",
+      "gdop": "7.51046771406390690e0",
+      "MAD_rejected": "0",
+      "RAIM_rejected": "1",
+      "vx_mps": "1.03629349430663181e-1",
+      "vy_mps": "-1.22395827011776745e-1",
+      "vz_mps": "-9.96257388016866807e-2",
+      "velocity_covariance_trace_m2_s2": "7.56574778917600725e2",
+      "velocity_satellites": "4",
+      "velocity_residual_rms_mps": "1.81153563744117622e-14",
+      "error": ""
+    },
+    {
+      "profile": "GPS-Galileo-elevation-no-QC",
+      "week": "2325",
+      "tow": "554542.19999999995343387",
+      "status": "SPP",
+      "x_m": "-3.81124270992836868e6",
+      "y_m": "3.56666056735199038e6",
+      "z_m": "3.65324274422956165e6",
+      "code_rms_m": "6.52343010394662848e0",
+      "position_covariance_trace_m2": "2.73660380204400781e2",
+      "satellites": "9",
+      "gdop": "4.37221778254055859e0",
+      "MAD_rejected": "0",
+      "RAIM_rejected": "0",
+      "vx_mps": "2.51301282946641592e-2",
+      "vy_mps": "-3.74350048466745855e-2",
+      "vz_mps": "-2.19531354181541905e-2",
+      "velocity_covariance_trace_m2_s2": "3.33024454682024498e1",
+      "velocity_satellites": "7",
+      "velocity_residual_rms_mps": "2.56590150215200942e-3",
+      "error": ""
+    },
+    {
+      "profile": "GPS-Galileo-native-variance-QC",
+      "week": "2325",
+      "tow": "554542.19999999995343387",
+      "status": "SPP",
+      "x_m": "-3.81117747027392639e6",
+      "y_m": "3.56659785820065811e6",
+      "z_m": "3.65318443212525127e6",
+      "code_rms_m": "7.61134047257657320e-1",
+      "position_covariance_trace_m2": "2.39366199643569371e3",
+      "satellites": "7",
+      "gdop": "1.48119720440814362e1",
+      "MAD_rejected": "2",
+      "RAIM_rejected": "0",
+      "vx_mps": "-2.01515227280169434e-2",
+      "vy_mps": "6.02936109748684803e-3",
+      "vz_mps": "2.06521672333597056e-2",
+      "velocity_covariance_trace_m2_s2": "3.33028146433219590e1",
+      "velocity_satellites": "7",
+      "velocity_residual_rms_mps": "3.45119116330049351e-3",
+      "error": ""
+    }
+  ],
+  "all_four_profiles_retained": true,
+  "scores": {
+    "GPS-elevation-no-QC": {
+      "reference_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 1,
+            "horizontal_rms_m": 3.9632688959044073,
+            "vertical_rms_m": 128.75685401519814,
+            "three_dimensional_rms_m": 128.81783632801898,
+            "horizontal_p50_m": 3.9632688959044073,
+            "horizontal_p95_m": 3.9632688959044073,
+            "maximum_3d_m": 128.81783632801898
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 1,
+            "horizontal_rms_m": 3.5232221088078273,
+            "vertical_rms_m": 127.52313265542016,
+            "three_dimensional_rms_m": 127.57179334116094,
+            "horizontal_p50_m": 3.5232221088078273,
+            "horizontal_p95_m": 3.5232221088078273,
+            "maximum_3d_m": 127.57179334116094
+          }
+        }
+      },
+      "estimated_speed_mps": 0.26782029837252413
+    },
+    "GPS-native-variance-QC": {
+      "reference_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 1,
+            "horizontal_rms_m": 3.340421089892466,
+            "vertical_rms_m": 113.48683312132033,
+            "three_dimensional_rms_m": 113.53598418547402,
+            "horizontal_p50_m": 3.340421089892466,
+            "horizontal_p95_m": 3.340421089892466,
+            "maximum_3d_m": 113.53598418547402
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 1,
+            "horizontal_rms_m": 3.0211395695384917,
+            "vertical_rms_m": 112.25311176154234,
+            "three_dimensional_rms_m": 112.29375932992869,
+            "horizontal_p50_m": 3.0211395695384917,
+            "horizontal_p95_m": 3.0211395695384917,
+            "maximum_3d_m": 112.29375932992869
+          }
+        }
+      },
+      "estimated_speed_mps": 0.18879901579484246
+    },
+    "GPS-Galileo-elevation-no-QC": {
+      "reference_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 1,
+            "horizontal_rms_m": 2.304925945113763,
+            "vertical_rms_m": 117.82830890865267,
+            "three_dimensional_rms_m": 117.85085092558874,
+            "horizontal_p50_m": 2.304925945113763,
+            "horizontal_p95_m": 2.304925945113763,
+            "maximum_3d_m": 117.85085092558874
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 1,
+            "horizontal_rms_m": 2.985488009882041,
+            "vertical_rms_m": 116.5945875488747,
+            "three_dimensional_rms_m": 116.63280406622039,
+            "horizontal_p50_m": 2.985488009882041,
+            "horizontal_p95_m": 2.985488009882041,
+            "maximum_3d_m": 116.63280406622039
+          }
+        }
+      },
+      "estimated_speed_mps": 0.05014821124092709
+    },
+    "GPS-Galileo-native-variance-QC": {
+      "reference_errors": {
+        "valid_positions_without_reference": 0,
+        "hypotheses": {
+          "reference_is_antenna": {
+            "epochs": 1,
+            "horizontal_rms_m": 2.5589594015147723,
+            "vertical_rms_m": 10.275064107397386,
+            "three_dimensional_rms_m": 10.588919474135539,
+            "horizontal_p50_m": 2.5589594015147723,
+            "horizontal_p95_m": 2.5589594015147723,
+            "maximum_3d_m": 10.588919474135539
+          },
+          "reference_is_IMU_nagoya": {
+            "epochs": 1,
+            "horizontal_rms_m": 2.5872469668960187,
+            "vertical_rms_m": 9.041342747619405,
+            "three_dimensional_rms_m": 9.404239764470207,
+            "horizontal_p50_m": 2.5872469668960187,
+            "horizontal_p95_m": 2.5872469668960187,
+            "maximum_3d_m": 9.404239764470207
+          }
+        }
+      },
+      "estimated_speed_mps": 0.029477942176080192
+    }
+  },
+  "truth_used_by_solver": false,
+  "SPP_relabelled_PPP": false
+}

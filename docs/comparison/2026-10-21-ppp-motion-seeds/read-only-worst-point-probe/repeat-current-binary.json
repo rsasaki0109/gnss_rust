@@ -1,0 +1,18 @@
+{
+  "command": [
+    "target/release/examples/ppc_ppp_seed_probe",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3",
+    "2325",
+    "554542.19999999995343387"
+  ],
+  "returncode": 0,
+  "binary_sha256": "6c91c84901749393eacd11f2d9b86b855a46e8a32a74bd0b45e85298fb128f4d",
+  "source_sha256": "67100b2d0008147f7e4a104a9949b4fc78f78082c1650ad04f16037902b54ee2",
+  "repeat_stdout_and_stderr_byte_identical": true,
+  "truth_used_by_solver": false,
+  "PPP_filter_updated": false,
+  "input_sha256": {
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3/rover.obs": "41e6a6c886abca3034f570dbfdc6fe070e76427dd8e46fbfdc0e9b0aa3e67c46",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3/base.nav": "4a8e0e074c45604052936043a5dadd674d9a972c5f9c27a866ca4f9667df22d5"
+  }
+}
