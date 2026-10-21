@@ -6,7 +6,7 @@
 
 
 **開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
-2026-10-21時点で406テストと標準チェックが通過しています。
+2026-10-21時点で410テストと標準チェックが通過しています。
 
 [GPS/Galileo別時計SPP](docs/comparison/2026-10-21-multiclock-spp/README.md)をRTKの種位置へ接続し、
 [元C++の観測分散モデル](docs/comparison/2026-10-21-spp-variance/README.md)と
@@ -23,6 +23,8 @@ PPC用のCODE精密製品27ファイルとIGS20衛星校正を取得・読み込
 [PPC全6走行で初回PPPを実行](docs/comparison/2026-10-21-ppc-ppp-first/README.md)しましたが、
 各58,634エポック中のFLOATは1C/2Wで141点、1C/2Lで152点にとどまっています。
 初期化・継続・棄却後の復帰と、元C++全体との性能比較が次の課題です。
+[元C++の初期事前分布](docs/comparison/2026-10-21-ppp-initial-prior/README.md)も選択できます。
+精度・解数が改善する条件と悪化する条件があり、既定設定は維持しています。
 
 [移動FIX](docs/comparison/2026-10-21-kinematic-fix/README.md)、
 [ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)、

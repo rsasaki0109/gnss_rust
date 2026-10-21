@@ -1648,3 +1648,17 @@ The calibrated/raw-code-OSB/raw-code-DSB moving traces are compared on all
 64 clean and 64 noisy epochs at a predeclared 1 micrometre position and
 ambiguity-shift bound. See the frozen
 [raw-phase evidence](../../docs/comparison/2026-10-21-ppp-raw-phase/README.md).
+
+## Native initial head and compact troposphere climatology (2026-10-21)
+
+`upstream_zenith_climatology.csv` contains 312 calls to the actual pinned
+`models::estimateZenithTroposphereClimatology` in
+`scripts/upstream_zenith_climatology.cpp`: 13 latitudes, four heights and six
+days, retaining pressure, temperature, vapour and dry/wet/total delay.
+`upstream_ppp_initial.csv` contains six actual native `initializeFilter` calls
+from `scripts/native_ppc_ppp_initial.cpp`, with independent PPC RINEX-header
+seeds and no reference truth or SPP solve. Both fixtures reproduce twice.
+They verify the optional initial head prior and compact climatology, not the
+full native initializer/measurement/ambiguity/recovery path. The original
+synthetic bounds remain unchanged. See the
+[initial-prior evidence](../../docs/comparison/2026-10-21-ppp-initial-prior/README.md).

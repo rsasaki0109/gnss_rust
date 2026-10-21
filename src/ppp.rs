@@ -17,7 +17,7 @@ use crate::dual_frequency::{
     DualFrequencyConfig, IonosphereFreeObservation, PhaseBiasMode, SignalCorrections,
 };
 use crate::filter::{FilterError, GaussianState, Matrix, measurement_update, zeros};
-use crate::models::niell_hydrostatic_mapping;
+use crate::models::{niell_hydrostatic_mapping, zenith_troposphere_climatology};
 use crate::observation::ObservationEpoch;
 use crate::phase_arc::{
     PhaseArcCommit, PhaseArcConfig, PhaseArcDecision, PhaseArcError, PhaseArcId, PhaseArcTracker,
@@ -211,6 +211,27 @@ impl From<TideError> for PppError {
     }
 }
 impl PppConfig {
+    /// Opt in to the ordinary native precise-mode initial head prior.
+    /// Position and clock seed means remain caller supplied; ZTD is seeded
+    /// from native climatology. XYZ/clock/ZTD variances become 100/1e8/25 m².
+    /// Constant-velocity mode starts at rest with 25 (m/s)², matching native
+    /// non-PVA initialization. Ambiguity priors, noise, gates, correction
+    /// settings and subsequent dynamics remain independent and unchanged.
+    /// This is not a whole-native PPP initialization or recovery policy.
+    pub fn with_native_precise_head_prior(mut self, time: GnssTime) -> Result<Self, PppError> {
+        self.initial_zenith_delay_m = zenith_troposphere_climatology(
+            ecef_to_geodetic(self.initial_position)?,
+            day_of_year_gps_scale(time)?,
+        )?
+        .total_delay_m();
+        self.filter.initial_head_variance_m2 = [100.0, 100.0, 100.0, 1e8, 25.0];
+        if let PppPositionModel::ConstantVelocity(ref mut model) = self.filter.position_model {
+            model.initial_velocity_mps = [0.0; 3];
+            model.initial_velocity_variance_m2_s2 = 25.0;
+        }
+        Ok(self)
+    }
+
     fn validate(&self) -> Result<(), PppError> {
         self.check_references()?;
         if self.solid_earth_tide.is_some() {

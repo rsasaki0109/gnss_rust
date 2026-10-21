@@ -101,6 +101,58 @@ fn config() -> PppConfig {
         solid_earth_tide: None,
     }
 }
+
+#[test]
+fn optional_native_head_prior_matches_six_actual_initializers_and_keeps_other_policies() {
+    for line in include_str!("fixtures/upstream_ppp_initial.csv")
+        .lines()
+        .skip(1)
+    {
+        let fields: Vec<_> = line.split(',').collect();
+        let v: Vec<f64> = fields[1..].iter().map(|s| s.parse().unwrap()).collect();
+        let time = gnss_rust::GnssTime::new(v[0] as i32, v[1]).unwrap();
+        let mut original = config();
+        original.initial_position = EcefCoord::new(v[2], v[3], v[4]);
+        let changed = original
+            .clone()
+            .with_native_precise_head_prior(time)
+            .unwrap();
+        assert_eq!(changed.initial_position, original.initial_position);
+        assert_eq!(
+            changed.initial_receiver_clock_s,
+            original.initial_receiver_clock_s
+        );
+        assert!((changed.initial_zenith_delay_m - v[6]).abs() < 1e-10);
+        let filter = PppFilter::new(changed.clone()).unwrap();
+        let state = filter.state();
+        let expected = [v[7], v[8], v[9], v[11], v[12], v[10], v[10], v[10]];
+        for (i, row) in state.covariance.iter().enumerate() {
+            for (j, &value) in row.iter().enumerate() {
+                assert_eq!(value, if i == j { expected[i] } else { 0.0 });
+            }
+        }
+        let mut restored = changed;
+        restored.initial_zenith_delay_m = original.initial_zenith_delay_m;
+        restored.filter.initial_head_variance_m2 = original.filter.initial_head_variance_m2;
+        restored.filter.position_model = original.filter.position_model;
+        assert_eq!(
+            restored, original,
+            "only declared initial head means/variances may change"
+        );
+        let mut static_config = original;
+        static_config.filter.position_model = PppPositionModel::Static;
+        let static_prior = static_config.with_native_precise_head_prior(time).unwrap();
+        assert_eq!(static_prior.filter.position_model, PppPositionModel::Static);
+        assert_eq!(PppFilter::new(static_prior).unwrap().state().mean.len(), 5);
+    }
+    let mut invalid = config();
+    invalid.initial_position = EcefCoord::new(f64::NAN, 0.0, 0.0);
+    assert!(
+        invalid
+            .with_native_precise_head_prior(epochs(false)[0].time)
+            .is_err()
+    );
+}
 fn solution(result: PppEpoch) -> Box<PppSolution> {
     match result {
         PppEpoch::Solution(s) => s,

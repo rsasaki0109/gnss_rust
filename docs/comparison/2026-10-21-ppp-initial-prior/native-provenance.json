@@ -1,0 +1,21 @@
+{
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "prior_native_proof": "docs/comparison/2026-10-21-ppc-ppp-first/native-initial.json",
+  "prior_native_proof_sha256": "f39e9a063da4e0b3c8ede183b7a6a6573138f85114d2b4106c9e5b3fa3503d65",
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0",
+  "native_library_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "header_sha256": {
+    "include/libgnss++/models/troposphere.hpp": "c9b604166bf96a5d693c7646a0c447d344be6adc9c43c712b3b7463c05f9d19e",
+    "include/libgnss++/core/coordinates.hpp": "d90af3973c14704ffed2b8a83ea1d9f3e241cb613c46dc9be0a435b674b2c1fe",
+    "include/libgnss++/algorithms/ppp.hpp": "a1bfec1fa81f295bb57224d329447104e0c4d04428545c6e4f33b12bde2cc986",
+    "include/libgnss++/algorithms/ppp_shared.hpp": "26e9e74114a954f1cc9c722afece5278d2aa1429d78e89112ef404f381655028"
+  },
+  "whole_native_PPP_executed": false,
+  "upstream_source_patched": false
+}

@@ -3,6 +3,94 @@
 use crate::{Error, GeodeticCoord, constants::SPEED_OF_LIGHT};
 use std::f64::consts::PI;
 
+/// Latitude/season/height climatology adapted from UNB3m by the pinned native
+/// PPP implementation. This is its compact fallback, not the full GPT model.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ZenithTroposphereDelay {
+    pub pressure_hpa: f64,
+    pub temperature_k: f64,
+    pub water_vapor_pressure_hpa: f64,
+    pub hydrostatic_delay_m: f64,
+    pub wet_delay_m: f64,
+}
+impl ZenithTroposphereDelay {
+    pub fn total_delay_m(self) -> f64 {
+        self.hydrostatic_delay_m + self.wet_delay_m
+    }
+}
+
+/// Native climatological zenith delay for an explicit GPS-calendar day.
+/// Negative height is clamped to sea level. Invalid/nonphysical input fails;
+/// no standard-atmosphere or constant-delay fallback is silently substituted.
+/// Copyright (c) 2024 LibGNSS++ Contributors. See LICENSE.
+pub fn zenith_troposphere_climatology(
+    position: GeodeticCoord,
+    day_of_year: u16,
+) -> Result<ZenithTroposphereDelay, Error> {
+    position.validate()?;
+    if !(1..=366).contains(&day_of_year) {
+        return Err(Error::InvalidConfiguration);
+    }
+    let latitude = position.latitude.abs().to_degrees().clamp(0.0, 90.0);
+    let interpolate = |values: [f64; 5]| {
+        if latitude <= 15.0 {
+            return values[0];
+        }
+        if latitude >= 75.0 {
+            return values[4];
+        }
+        let i = ((latitude - 15.0) / 15.0).floor() as usize;
+        let weight = (latitude - (15.0 + 15.0 * i as f64)) / 15.0;
+        values[i] * (1.0 - weight) + values[i + 1] * weight
+    };
+    let phase = (2.0 * PI * (f64::from(day_of_year) - 28.0) / 365.25
+        + if position.latitude < 0.0 { PI } else { 0.0 })
+    .cos();
+    let seasonal = |mean, amplitude| interpolate(mean) - interpolate(amplitude) * phase;
+    let pressure0 = seasonal(
+        [1013.25, 1017.25, 1015.75, 1011.75, 1013.0],
+        [0.0, -3.75, -2.25, -1.75, -0.50],
+    );
+    let temperature0 = seasonal(
+        [299.65, 294.15, 283.15, 272.15, 263.65],
+        [0.0, 7.0, 11.0, 15.0, 14.5],
+    );
+    let vapor0 = seasonal(
+        [26.31, 21.79, 11.66, 6.78, 4.11],
+        [0.0, 8.85, 7.24, 5.36, 3.39],
+    );
+    let beta = seasonal(
+        [6.30e-3, 6.05e-3, 5.58e-3, 5.39e-3, 4.53e-3],
+        [0.0, 0.25e-3, 0.32e-3, 0.81e-3, 0.62e-3],
+    );
+    let lambda = seasonal(
+        [2.77, 3.15, 2.57, 1.81, 1.55],
+        [0.0, 0.33, 0.46, 0.74, 0.30],
+    );
+    let height = position.height.max(0.0);
+    let scale = (1.0 - beta * height / temperature0).max(1e-3);
+    let exponent = 9.80665 / (287.054 * beta);
+    let pressure = pressure0 * scale.powf(exponent);
+    let temperature = temperature0 - beta * height;
+    let vapor = vapor0 * scale.powf(exponent * (lambda + 1.0) - 1.0);
+    let hydrostatic = 0.0022768 * pressure
+        / (1.0 - 0.00266 * (2.0 * position.latitude).cos() - 0.00028 * height * 1e-3);
+    let wet = 0.002277 * (1255.0 / temperature + 0.05) * vapor;
+    if ![pressure, temperature, vapor, hydrostatic, wet]
+        .iter()
+        .all(|v| v.is_finite() && *v > 0.0)
+    {
+        return Err(Error::OutOfRange);
+    }
+    Ok(ZenithTroposphereDelay {
+        pressure_hpa: pressure,
+        temperature_k: temperature,
+        water_vapor_pressure_hpa: vapor,
+        hydrostatic_delay_m: hydrostatic,
+        wet_delay_m: wet,
+    })
+}
+
 /// Niell (1996) hydrostatic mapping with seasonal/latitude interpolation and
 /// height correction, ported from libgnss++ models/troposphere.hpp.
 /// Copyright (c) 2024 LibGNSS++ Contributors. See LICENSE.

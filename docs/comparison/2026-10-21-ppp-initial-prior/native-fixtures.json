@@ -1,0 +1,102 @@
+{
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "whole_native_PPP_executed": false,
+  "upstream_source_patched": false,
+  "builds": [
+    {
+      "command": [
+        "g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+        "-I/workspace/.cloud-setup/eigen-3.4.0",
+        "/workspace/gnss_rust/scripts/upstream_zenith_climatology.cpp",
+        "-o",
+        "/workspace/.cloud-setup/ppp-initial-fixtures-l9edpc97/climatology"
+      ],
+      "returncode": 0,
+      "log": "native-climatology-build.log.gz",
+      "log_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "binary_sha256": "ea151a067bc369dd09e189a16033e3320ba95cce63dac0449b1a6bfab34ca10e",
+      "source": "scripts/upstream_zenith_climatology.cpp",
+      "source_sha256": "785b859636970271f33ff2af6d22e3bb75e7f456a4246a3f2ed630ffae29c204"
+    },
+    {
+      "command": [
+        "g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+        "-I/workspace/.cloud-setup/eigen-3.4.0",
+        "/workspace/gnss_rust/scripts/native_ppc_ppp_initial.cpp",
+        "-Wl,--start-group",
+        "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+        "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+        "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+        "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+        "-Wl,--end-group",
+        "-o",
+        "/workspace/.cloud-setup/ppp-initial-fixtures-l9edpc97/initial"
+      ],
+      "returncode": 0,
+      "log": "native-initial-build.log.gz",
+      "log_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "binary_sha256": "026391ad355904afe8d344fa58a59ee7d6a11a4a0460a1cda3054191c68ff570",
+      "source": "scripts/native_ppc_ppp_initial.cpp",
+      "source_sha256": "31ca10a96f1a9b5b059ebdd228fe71eac5732e8faf9c021e47f2401edb3b00ea"
+    }
+  ],
+  "repeat_runs": [
+    {
+      "kind": "climatology",
+      "command": [
+        "/workspace/.cloud-setup/ppp-initial-fixtures-l9edpc97/climatology",
+        "/workspace/.cloud-setup/ppp-initial-fixtures-l9edpc97"
+      ],
+      "returncode": 0,
+      "fixture": "upstream_zenith_climatology.csv",
+      "fixture_sha256": "989d63746381efed397123414e248b401d3ab9ecc73eed99ee965e03fb2550d2",
+      "actual_native_component_calls": 312
+    },
+    {
+      "kind": "climatology",
+      "command": [
+        "/workspace/.cloud-setup/ppp-initial-fixtures-l9edpc97/climatology",
+        "/workspace/.cloud-setup/ppp-initial-fixtures-l9edpc97"
+      ],
+      "returncode": 0,
+      "fixture": "upstream_zenith_climatology.csv",
+      "fixture_sha256": "989d63746381efed397123414e248b401d3ab9ecc73eed99ee965e03fb2550d2",
+      "actual_native_component_calls": 312
+    },
+    {
+      "kind": "initial",
+      "command": [
+        "/workspace/.cloud-setup/ppp-initial-fixtures-l9edpc97/initial",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset"
+      ],
+      "returncode": 0,
+      "fixture": "upstream_ppp_initial.csv",
+      "fixture_sha256": "27b2f330d3588a7ce54daf5da4fdccd7d8402404bf1cf612e99bb80020ec271b",
+      "actual_native_component_calls": 6
+    },
+    {
+      "kind": "initial",
+      "command": [
+        "/workspace/.cloud-setup/ppp-initial-fixtures-l9edpc97/initial",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset"
+      ],
+      "returncode": 0,
+      "fixture": "upstream_ppp_initial.csv",
+      "fixture_sha256": "27b2f330d3588a7ce54daf5da4fdccd7d8402404bf1cf612e99bb80020ec271b",
+      "actual_native_component_calls": 6
+    }
+  ]
+}

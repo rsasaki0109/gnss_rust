@@ -28,11 +28,16 @@ fn csv(value: &str) -> String {
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
-    if args.len() != 8
+    if !matches!(args.len(), 8 | 9)
         || !matches!(args[6].as_str(), "1C2W" | "1C2L")
         || !matches!(args[7].as_str(), "calibrated" | "raw-float")
+        || (args.len() == 9
+            && !matches!(
+                args[8].as_str(),
+                "native-variances" | "climatology" | "native-head"
+            ))
     {
-        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float".into());
+        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head]".into());
     }
     let open = |name: &str| File::open(name).map(BufReader::new);
     let orbit = read_sp3(open(&args[1])?)?;
@@ -139,7 +144,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         calibrations,
     )?;
-    let config = PppConfig {
+    let mut config = PppConfig {
         initial_position,
         initial_receiver_clock_s: 0.0,
         initial_zenith_delay_m: 2.3,
@@ -162,6 +167,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         receiver_reference: ReceiverPositionReference::InstantaneousMarker,
         solid_earth_tide: None,
     };
+    if args.len() == 9 {
+        let original = config.clone();
+        config = config.with_native_precise_head_prior(first.time)?;
+        match args[8].as_str() {
+            "native-variances" => config.initial_zenith_delay_m = original.initial_zenith_delay_m,
+            "climatology" => config.filter = original.filter,
+            "native-head" => (),
+            _ => unreachable!(),
+        }
+        eprintln!(
+            "initial_head_profile={} independent_RINEX_header_seed=true thresholds_changed=false ambiguity_prior_changed=false",
+            args[8]
+        );
+    }
     eprintln!(
         "config={config:?} case={} pair={} phase={} RINEX_phase_shift_declarations={phase_shifts} excluded_receiver_clocks={} excluded_receiver_bias_rows={} byte_comment_lines={} receiver_calibration_known=false satellite_PCV_applied=false solid_earth_tide_applied=false truth_used_by_solver=false whole_native_PPP_executed=false practical_parity_accepted=false",
         args[5],
