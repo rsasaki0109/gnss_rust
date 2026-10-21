@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_dsb_clock",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/igs-20261021/CAS0OPSRAP_20242050000_01D_01D_DCB.BIA",
+    "--rover",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3/rover.obs"
+  ],
+  "returncode": 0,
+  "csv_sha256": "f38443a53687a180c928046410bae296aabb5fdf6bd8b298ed6bafd29e9fb7f3",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "9ab5b0d13e22491f3b978342360007e14f91fac0b7ca3b5c2c385f7960b08b18"
+}

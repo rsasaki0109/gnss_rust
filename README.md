@@ -6,13 +6,17 @@
 
 
 **開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
-2026-10-21時点で383テストと標準チェックが通過しています。
+2026-10-21時点で390テストと標準チェックが通過しています。
 
 [GPS/Galileo別時計SPP](docs/comparison/2026-10-21-multiclock-spp/README.md)をRTKの種位置へ接続し、
 [元C++の観測分散モデル](docs/comparison/2026-10-21-spp-variance/README.md)と
 [MAD/RAIMによる再計算](docs/comparison/2026-10-21-spp-qc/README.md)も選択できるようにしました。
 PPC全6走行の比較では、3 m事前ゲート併用のFLOATが分散モデル追加で3,880→4,976点、
 QC追加で6,353点になりました。位置誤差が悪化する条件もあり、既定設定は維持しています。
+
+PPP向けには[相対DSBの明示的な時計基準変換](docs/comparison/2026-10-21-dsb-clock/README.md)を追加。
+全58,634エポックの完全なGPS二周波観測では、必要なコードDSBが揃っています。
+時計製品との互換性・位相基準・移動PPPへの接続と性能比較は未完です。
 
 [移動FIX](docs/comparison/2026-10-21-kinematic-fix/README.md)、
 [ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)、

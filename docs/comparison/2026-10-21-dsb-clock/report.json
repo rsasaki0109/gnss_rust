@@ -1,0 +1,252 @@
+{
+  "products": {
+    "2024-07-19": {
+      "rows": 128,
+      "status_counts": {
+        "AVAILABLE": 121,
+        "MISSING": 7
+      }
+    },
+    "2024-07-20": {
+      "rows": 128,
+      "status_counts": {
+        "AVAILABLE": 121,
+        "MISSING": 7
+      }
+    },
+    "2024-07-21": {
+      "rows": 128,
+      "status_counts": {
+        "AVAILABLE": 121,
+        "MISSING": 7
+      }
+    },
+    "2024-07-22": {
+      "rows": 128,
+      "status_counts": {
+        "AVAILABLE": 121,
+        "MISSING": 7
+      }
+    },
+    "2024-07-23": {
+      "rows": 128,
+      "status_counts": {
+        "AVAILABLE": 121,
+        "MISSING": 7
+      }
+    },
+    "2024-07-24": {
+      "rows": 128,
+      "status_counts": {
+        "AVAILABLE": 121,
+        "MISSING": 7
+      }
+    },
+    "2024-08-02": {
+      "rows": 128,
+      "status_counts": {
+        "AVAILABLE": 121,
+        "MISSING": 7
+      }
+    },
+    "2024-08-03": {
+      "rows": 128,
+      "status_counts": {
+        "AVAILABLE": 121,
+        "MISSING": 7
+      }
+    },
+    "2024-08-04": {
+      "rows": 128,
+      "status_counts": {
+        "AVAILABLE": 121,
+        "MISSING": 7
+      }
+    }
+  },
+  "cases": {
+    "nagoya-run1": {
+      "counts": {
+        "raw_rover_epochs": 7602,
+        "complete_1c2w": 38339,
+        "unflagged_1c2w": 38045,
+        "dsb_available_1c2w": 38339,
+        "dsb_missing_1c2w": 0,
+        "dsb_expired_1c2w": 0,
+        "dsb_ambiguous_1c2w": 0,
+        "dsb_other_1c2w": 0,
+        "epochs_with_at_least_four_complete_1c2w": 6253,
+        "epochs_with_at_least_four_unflagged_1c2w": 6197,
+        "epochs_with_at_least_four_DSB_available_1c2w": 6253,
+        "complete_1c2l": 37582,
+        "unflagged_1c2l": 37453,
+        "dsb_available_1c2l": 37582,
+        "dsb_missing_1c2l": 0,
+        "dsb_expired_1c2l": 0,
+        "dsb_ambiguous_1c2l": 0,
+        "dsb_other_1c2l": 0,
+        "epochs_with_at_least_four_complete_1c2l": 5895,
+        "epochs_with_at_least_four_unflagged_1c2l": 5865,
+        "epochs_with_at_least_four_DSB_available_1c2l": 5895,
+        "missing_LLI_pair_rows": 0
+      },
+      "epoch_kinds": {
+        "OBSERVATION": 7602
+      },
+      "scope": "all original rover epochs; pair counts can overlap, DSB is code only"
+    },
+    "nagoya-run2": {
+      "counts": {
+        "raw_rover_epochs": 9451,
+        "complete_1c2w": 43777,
+        "unflagged_1c2w": 43230,
+        "dsb_available_1c2w": 43777,
+        "dsb_missing_1c2w": 0,
+        "dsb_expired_1c2w": 0,
+        "dsb_ambiguous_1c2w": 0,
+        "dsb_other_1c2w": 0,
+        "epochs_with_at_least_four_complete_1c2w": 6654,
+        "epochs_with_at_least_four_unflagged_1c2w": 6514,
+        "epochs_with_at_least_four_DSB_available_1c2w": 6654,
+        "complete_1c2l": 42847,
+        "unflagged_1c2l": 42650,
+        "dsb_available_1c2l": 42847,
+        "dsb_missing_1c2l": 0,
+        "dsb_expired_1c2l": 0,
+        "dsb_ambiguous_1c2l": 0,
+        "dsb_other_1c2l": 0,
+        "epochs_with_at_least_four_complete_1c2l": 6182,
+        "epochs_with_at_least_four_unflagged_1c2l": 6131,
+        "epochs_with_at_least_four_DSB_available_1c2l": 6182,
+        "missing_LLI_pair_rows": 0
+      },
+      "epoch_kinds": {
+        "OBSERVATION": 9451
+      },
+      "scope": "all original rover epochs; pair counts can overlap, DSB is code only"
+    },
+    "nagoya-run3": {
+      "counts": {
+        "raw_rover_epochs": 5201,
+        "complete_1c2w": 22767,
+        "unflagged_1c2w": 22309,
+        "dsb_available_1c2w": 22767,
+        "dsb_missing_1c2w": 0,
+        "dsb_expired_1c2w": 0,
+        "dsb_ambiguous_1c2w": 0,
+        "dsb_other_1c2w": 0,
+        "epochs_with_at_least_four_complete_1c2w": 3397,
+        "epochs_with_at_least_four_unflagged_1c2w": 3283,
+        "epochs_with_at_least_four_DSB_available_1c2w": 3397,
+        "complete_1c2l": 22326,
+        "unflagged_1c2l": 22154,
+        "dsb_available_1c2l": 22326,
+        "dsb_missing_1c2l": 0,
+        "dsb_expired_1c2l": 0,
+        "dsb_ambiguous_1c2l": 0,
+        "dsb_other_1c2l": 0,
+        "epochs_with_at_least_four_complete_1c2l": 3265,
+        "epochs_with_at_least_four_unflagged_1c2l": 3213,
+        "epochs_with_at_least_four_DSB_available_1c2l": 3265,
+        "missing_LLI_pair_rows": 0
+      },
+      "epoch_kinds": {
+        "OBSERVATION": 5201
+      },
+      "scope": "all original rover epochs; pair counts can overlap, DSB is code only"
+    },
+    "tokyo-run1": {
+      "counts": {
+        "raw_rover_epochs": 11928,
+        "complete_1c2w": 50718,
+        "unflagged_1c2w": 50331,
+        "dsb_available_1c2w": 50718,
+        "dsb_missing_1c2w": 0,
+        "dsb_expired_1c2w": 0,
+        "dsb_ambiguous_1c2w": 0,
+        "dsb_other_1c2w": 0,
+        "epochs_with_at_least_four_complete_1c2w": 7639,
+        "epochs_with_at_least_four_unflagged_1c2w": 7547,
+        "epochs_with_at_least_four_DSB_available_1c2w": 7639,
+        "complete_1c2l": 38003,
+        "unflagged_1c2l": 37793,
+        "dsb_available_1c2l": 38003,
+        "dsb_missing_1c2l": 0,
+        "dsb_expired_1c2l": 0,
+        "dsb_ambiguous_1c2l": 0,
+        "dsb_other_1c2l": 0,
+        "epochs_with_at_least_four_complete_1c2l": 5081,
+        "epochs_with_at_least_four_unflagged_1c2l": 5030,
+        "epochs_with_at_least_four_DSB_available_1c2l": 5081,
+        "missing_LLI_pair_rows": 0
+      },
+      "epoch_kinds": {
+        "OBSERVATION": 11928
+      },
+      "scope": "all original rover epochs; pair counts can overlap, DSB is code only"
+    },
+    "tokyo-run2": {
+      "counts": {
+        "raw_rover_epochs": 9151,
+        "complete_1c2w": 45614,
+        "unflagged_1c2w": 45323,
+        "dsb_available_1c2w": 45614,
+        "dsb_missing_1c2w": 0,
+        "dsb_expired_1c2w": 0,
+        "dsb_ambiguous_1c2w": 0,
+        "dsb_other_1c2w": 0,
+        "epochs_with_at_least_four_complete_1c2w": 7164,
+        "epochs_with_at_least_four_unflagged_1c2w": 7125,
+        "epochs_with_at_least_four_DSB_available_1c2w": 7164,
+        "complete_1c2l": 34402,
+        "unflagged_1c2l": 34243,
+        "dsb_available_1c2l": 34402,
+        "dsb_missing_1c2l": 0,
+        "dsb_expired_1c2l": 0,
+        "dsb_ambiguous_1c2l": 0,
+        "dsb_other_1c2l": 0,
+        "epochs_with_at_least_four_complete_1c2l": 5145,
+        "epochs_with_at_least_four_unflagged_1c2l": 5111,
+        "epochs_with_at_least_four_DSB_available_1c2l": 5145,
+        "missing_LLI_pair_rows": 0
+      },
+      "epoch_kinds": {
+        "OBSERVATION": 9151
+      },
+      "scope": "all original rover epochs; pair counts can overlap, DSB is code only"
+    },
+    "tokyo-run3": {
+      "counts": {
+        "raw_rover_epochs": 15301,
+        "complete_1c2w": 80709,
+        "unflagged_1c2w": 80105,
+        "dsb_available_1c2w": 80709,
+        "dsb_missing_1c2w": 0,
+        "dsb_expired_1c2w": 0,
+        "dsb_ambiguous_1c2w": 0,
+        "dsb_other_1c2w": 0,
+        "epochs_with_at_least_four_complete_1c2w": 11823,
+        "epochs_with_at_least_four_unflagged_1c2w": 11710,
+        "epochs_with_at_least_four_DSB_available_1c2w": 11823,
+        "complete_1c2l": 61381,
+        "unflagged_1c2l": 61027,
+        "dsb_available_1c2l": 61381,
+        "dsb_missing_1c2l": 0,
+        "dsb_expired_1c2l": 0,
+        "dsb_ambiguous_1c2l": 0,
+        "dsb_other_1c2l": 0,
+        "epochs_with_at_least_four_complete_1c2l": 8965,
+        "epochs_with_at_least_four_unflagged_1c2l": 8876,
+        "epochs_with_at_least_four_DSB_available_1c2l": 8965,
+        "missing_LLI_pair_rows": 0
+      },
+      "epoch_kinds": {
+        "OBSERVATION": 15301
+      },
+      "scope": "all original rover epochs; pair counts can overlap, DSB is code only"
+    }
+  },
+  "positioning_executed": false,
+  "PPP_executed": false,
+  "practical_parity_accepted": false
+}

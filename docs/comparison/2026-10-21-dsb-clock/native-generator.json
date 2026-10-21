@@ -1,0 +1,44 @@
+{
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "scripts/upstream_dsb_clock.cpp",
+    "-o",
+    "/workspace/.cloud-setup/solver-reference-20261021/upstream_dsb_clock"
+  ],
+  "returncode": 0,
+  "build_log_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+  "source_sha256": "960920acba91a5a62039c3aefd7f39770d6420901e453de50c31fb65d8f1ceee",
+  "binary_sha256": "008c16b1bd0ea6370f0aa661a47ebfab7cf25a506137f1062c4ae039a0d785c1",
+  "repeat_runs": [
+    {
+      "returncode": 0,
+      "fixture_sha256": "a28fae5c9e2eb926f7abf5aac2039ad118773cf317d1731da248f607c7eda07f"
+    },
+    {
+      "returncode": 0,
+      "fixture_sha256": "a28fae5c9e2eb926f7abf5aac2039ad118773cf317d1731da248f607c7eda07f"
+    }
+  ],
+  "cases": 24,
+  "code_corrections": 96,
+  "independent_solver": "Eigen full-pivot LU",
+  "native_DSB_clock_conversion_called": false,
+  "pinned_upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "upstream_source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "header_sha256": {
+    "/workspace/.cloud-setup/reference/gnssplusplus-library/include/libgnss++/core/constants.hpp": "fa0b7a0e53c6fac89568a33c9399bef0bbcc849222ae0086b0c56f221229dc99",
+    "/workspace/.cloud-setup/reference/gnssplusplus-library/include/libgnss++/algorithms/ppp_correction_contract.hpp": "6f3cc6e35573a3a3edf384711c251fc032ed24cc632fa4a177d571ee651994de",
+    "/workspace/.cloud-setup/eigen-3.4.0/Eigen/src/Core/util/Macros.h": "8d73259b4ba482e6dbd11b31d8887fd350dfb0836700d32793446bba6ab1ae7a"
+  },
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0",
+  "earlier_native_source_proof": {
+    "docs/comparison/2026-10-21-native-rtk-common-inputs/native-build.json": "7ae5001f6365d1d2730e00ea24e975c12042b47a57ef945a3fe5272bbb0ec093"
+  }
+}

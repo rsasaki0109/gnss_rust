@@ -43,6 +43,7 @@ pub mod bias;
 mod clock_fit;
 pub mod constants;
 pub mod coordinates;
+pub mod dsb_clock;
 pub mod dual_frequency;
 pub mod earth_rotation;
 pub mod epoch_match;

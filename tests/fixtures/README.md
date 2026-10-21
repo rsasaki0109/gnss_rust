@@ -1604,3 +1604,17 @@ regression, not a positioning accuracy acceptance. The 80 native QC utility
 cases are reused unchanged; final native common-clock DOP and stored child
 initialization differ from the explicit Rust per-system geometry/baseline seed.
 See [`2026-10-21-spp-qc`](../../docs/comparison/2026-10-21-spp-qc/README.md).
+
+## Explicit GPS IF DSB clock gauge (2026-10-21)
+
+`scripts/upstream_dsb_clock.cpp` independently solves four bias/gauge equations
+with Eigen full-pivot LU on 24 cases, emitting `upstream_dsb_clock.csv` with
+96 code corrections and uncertainty bounds. It uses pinned native GPS IF
+constants and the native additive correction sign; it does not call a native
+DSB-to-clock conversion routine. Two generations are identical. Rust tests
+reverse all source pairs, mix metre/ns units, remove injected code biases,
+preserve absent phase OSBs, and check validity/ambiguity/unsupported requests,
+fixed graph paths, receiver exclusion and bounds with unknown correlations.
+The initial base-term sign error was caught by the independent solve and
+corrected without relaxing tolerances. Product provenance and raw PPC admission
+audits are in [`2026-10-21-dsb-clock`](../../docs/comparison/2026-10-21-dsb-clock/README.md).
