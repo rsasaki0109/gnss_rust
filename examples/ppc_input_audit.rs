@@ -1,5 +1,5 @@
 //! Read-only PPC input audit; this does not output RTK or PPP solutions.
-use gnss_rust::bias::{BiasKind, read_satellite_biases};
+use gnss_rust::bias::{BiasKind, read_satellite_biases, read_satellite_biases_with_byte_comments};
 use gnss_rust::observation::ObservationEpoch;
 use gnss_rust::precise::{PreciseProducts, read_satellite_clocks, read_sp3};
 use gnss_rust::rinex::{RinexObservationReader, read_navigation_for_systems};
@@ -183,18 +183,120 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     if args.len() != 2 {
         return Err(
-            "usage: ppc_input_audit observations DATASET_ROOT | products PRODUCT_ROOT".into(),
+            "usage: ppc_input_audit observations DATASET_ROOT | products PRODUCT_ROOT | code-products PRODUCT_ROOT".into(),
         );
     }
     if args[0] == "observations" {
         observations(Path::new(&args[1]))?;
     } else if args[0] == "products" {
         products(Path::new(&args[1]))?;
+    } else if args[0] == "code-products" {
+        code_products(Path::new(&args[1]))?;
     } else {
-        return Err("expected observations or products".into());
+        return Err("expected observations, products or code-products".into());
     }
     eprintln!(
         "readiness_audit_only=true RTK_solution=false PPP_solution=false performance_accepted=false"
     );
+    Ok(())
+}
+
+fn code_products(root: &Path) -> Result<(), Box<dyn Error>> {
+    println!(
+        "date,frame,orbit_satellites,orbit_samples,clock_satellites,clock_samples,satellite_bias_rows,excluded_receiver_bias_rows,preserved_byte_comment_lines,GPS_IF_C1W_C2W_declared,bias_APC_IGS20,GPS_sample_states_with_clock,GPS_sample_states_unavailable,code_1c2w_pairs,phase_1c2w_pairs,code_1c2l_pairs,phase_1c2l_pairs,gauge_pairs_missing,max_abs_GPS_IF_code_gauge_m"
+    );
+    let mut paths = std::fs::read_dir(root)?
+        .map(|e| e.map(|e| e.path()))
+        .collect::<Result<Vec<_>, _>>()?;
+    paths.sort();
+    for path in paths
+        .iter()
+        .filter(|p| p.extension().is_some_and(|e| e == "SP3"))
+    {
+        let name = path
+            .file_name()
+            .ok_or("missing product name")?
+            .to_str()
+            .ok_or("non-UTF8 product name")?;
+        let stamp = name.split('_').nth(1).ok_or("missing product date")?;
+        let orbit = read_sp3(BufReader::new(File::open(path)?))?;
+        let clocks = read_satellite_clocks(BufReader::new(File::open(
+            root.join(format!("COD0OPSRAP_{stamp}_01D_30S_CLK.CLK")),
+        )?))?
+        .clocks;
+        let bias = read_satellite_biases_with_byte_comments(
+            BufReader::new(File::open(
+                root.join(format!("COD0OPSRAP_{stamp}_01D_01D_OSB.BIA")),
+            )?),
+            Default::default(),
+        )?;
+        let description = bias.selection.products.description();
+        let declared = description
+            .get("SATELLITE_CLOCK_REFERENCE_OBSERVABLES")
+            .is_some_and(|v| v.iter().any(|v| v.as_slice() == ["G", "C1W", "C2W"]));
+        let apc = description
+            .get("APC_MODEL")
+            .is_some_and(|v| v.len() == 1 && v[0].as_slice() == ["IGS20"]);
+        let frame = orbit.header().coordinate_system.clone();
+        let sample = orbit.header().start_time.checked_add_seconds(450.0)?;
+        let counts = (
+            orbit.samples().len(),
+            orbit.samples().values().map(Vec::len).sum::<usize>(),
+            clocks.samples().len(),
+            clocks.samples().values().map(Vec::len).sum::<usize>(),
+        );
+        let products = PreciseProducts::new(orbit, Some(clocks));
+        let table = &bias.selection.products;
+        let (mut available, mut unavailable, mut missing, mut max_gauge) = (0, 0, 0, 0.0_f64);
+        let mut pairs = [0usize; 4];
+        for &sat in products
+            .orbit()
+            .samples()
+            .keys()
+            .filter(|s| s.system() == GnssSystem::Gps)
+        {
+            match products.interpolate(sat, sample, Default::default()) {
+                Ok(s) if s.clock.is_some() => available += 1,
+                _ => unavailable += 1,
+            }
+            match (
+                table.select_osb(sat, "C1W", sample),
+                table.select_osb(sat, "C2W", sample),
+            ) {
+                (Ok(a), Ok(b)) => {
+                    let residual = gnss_rust::constants::IFLC_F1 * a.metres(None)?.0
+                        + gnss_rust::constants::IFLC_F2 * b.metres(None)?.0;
+                    max_gauge = max_gauge.max(residual.abs());
+                }
+                _ => missing += 1,
+            }
+            for (i, second) in ["2W", "2L"].iter().enumerate() {
+                if table.select_osb(sat, "C1C", sample).is_ok()
+                    && table.select_osb(sat, &format!("C{second}"), sample).is_ok()
+                {
+                    pairs[2 * i] += 1;
+                }
+                if table.select_osb(sat, "L1C", sample).is_ok()
+                    && table.select_osb(sat, &format!("L{second}"), sample).is_ok()
+                {
+                    pairs[2 * i + 1] += 1;
+                }
+            }
+        }
+        println!(
+            "{stamp},{frame},{},{},{},{},{},{},{},{declared},{apc},{available},{unavailable},{},{},{},{},{missing},{max_gauge:.17e}",
+            counts.0,
+            counts.1,
+            counts.2,
+            counts.3,
+            table.entries().len(),
+            bias.selection.excluded_receiver_records.len(),
+            bias.preserved_free_text.len(),
+            pairs[0],
+            pairs[1],
+            pairs[2],
+            pairs[3]
+        );
+    }
     Ok(())
 }

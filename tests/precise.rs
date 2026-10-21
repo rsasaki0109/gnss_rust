@@ -11,6 +11,46 @@ const TWO: &str = include_str!("fixtures/synthetic_precise_two.sp3");
 const CLK: &str = include_str!("fixtures/synthetic_precise.clk");
 
 #[test]
+fn clock_200_keeps_original_header_and_validates_mixed_satellite_receiver_records() {
+    let first = CLK.lines().next().unwrap();
+    let legacy_header = format!(
+        "{:<60}RINEX VERSION / TYPE",
+        "     2.00           CLOCK DATA"
+    );
+    let legacy = CLK.replacen(first, &legacy_header, 1);
+    let original = read_clk(Cursor::new(CLK)).unwrap();
+    let parsed = read_clk(Cursor::new(&legacy)).unwrap();
+    assert_eq!(parsed.header().version, 2.0);
+    assert_eq!(parsed.header().raw_lines[0], legacy_header);
+    assert_eq!(parsed.samples(), original.samples());
+    let as_line = legacy.lines().find(|l| l.starts_with("AS")).unwrap();
+    let mixed = legacy.replacen(
+        as_line,
+        &(as_line.replacen("AS G01", "AR MGUE", 1) + "\n" + as_line),
+        1,
+    );
+    assert!(read_clk(Cursor::new(&mixed)).is_err());
+    let selected = read_satellite_clocks(Cursor::new(&mixed)).unwrap();
+    assert_eq!(selected.clocks.samples(), original.samples());
+    assert_eq!(selected.receiver_records[0].receiver_name, "MGUE");
+    for version in ["1.00", "2.01", "2.99", "3.05", "4.00"] {
+        assert!(matches!(
+            read_clk(Cursor::new(legacy.replacen("2.00", version, 1))),
+            Err(ProductError::Unsupported { .. })
+        ));
+    }
+    assert!(
+        read_clk(Cursor::new(legacy.replacen(
+            "CLOCK DATA",
+            "OBSERVATION DATA",
+            1
+        )))
+        .is_err()
+    );
+    assert!(read_satellite_clocks(Cursor::new(mixed.replacen("AR MGUE", "CR MGUE", 1))).is_err());
+}
+
+#[test]
 fn mixed_receiver_and_satellite_clocks_require_explicit_selection_and_keep_values() {
     let first = CLK.lines().find(|line| line.starts_with("AS")).unwrap();
     let ar = first.replacen("AS G01", "AR GPST", 1);

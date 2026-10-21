@@ -551,6 +551,76 @@ pub struct SelectedSatelliteBiases {
     pub excluded_receiver_records: Vec<ExcludedReceiverBias>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawBiasFreeText {
+    pub line: usize,
+    /// Original uninterpreted bytes, including the original line ending.
+    pub bytes: Vec<u8>,
+}
+#[derive(Debug, Clone)]
+pub struct BiasesWithByteComments {
+    pub selection: SelectedSatelliteBiases,
+    pub preserved_free_text: Vec<RawBiasFreeText>,
+}
+
+/// Explicit legacy-byte admission for provider free text only. Non-ASCII
+/// bytes in FILE/REFERENCE, FILE/COMMENT, INPUT/ACKNOWLEDGMENTS or * comments
+/// are escaped for the ASCII parser and retained verbatim here. Technical
+/// records remain ASCII, source line numbers are unchanged, and no character
+/// encoding is guessed. The default strict reader below is unchanged.
+pub fn read_satellite_biases_with_byte_comments(
+    mut reader: impl BufRead,
+    options: BiasReadOptions,
+) -> Result<BiasesWithByteComments, BiasError> {
+    let mut normalized = Vec::new();
+    let mut raw = Vec::new();
+    let mut preserved = Vec::new();
+    let mut text_block: Option<&[u8]> = None;
+    let mut line = 0;
+    loop {
+        raw.clear();
+        if reader.read_until(b'\n', &mut raw)? == 0 {
+            break;
+        }
+        line += 1;
+        let trimmed = raw.trim_ascii();
+        match trimmed {
+            b"+FILE/REFERENCE" => text_block = Some(b"-FILE/REFERENCE"),
+            b"+FILE/COMMENT" => text_block = Some(b"-FILE/COMMENT"),
+            b"+INPUT/ACKNOWLEDGMENTS" => text_block = Some(b"-INPUT/ACKNOWLEDGMENTS"),
+            _ => (),
+        }
+        if raw.is_ascii() {
+            normalized.extend_from_slice(&raw);
+        } else {
+            if text_block.is_none() && !trimmed.starts_with(b"*") {
+                return Err(unsupported(
+                    line,
+                    "non-ASCII byte in a Bias-SINEX technical record",
+                ));
+            }
+            preserved.push(RawBiasFreeText {
+                line,
+                bytes: raw.clone(),
+            });
+            for &byte in &raw {
+                if byte.is_ascii() {
+                    normalized.push(byte);
+                } else {
+                    normalized.extend_from_slice(format!("\\x{byte:02X}").as_bytes());
+                }
+            }
+        }
+        if text_block == Some(trimmed) {
+            text_block = None;
+        }
+    }
+    Ok(BiasesWithByteComments {
+        selection: read_satellite_biases(std::io::Cursor::new(normalized), options)?,
+        preserved_free_text: preserved,
+    })
+}
+
 /// Select satellite rows while retaining CAS-style receiver-only rows in an
 /// explicit, uninterpreted ledger. DSBs remain relative and require a declared
 /// gauge before conversion to signal corrections. No receiver bias is applied.

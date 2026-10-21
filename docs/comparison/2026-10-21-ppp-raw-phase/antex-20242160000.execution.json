@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_antex",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/gps-subset/gps-satellite-igs20.atx",
+    "2325",
+    "518400"
+  ],
+  "returncode": 0,
+  "csv_sha256": "fe25495987e9bd5093ba7bff10800e6ba4c0804b7879d32b7d819983a93c199b",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "f9f37d190a84b309ef2b3f9c634676099b3a62a14b1daa90c8f9a929c87dde60"
+}

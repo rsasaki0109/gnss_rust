@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp_kinematic",
+    "kinematic",
+    "clean",
+    "-raw-dsb"
+  ],
+  "returncode": 0,
+  "csv_sha256": "7e140caa1edee8c6aca1e4b1186206aaacf1131a3070770189ca908689207ddd",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "cfe1598a118d40a38449b6c50df50a73aef81a8e627f5e0457b8f8ff148c84cd"
+}

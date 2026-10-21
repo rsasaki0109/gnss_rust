@@ -7,6 +7,18 @@
 現在のこのコピーのチェックリストは18/24（75%）。旧83%の資料は再検証できないため、
 以後の開発と比較記録を codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[未校正位相の明示FLOAT基準と製品監査](docs/comparison/2026-10-21-ppp-raw-phase/README.md)を追加。
+位相OSBはNoneのまま保持し、定数IFバイアスを実数ambiguityへ含める。既定は補正必須を維持。
+コード時計基準・欠測/LLI/半サイクル・有効期間を保ち、モデル/基準変更でアークを初期化する。
+合成64点×雑音有無×OSB/DSBコード基準は位置差最大0.657 µm、独立C++のambiguity差も0.056 µm以内。
+既存11移動＋10静止条件は全CSVバイト一致。8追加を含むRust406・標準チェック通過。
+CODE rapidの同一系列SP3/CLK/絶対OSBを9日27/27取得。旧CLK2.00と非UTF8の自由記述のみ明示読込を追加。
+GPS IF(C1W,C2W)/IGS20 APC宣言・32衛星状態/時計・コード/位相OSBをRustで監査した。
+IGS/BKGのIGS20 ANTEXは同一SHA。GPS全ブロックの無変更抜粋で3日×32 SVN/期間校正を確認。
+CAS G01のG063記載とANTEX G049の矛盾は保持し、CODEはG049と一致する。
+受信機校正・衛星PCV・実PPC PPP・全native比較は未完。次はこの同一系列製品で移動PPPを実行する。
+実用RTK/PPP受け入れ未達、全体18/24（75%）を維持。
+
 [初期GPS移動PPP](docs/comparison/2026-10-21-kinematic-ppp/README.md)に等速状態/全共分散予測を追加。
 元PPPProcessor::predictState実呼出し24ケースに一致し、時計/ZTD/velocity/ambiguityの相関を保持する。
 静止を既定とし、初回速度は明示的な平均/分散、失敗/イベントは状態を確定せず、位相欠測後の添字も再対応する。

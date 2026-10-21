@@ -1,0 +1,9 @@
+{
+  "pinned_upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "source_files_verified": 2091,
+  "upstream_source_patched": false,
+  "earlier_native_build_proof": "docs/comparison/2026-10-21-native-rtk-common-inputs/native-build.json",
+  "earlier_native_build_proof_sha256": "7ae5001f6365d1d2730e00ea24e975c12042b47a57ef945a3fe5272bbb0ec093",
+  "reference_level": "independent fixture with native constants, not whole native PPP"
+}

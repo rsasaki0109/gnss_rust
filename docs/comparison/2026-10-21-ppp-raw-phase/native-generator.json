@@ -1,0 +1,36 @@
+{
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "/workspace/gnss_rust/scripts/upstream_ppp_raw_phase.cpp",
+    "-o",
+    "/workspace/.cloud-setup/ppp-raw-native-h0rykdz3/generator"
+  ],
+  "returncode": 0,
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0",
+  "native_constants_header_sha256": "fa0b7a0e53c6fac89568a33c9399bef0bbcc849222ae0086b0c56f221229dc99",
+  "generator_sha256": "0164c7c6289e8284cf048dbd17c86560f164a2522de5934aa78e397307889759",
+  "binary_sha256": "1f7027a0ce22839606231967fab4af4e92430e96033f3b03b4c607aac5bd3c10",
+  "whole_native_PPP_executed": false,
+  "repeat_runs": [
+    {
+      "returncode": 0,
+      "fixture_sha256": {
+        "synthetic_ppp_raw_phase_dsb.bsx": "76d01cc64f520cccfa7282eb26bb5b8cbad2c6e05d4f726b7a15d8d2dae6d1bb",
+        "upstream_ppp_raw_phase.csv": "10357b436c9765099d0f8275c023dd1e300a58be6f492a9bf8fa5ad0ebcc1da2"
+      }
+    },
+    {
+      "returncode": 0,
+      "fixture_sha256": {
+        "synthetic_ppp_raw_phase_dsb.bsx": "76d01cc64f520cccfa7282eb26bb5b8cbad2c6e05d4f726b7a15d8d2dae6d1bb",
+        "upstream_ppp_raw_phase.csv": "10357b436c9765099d0f8275c023dd1e300a58be6f492a9bf8fa5ad0ebcc1da2"
+      }
+    }
+  ]
+}

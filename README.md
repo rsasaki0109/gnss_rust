@@ -6,7 +6,7 @@
 
 
 **開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
-2026-10-21時点で398テストと標準チェックが通過しています。
+2026-10-21時点で406テストと標準チェックが通過しています。
 
 [GPS/Galileo別時計SPP](docs/comparison/2026-10-21-multiclock-spp/README.md)をRTKの種位置へ接続し、
 [元C++の観測分散モデル](docs/comparison/2026-10-21-spp-variance/README.md)と
@@ -17,7 +17,10 @@ QC追加で6,353点になりました。位置誤差が悪化する条件もあ�
 PPP向けには[相対DSBの時計基準変換](docs/comparison/2026-10-21-dsb-clock/README.md)と
 [選択式の移動PPP](docs/comparison/2026-10-21-kinematic-ppp/README.md)を追加しました。
 合成移動観測64点を追従し、既存静止PPP 10条件は旧出力と全バイト一致。
-時計製品との互換性・位相基準・実PPCへの接続と性能比較は未完です。
+[実数位相基準](docs/comparison/2026-10-21-ppp-raw-phase/README.md)も明示的に選べます。
+合成64点の位置差は位相OSB適用時と最大0.66 µm、既存21条件の全CSVも一致しました。
+PPC用のCODE精密製品27ファイルとIGS20衛星校正を取得・読み込み確認済みです。
+実PPCへのPPP接続と性能比較は未完です。
 
 [移動FIX](docs/comparison/2026-10-21-kinematic-fix/README.md)、
 [ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)、
@@ -67,7 +70,7 @@ RTK・PPP双方の同等性能という最終目標は未達です。
 - GPS L1 C/A静止/キネマティックFLOAT、単差状態・相関雑音・LAMBDA接続
 - 選択式のGalileo E1、衛星系内の参照・時計・DD共分散、複数時計の幾何診断
 - 整数候補による位置・共分散の条件付け、残差・履歴検証、連続確認後の初期FIX出力
-- SP3-c/d P精密暦・RINEX 3 AS精密時計、最大10点補間、速度・時計ドリフトと相対論補正
+- SP3-c/d P精密暦・RINEX CLK 2.00/3 AS精密時計、最大10点補間、速度・時計ドリフトと相対論補正
 - Niellマッピング、初期GPS静止IF PPP FLOAT、実数アンビギュイティ・天頂全遅延状態
 - Bias-SINEX 1.00 OSB/DSB読込、期間・時刻系・単位・不確かさ保持、衛星OSBのPPP補正変換
 - 公称yaw姿勢のWu位相wind-up、元の近似太陽位置、採用アークごとのcycle継続値

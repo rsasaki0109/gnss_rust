@@ -376,3 +376,322 @@ fn kinematic_configuration_requires_finite_velocity_and_valid_noise_without_chan
         ));
     }
 }
+
+fn code_only_biases(t: gnss_rust::GnssTime) -> gnss_rust::dual_frequency::SignalCorrections {
+    let b = biases(t);
+    let entries = b
+        .entries()
+        .values()
+        .flatten()
+        .cloned()
+        .map(|mut c| {
+            c.phase_add_m = None;
+            c.phase_reference = None;
+            c
+        })
+        .collect();
+    gnss_rust::dual_frequency::SignalCorrections::new(entries).unwrap()
+}
+fn raw_selections() -> BTreeMap<SatelliteId, DualFrequencyConfig> {
+    selections()
+        .into_iter()
+        .map(|(s, mut c)| {
+            c.phase_reference = "raw-carrier-FLOAT-gauge-v1".into();
+            (s, c)
+        })
+        .collect()
+}
+fn dsb_biases(t: gnss_rust::GnssTime) -> gnss_rust::dual_frequency::SignalCorrections {
+    let p = read_bias_sinex(
+        Cursor::new(include_str!("fixtures/synthetic_ppp_raw_phase_dsb.bsx")),
+        Default::default(),
+    )
+    .unwrap();
+    let m = gnss_rust::dsb_clock::GpsIfDsbClock::new(&p).unwrap();
+    let requests: Vec<_> = selections()
+        .into_iter()
+        .flat_map(|(sat, c)| {
+            c.tracking_codes
+                .into_iter()
+                .map(move |code| BiasSignalRequest {
+                    satellite: sat,
+                    tracking_code: code,
+                    glonass_channel: None,
+                })
+        })
+        .collect();
+    m.corrections_at(
+        t,
+        &gnss_rust::dsb_clock::GpsIfClockBinding {
+            product_id: "synthetic_ppp_raw_phase_dsb.bsx".into(),
+            clock_source: ClockSource::RinexClk,
+            clock_reference: "synthetic-precise-clock-v1".into(),
+        },
+        &requests,
+    )
+    .unwrap()
+    .corrections
+}
+
+#[test]
+fn explicit_raw_float_keeps_absent_phase_osbs_and_default_still_requires_them() {
+    use gnss_rust::dual_frequency::*;
+    let e = &epochs(false)[0];
+    let before = e.clone();
+    let sat = "G01".parse().unwrap();
+    let selection = raw_selections();
+    let code = code_only_biases(e.time);
+    let strict = form_ionosphere_free(e, sat, &code, &selection[&sat]).unwrap();
+    assert!(strict.phase.is_none());
+    assert!(matches!(
+        strict.phase_unavailability,
+        Some(PhaseUnavailable::MissingCorrection { .. })
+    ));
+    let raw = form_ionosphere_free_with_phase_bias_mode(
+        e,
+        sat,
+        &code,
+        &selection[&sat],
+        PhaseBiasMode::UncalibratedFloat,
+    )
+    .unwrap();
+    assert_eq!(raw.phase_bias_mode, PhaseBiasMode::UncalibratedFloat);
+    assert_eq!(raw.phase_reference, selection[&sat].phase_reference);
+    assert!(
+        raw.corrections
+            .iter()
+            .all(|c| c.phase_add_m.is_none() && c.phase_reference.is_none())
+    );
+    for i in 0..2 {
+        assert_eq!(
+            raw.phase.as_ref().unwrap().corrected_phase_m[i],
+            raw.raw[i].carrier_phase_cycles.unwrap() * raw.wavelength_m[i]
+        );
+    }
+    assert_eq!(*e, before);
+    let mut cfg = config();
+    let mut filter = PppFilter::new(cfg.clone()).unwrap();
+    let state = filter.state().clone();
+    assert!(matches!(
+        filter.process_epoch(e, &products(), &code, &selection),
+        Err(PppError::InsufficientPhase { available: 0 })
+    ));
+    assert_eq!(filter.state(), &state);
+    cfg.filter.phase_bias_mode = PhaseBiasMode::UncalibratedFloat;
+    let result = solution(
+        PppFilter::new(cfg)
+            .unwrap()
+            .process_epoch(e, &products(), &code, &selection)
+            .unwrap(),
+    );
+    assert_eq!(result.phase_bias_mode, PhaseBiasMode::UncalibratedFloat);
+    assert!(!result.position.is_fixed());
+}
+
+#[test]
+fn raw_float_rejects_supplied_phase_corrections_and_preserves_missing_or_half_cycle_reasons() {
+    use gnss_rust::dual_frequency::*;
+    let mut e = epochs(false)[0].clone();
+    let sat = "G01".parse().unwrap();
+    let selections = raw_selections();
+    assert!(matches!(
+        form_ionosphere_free_with_phase_bias_mode(
+            &e,
+            sat,
+            &biases(e.time),
+            &selections[&sat],
+            PhaseBiasMode::UncalibratedFloat
+        ),
+        Err(DualFrequencyError::PhaseBiasModeMismatch { .. })
+    ));
+    let code = code_only_biases(e.time);
+    let supplied_zero = SignalCorrections::new(
+        code.entries()
+            .values()
+            .flatten()
+            .cloned()
+            .map(|mut c| {
+                c.phase_add_m = Some(0.0);
+                c.phase_reference = Some("declared-zero-OSB".into());
+                c
+            })
+            .collect(),
+    )
+    .unwrap();
+    assert!(matches!(
+        form_ionosphere_free_with_phase_bias_mode(
+            &e,
+            sat,
+            &supplied_zero,
+            &selections[&sat],
+            PhaseBiasMode::UncalibratedFloat
+        ),
+        Err(DualFrequencyError::PhaseBiasModeMismatch { .. })
+    ));
+    let mut wrong_clock = selections[&sat].clone();
+    wrong_clock.clock_reference = "different-clock".into();
+    assert!(matches!(
+        form_ionosphere_free_with_phase_bias_mode(
+            &e,
+            sat,
+            &code,
+            &wrong_clock,
+            PhaseBiasMode::UncalibratedFloat
+        ),
+        Err(DualFrequencyError::ClockDatumMismatch { .. })
+    ));
+    let mut offset_epoch = e.clone();
+    offset_epoch.receiver_clock_offset_s = Some(1e-6);
+    assert!(matches!(
+        form_ionosphere_free_with_phase_bias_mode(
+            &offset_epoch,
+            sat,
+            &code,
+            &selections[&sat],
+            PhaseBiasMode::UncalibratedFloat
+        ),
+        Err(DualFrequencyError::InvalidEpoch)
+    ));
+    e.observations[0].carrier_phase_cycles = None;
+    let missing = form_ionosphere_free_with_phase_bias_mode(
+        &e,
+        sat,
+        &code,
+        &selections[&sat],
+        PhaseBiasMode::UncalibratedFloat,
+    )
+    .unwrap();
+    assert!(matches!(
+        missing.phase_unavailability,
+        Some(PhaseUnavailable::MissingPhase { .. })
+    ));
+    e = epochs(false)[0].clone();
+    e.observations[0].lli = Some(2);
+    let half = form_ionosphere_free_with_phase_bias_mode(
+        &e,
+        sat,
+        &code,
+        &selections[&sat],
+        PhaseBiasMode::UncalibratedFloat,
+    )
+    .unwrap();
+    assert!(matches!(
+        half.phase_unavailability,
+        Some(PhaseUnavailable::HalfCycle { .. })
+    ));
+}
+
+#[test]
+fn changing_raw_phase_model_or_reference_starts_a_new_arc_without_fake_zero_osbs() {
+    use gnss_rust::dual_frequency::PhaseBiasMode;
+    use gnss_rust::phase_arc::{ArcResetReason, PhaseArcTracker};
+    use std::collections::BTreeSet;
+    let e = epochs(false);
+    let mut tracker = PhaseArcTracker::new(Default::default()).unwrap();
+    let mut s = selections();
+    for c in s.values_mut() {
+        c.phase_reference = "same-name".into();
+    }
+    let mut calibrated = biases(e[0].time)
+        .entries()
+        .values()
+        .flatten()
+        .cloned()
+        .collect::<Vec<_>>();
+    for c in &mut calibrated {
+        c.phase_reference = Some("same-name".into());
+    }
+    let calibrated = gnss_rust::dual_frequency::SignalCorrections::new(calibrated).unwrap();
+    tracker.prepare_epoch(&e[0], &calibrated, &s).unwrap();
+    let used: BTreeSet<_> = s.keys().copied().collect();
+    let first = tracker.finish_epoch(&used).unwrap();
+    let prepared = tracker
+        .prepare_epoch_with_phase_bias_mode(
+            &e[1],
+            &code_only_biases(e[1].time),
+            &s,
+            PhaseBiasMode::UncalibratedFloat,
+        )
+        .unwrap();
+    assert!(prepared.decisions().values().all(|d| {
+        d.reset_reasons
+            .contains(&ArcResetReason::PhaseBiasModelChanged)
+    }));
+    let second = tracker.finish_epoch(&used).unwrap();
+    for sat in &used {
+        assert_ne!(first.accepted[sat].id, second.accepted[sat].id);
+    }
+    for c in s.values_mut() {
+        c.phase_reference = "new-raw-reference".into();
+    }
+    let prepared = tracker
+        .prepare_epoch_with_phase_bias_mode(
+            &e[2],
+            &code_only_biases(e[2].time),
+            &s,
+            PhaseBiasMode::UncalibratedFloat,
+        )
+        .unwrap();
+    assert!(
+        prepared
+            .decisions()
+            .values()
+            .all(|d| d.reset_reasons.contains(&ArcResetReason::PhaseDatumChanged))
+    );
+    tracker.finish_epoch(&used).unwrap();
+}
+
+#[test]
+fn raw_float_and_relative_code_dsb_gauges_preserve_moving_positions_and_shift_real_ambiguities() {
+    use gnss_rust::dual_frequency::PhaseBiasMode;
+    let p = products();
+    let mut expected = BTreeMap::new();
+    for line in include_str!("fixtures/upstream_ppp_raw_phase.csv")
+        .lines()
+        .skip(1)
+    {
+        let v: Vec<_> = line.split(',').collect();
+        expected.insert(
+            v[0].parse::<SatelliteId>().unwrap(),
+            v[2].parse::<f64>().unwrap(),
+        );
+    }
+    for noisy in [false, true] {
+        let mut calibrated = PppFilter::new(config()).unwrap();
+        let mut c = config();
+        c.filter.phase_bias_mode = PhaseBiasMode::UncalibratedFloat;
+        let mut raw = PppFilter::new(c.clone()).unwrap();
+        let mut dsb = PppFilter::new(c).unwrap();
+        let s = selections();
+        let rs = raw_selections();
+        for e in epochs(noisy) {
+            let base = solution(
+                calibrated
+                    .process_epoch(&e, &p, &biases(e.time), &s)
+                    .unwrap(),
+            );
+            let raw = solution(
+                raw.process_epoch(&e, &p, &code_only_biases(e.time), &rs)
+                    .unwrap(),
+            );
+            let dsb = solution(dsb.process_epoch(&e, &p, &dsb_biases(e.time), &rs).unwrap());
+            let reference = base.position.position_ecef.unwrap();
+            let xyz = [reference.x, reference.y, reference.z];
+            for r in [&raw, &dsb] {
+                assert!(distance(r.position.position_ecef.unwrap(), &xyz) < 1e-6);
+                assert!(!r.position.is_fixed());
+                assert_eq!(r.phase_bias_mode, PhaseBiasMode::UncalibratedFloat);
+                assert!(r.measurements.iter().all(|m| {
+                    m.observation
+                        .corrections
+                        .iter()
+                        .all(|c| c.phase_add_m.is_none() && c.phase_reference.is_none())
+                }));
+                for (b, a) in base.ambiguities.iter().zip(&r.ambiguities) {
+                    assert_eq!(b.satellite, a.satellite);
+                    assert!((a.metres - b.metres - expected[&a.satellite]).abs() < 1e-6);
+                }
+            }
+        }
+    }
+}

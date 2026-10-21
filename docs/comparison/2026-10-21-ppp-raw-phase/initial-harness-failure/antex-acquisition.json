@@ -1,0 +1,72 @@
+{
+  "source_sha256": "ca01d59d48f82a9b88060dbe7fa266bf4b1e009891c6d665e18cf81104a160f5",
+  "product": "IGS20 ANTEX",
+  "downloaded": [
+    {
+      "source": "igs",
+      "url": "https://files.igs.org/pub/station/general/igs20.atx",
+      "command": [
+        "curl",
+        "--location",
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "10",
+        "--max-time",
+        "60",
+        "--max-filesize",
+        "67108864",
+        "--dump-header",
+        "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/igs-igs20.atx.headers",
+        "--output",
+        "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/igs-igs20.atx",
+        "https://files.igs.org/pub/station/general/igs20.atx"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "acquired": true,
+      "filename": "igs-igs20.atx",
+      "bytes": 61579571,
+      "sha256": "0cd58d0d9ee678d5586de6c01f576e5aceb86f4a0735a168f733dfd091c0a614",
+      "headers_sha256": "6d051c70d9343f9201a3efa4028fd16783c9995c8f65873fdecee6645f239b84",
+      "first_line": "     1.4            M                                       ANTEX VERSION / SYST",
+      "antenna_blocks": 926
+    },
+    {
+      "source": "bkg",
+      "url": "https://igs.bkg.bund.de/root_ftp/IGS/station/general/igs20.atx",
+      "command": [
+        "curl",
+        "--location",
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "10",
+        "--max-time",
+        "60",
+        "--max-filesize",
+        "67108864",
+        "--dump-header",
+        "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/bkg-igs20.atx.headers",
+        "--output",
+        "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/bkg-igs20.atx",
+        "https://igs.bkg.bund.de/root_ftp/IGS/station/general/igs20.atx"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "acquired": true,
+      "filename": "bkg-igs20.atx",
+      "bytes": 61579571,
+      "sha256": "0cd58d0d9ee678d5586de6c01f576e5aceb86f4a0735a168f733dfd091c0a614",
+      "headers_sha256": "40c0b07ac51d0bdb2ea43776122521a68afd93c072198f6670468a0f8eb609eb",
+      "first_line": "     1.4            M                                       ANTEX VERSION / SYST",
+      "antenna_blocks": 926
+    }
+  ],
+  "applied_to_PPP": false,
+  "receiver_calibration_identified": false,
+  "performance_accepted": false,
+  "all_acquired_sources_identical": true
+}

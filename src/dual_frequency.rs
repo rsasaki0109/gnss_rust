@@ -28,6 +28,7 @@ pub enum DualFrequencyError {
     ExpiredCorrection { tracking_code: String },
     ClockDatumMismatch { tracking_code: String },
     PhaseDatumMismatch { tracking_code: String },
+    PhaseBiasModeMismatch { tracking_code: String },
     InvalidNoise,
     Gnss(Error),
 }
@@ -259,6 +260,17 @@ pub struct DualFrequencyConfig {
     pub noise: DualFrequencyNoise,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum PhaseBiasMode {
+    #[default]
+    RequireSignalCorrections,
+    /// Explicit FLOAT-only gauge: retain raw carriers and estimate their
+    /// unknown constant IF bias in the real-valued ambiguity for each arc.
+    /// This does not assert a zero phase OSB or permit integer fixing.
+    /// The caller names this raw-carrier reference in phase_reference.
+    UncalibratedFloat,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PhaseUnavailable {
     MissingPhase { tracking_code: String },
@@ -280,6 +292,8 @@ pub struct IonosphereFreePhase {
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct IonosphereFreeObservation {
+    pub phase_bias_mode: PhaseBiasMode,
+    pub phase_reference: String,
     pub time: GnssTime,
     pub satellite: SatelliteId,
     pub raw: [Observation; 2],
@@ -303,6 +317,25 @@ pub fn form_ionosphere_free(
     satellite: SatelliteId,
     corrections: &SignalCorrections,
     config: &DualFrequencyConfig,
+) -> Result<IonosphereFreeObservation, DualFrequencyError> {
+    form_ionosphere_free_with_phase_bias_mode(
+        epoch,
+        satellite,
+        corrections,
+        config,
+        PhaseBiasMode::RequireSignalCorrections,
+    )
+}
+
+/// An explicit alternative raw-carrier FLOAT gauge. Raw mode requires absent
+/// phase correction fields; supplied phase OSBs are rejected rather than
+/// ignored or replaced by zero. Code clock-datum and all raw checks still apply.
+pub fn form_ionosphere_free_with_phase_bias_mode(
+    epoch: &ObservationEpoch,
+    satellite: SatelliteId,
+    corrections: &SignalCorrections,
+    config: &DualFrequencyConfig,
+    phase_bias_mode: PhaseBiasMode,
 ) -> Result<IonosphereFreeObservation, DualFrequencyError> {
     if config.clock_reference.trim().is_empty() || config.phase_reference.trim().is_empty() {
         return Err(DualFrequencyError::InvalidConfiguration);
@@ -379,6 +412,13 @@ pub fn form_ionosphere_free(
             .clone(),
     ];
     for correction in &corrections {
+        if phase_bias_mode == PhaseBiasMode::UncalibratedFloat
+            && (correction.phase_add_m.is_some() || correction.phase_reference.is_some())
+        {
+            return Err(DualFrequencyError::PhaseBiasModeMismatch {
+                tracking_code: correction.tracking_code.clone(),
+            });
+        }
         if correction
             .phase_reference
             .as_ref()
@@ -409,7 +449,9 @@ pub fn form_ionosphere_free(
             Some(PhaseUnavailable::HalfCycle {
                 tracking_code: code,
             })
-        } else if corrections[i].phase_add_m.is_none() {
+        } else if phase_bias_mode == PhaseBiasMode::RequireSignalCorrections
+            && corrections[i].phase_add_m.is_none()
+        {
             Some(PhaseUnavailable::MissingCorrection {
                 tracking_code: code,
             })
@@ -430,10 +472,13 @@ pub fn form_ionosphere_free(
             finite(cycles[0] * wavelength_m[0])?,
             finite(cycles[1] * wavelength_m[1])?,
         ];
-        let corrected_phase_m = [
-            finite(phase_m[0] + corrections[0].phase_add_m.unwrap())?,
-            finite(phase_m[1] + corrections[1].phase_add_m.unwrap())?,
-        ];
+        let corrected_phase_m = match phase_bias_mode {
+            PhaseBiasMode::UncalibratedFloat => phase_m,
+            PhaseBiasMode::RequireSignalCorrections => [
+                finite(phase_m[0] + corrections[0].phase_add_m.unwrap())?,
+                finite(phase_m[1] + corrections[1].phase_add_m.unwrap())?,
+            ],
+        };
         Some(IonosphereFreePhase {
             corrected_phase_m,
             phase_if_m: combine(corrected_phase_m)?,
@@ -450,6 +495,8 @@ pub fn form_ionosphere_free(
         None
     };
     Ok(IonosphereFreeObservation {
+        phase_bias_mode,
+        phase_reference: config.phase_reference.clone(),
         time: epoch.time,
         satellite,
         raw,

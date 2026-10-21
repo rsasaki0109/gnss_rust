@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp_kinematic",
+    "kinematic",
+    "unrounded-phase"
+  ],
+  "returncode": 0,
+  "csv_sha256": "1dd9db6e1e249de41ad2708ae49b40caf1857912fe720c219216a3b9a50e74f1",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "08a92980330ed65a9b9b6f1d186c1b035a9abdee33ac8cbba8d582c92c13a6f6"
+}

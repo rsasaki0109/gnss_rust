@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_input_audit",
+    "code-products",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021"
+  ],
+  "returncode": 0,
+  "csv_sha256": "e9305c443c5f9fafcd760159641e1fabe0e4268ecaedc53ceb3149dfc6f790fa",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "da8bf65e8e401a105bddbf023003c54d5e6534d1dfbdc08b19054b14e1a6feb2"
+}

@@ -1,4 +1,4 @@
-//! SP3-c/d position products and RINEX 3 satellite clocks, in SI units.
+//! SP3-c/d position products and RINEX CLK 2.00/3 satellite clocks, in SI units.
 //!
 //! Neville interpolation and central-difference rates follow libgnss++
 //! `precise_products.cpp`. Copyright (c) 2024 LibGNSS++ Contributors.
@@ -436,7 +436,7 @@ impl ClockData {
         &self.samples
     }
 }
-/// Read RINEX 3.00–3.04 satellite AS clocks, including 1–6 values and
+/// Read RINEX CLK 2.00 and 3.00–3.04 satellite AS clocks, including 1–6 values and
 /// continuation lines. Other clock record types fail explicitly.
 pub fn read_clk<R: BufRead>(reader: R) -> Result<ClockData, ProductError> {
     read_clk_impl(reader, false).map(|selected| selected.clocks)
@@ -477,7 +477,7 @@ fn read_clk_impl<R: BufRead>(
         return Err(bad(1, "missing RINEX VERSION / TYPE"));
     }
     let version = number(field(&first, 0, 9), 1)?;
-    if !(3.0..=3.04).contains(&version) {
+    if version != 2.0 && !(3.0..=3.04).contains(&version) {
         return Err(unsupported(1, "RINEX clock version"));
     }
     if first.as_bytes().get(20) != Some(&b'C') {

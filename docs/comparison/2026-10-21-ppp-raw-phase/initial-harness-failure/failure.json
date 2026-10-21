@@ -1,0 +1,5 @@
+{
+  "error": "Harness incorrectly required 18 applied phase OSBs on every epoch; 8 epochs have one code-only admitted satellite, hence 16 actual phase corrections. Solver unchanged; compare actual admitted ambiguities and positive even correction counts.",
+  "solver_changed": false,
+  "tolerance_changed": false
+}

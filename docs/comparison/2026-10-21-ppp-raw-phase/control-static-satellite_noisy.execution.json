@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp",
+    "noisy",
+    "satellite"
+  ],
+  "returncode": 0,
+  "csv_sha256": "dbf4c49592a4341a2c6e4f5606975abe1e5d73631b0a5ce3eb4d0152800d5d37",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "88ff939a715cdd7510a4351a92ebedfa5089170200ddb877ebdf63f26642be66"
+}

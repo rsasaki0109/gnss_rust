@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp_kinematic",
+    "kinematic",
+    "noisy",
+    "-phase-diagnostics"
+  ],
+  "returncode": 0,
+  "csv_sha256": "8f74f55eb3cce9d474d53381fbed5c5f629cfc598b6e69ddf93e01322161576c",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "49f114f0b603fb43f11ab3f3fb881157300111a8a7982ee0793fc6130d826390"
+}

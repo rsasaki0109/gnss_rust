@@ -1,0 +1,360 @@
+{
+  "gauge_profiles": {
+    "raw-phase-clean": {
+      "epochs": 64,
+      "maximum_position_difference_m": 5.166696124408925e-07,
+      "maximum_ambiguity_shift_error_m": 5.15217691426928e-08,
+      "bound_m": 1e-06
+    },
+    "raw-dsb-clean": {
+      "epochs": 64,
+      "maximum_position_difference_m": 5.166696124408925e-07,
+      "maximum_ambiguity_shift_error_m": 5.15217691426928e-08,
+      "bound_m": 1e-06
+    },
+    "raw-phase-noisy": {
+      "epochs": 64,
+      "maximum_position_difference_m": 6.560020635465242e-07,
+      "maximum_ambiguity_shift_error_m": 5.551314141705177e-08,
+      "bound_m": 1e-06
+    },
+    "raw-dsb-noisy": {
+      "epochs": 64,
+      "maximum_position_difference_m": 6.560020635465242e-07,
+      "maximum_ambiguity_shift_error_m": 5.551314141705177e-08,
+      "bound_m": 1e-06
+    }
+  },
+  "default_controls": {
+    "static_clean": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "8a408593d183113c05b14f6a0f06cdfa29fdaa8f45e72e3f797def5aa2124a67",
+      "prior_capture": "static_clean.stdout.csv.gz"
+    },
+    "static_noisy": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "0e059ab2bf0f2843bf93d275a85d005468890b2c41bb95850eeb5e9a50a4e4f9",
+      "prior_capture": "static_noisy.stdout.csv.gz"
+    },
+    "kinematic_clean": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "1704ec03ba7d8ccf512d3f3d8e3d18b3b4f2d6a59ee1c2ba9e8c88a1f1410639",
+      "prior_capture": "kinematic_clean.stdout.csv.gz"
+    },
+    "kinematic_noisy": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "5314f14229977085f5d8473d4bd2ee7e2cd511a0802486c9e332017df6b38af7",
+      "prior_capture": "kinematic_noisy.stdout.csv.gz"
+    },
+    "kinematic_clean_v10": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "565044b4ce90b5336136335b9c8bb98af5c4e5dbff8c3d5a25f4ecfe79b6faa1",
+      "prior_capture": "kinematic_clean_v10.stdout.csv.gz"
+    },
+    "kinematic_noisy_v10": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "70d4a1e2baaf68b54936fab39025853b831a442d05fc9ecb161eb2a5079e6bc1",
+      "prior_capture": "kinematic_noisy_v10.stdout.csv.gz"
+    },
+    "kinematic_clean_v1000": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "e4263f8d5f33c7eb1dd399e79e3341ae17de05ac491075a68eb7be4a8e4888cd",
+      "prior_capture": "kinematic_clean_v1000.stdout.csv.gz"
+    },
+    "kinematic_noisy_v1000": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "85439d58ea7f9e1f11e324af4661646181abac559a560b26a3776e5cc356ca56",
+      "prior_capture": "kinematic_noisy_v1000.stdout.csv.gz"
+    },
+    "kinematic_unrounded_phase": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "1dd9db6e1e249de41ad2708ae49b40caf1857912fe720c219216a3b9a50e74f1",
+      "prior_capture": "kinematic_unrounded_phase.stdout.csv.gz"
+    },
+    "kinematic_unrounded_code": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "b84addc556e000da675f8a88d990de1d7482254ccd48451686edc6f41c8780c5",
+      "prior_capture": "kinematic_unrounded_code.stdout.csv.gz"
+    },
+    "kinematic_unrounded_both": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "94cdeab2c7f05ab0c01feb7331bd8270cfa351cdc82fed4ab98827c0bc7edf5b",
+      "prior_capture": "kinematic_unrounded_both.stdout.csv.gz"
+    },
+    "static-plain_clean": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "35736cab05be821d25891e715972970bdf6d17348ad95e70341d91831167e32a",
+      "prior_capture": "static-new-plain_clean.stdout.csv.gz"
+    },
+    "static-plain_noisy": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "59536a5abbe34a0c28776e1b171ae90970d9daff99431f87a94eab214c374200",
+      "prior_capture": "static-new-plain_noisy.stdout.csv.gz"
+    },
+    "static-windup_clean": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "66ad942c6e1a384135fddc0b2482d0f8349b3440a9bf8e6fac1e05198cfdd9ae",
+      "prior_capture": "static-new-windup_clean.stdout.csv.gz"
+    },
+    "static-windup_noisy": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "2513478b7028be1a02d9d920ea43cf7ac9532efc722165fa15a05889b3e86cf3",
+      "prior_capture": "static-new-windup_noisy.stdout.csv.gz"
+    },
+    "static-antenna_clean": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "a5da616f2042e92b36686a876a4d1a3479453b2f9827a08225d8f9d3a5732a20",
+      "prior_capture": "static-new-antenna_clean.stdout.csv.gz"
+    },
+    "static-antenna_noisy": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "08e607250f5185404c1fe2fde0553298da43036829c4507f5fd318971ad35691",
+      "prior_capture": "static-new-antenna_noisy.stdout.csv.gz"
+    },
+    "static-satellite_clean": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "b9407fecdcd6a1465e68765d925a133c6fc7a178c72e85c57c06375c212de2da",
+      "prior_capture": "static-new-satellite_clean.stdout.csv.gz"
+    },
+    "static-satellite_noisy": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "dbf4c49592a4341a2c6e4f5606975abe1e5d73631b0a5ce3eb4d0152800d5d37",
+      "prior_capture": "static-new-satellite_noisy.stdout.csv.gz"
+    },
+    "static-legacy_tide_clean": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "a02c2e0376ee72c53a319aedce3e8f7ebad7cbb0c6a455c97fd33d0dfb8fb2a1",
+      "prior_capture": "static-new-legacy_tide_clean.stdout.csv.gz"
+    },
+    "static-legacy_tide_noisy": {
+      "all_CSV_bytes_identical": true,
+      "csv_sha256": "f177ddd9bec94462b26db228e8d58112905cb0852c5eb1657f12f9a24c6772ea",
+      "prior_capture": "static-new-legacy_tide_noisy.stdout.csv.gz"
+    }
+  },
+  "real_PPC_PPP_executed": false,
+  "practical_parity_accepted": false,
+  "code_product_admission": [
+    {
+      "date": "20242010000",
+      "frame": "IGS20",
+      "orbit_satellites": "82",
+      "orbit_samples": "23698",
+      "clock_satellites": "82",
+      "clock_samples": "236160",
+      "satellite_bias_rows": "8309",
+      "excluded_receiver_bias_rows": "685",
+      "preserved_byte_comment_lines": "2",
+      "GPS_IF_C1W_C2W_declared": "true",
+      "bias_APC_IGS20": "true",
+      "GPS_sample_states_with_clock": "32",
+      "GPS_sample_states_unavailable": "0",
+      "code_1c2w_pairs": "32",
+      "phase_1c2w_pairs": "32",
+      "code_1c2l_pairs": "25",
+      "phase_1c2l_pairs": "32",
+      "gauge_pairs_missing": "0",
+      "max_abs_GPS_IF_code_gauge_m": "5.00855497667096472e-5"
+    },
+    {
+      "date": "20242020000",
+      "frame": "IGS20",
+      "orbit_satellites": "82",
+      "orbit_samples": "23698",
+      "clock_satellites": "82",
+      "clock_samples": "236103",
+      "satellite_bias_rows": "8231",
+      "excluded_receiver_bias_rows": "677",
+      "preserved_byte_comment_lines": "2",
+      "GPS_IF_C1W_C2W_declared": "true",
+      "bias_APC_IGS20": "true",
+      "GPS_sample_states_with_clock": "32",
+      "GPS_sample_states_unavailable": "0",
+      "code_1c2w_pairs": "32",
+      "phase_1c2w_pairs": "32",
+      "code_1c2l_pairs": "25",
+      "phase_1c2l_pairs": "32",
+      "gauge_pairs_missing": "0",
+      "max_abs_GPS_IF_code_gauge_m": "5.94822219159851784e-5"
+    },
+    {
+      "date": "20242030000",
+      "frame": "IGS20",
+      "orbit_satellites": "82",
+      "orbit_samples": "23698",
+      "clock_satellites": "82",
+      "clock_samples": "236155",
+      "satellite_bias_rows": "8311",
+      "excluded_receiver_bias_rows": "683",
+      "preserved_byte_comment_lines": "2",
+      "GPS_IF_C1W_C2W_declared": "true",
+      "bias_APC_IGS20": "true",
+      "GPS_sample_states_with_clock": "32",
+      "GPS_sample_states_unavailable": "0",
+      "code_1c2w_pairs": "32",
+      "phase_1c2w_pairs": "32",
+      "code_1c2l_pairs": "25",
+      "phase_1c2l_pairs": "32",
+      "gauge_pairs_missing": "0",
+      "max_abs_GPS_IF_code_gauge_m": "6.36270553826534524e-5"
+    },
+    {
+      "date": "20242040000",
+      "frame": "IGS20",
+      "orbit_satellites": "82",
+      "orbit_samples": "23698",
+      "clock_satellites": "82",
+      "clock_samples": "236160",
+      "satellite_bias_rows": "8193",
+      "excluded_receiver_bias_rows": "680",
+      "preserved_byte_comment_lines": "2",
+      "GPS_IF_C1W_C2W_declared": "true",
+      "bias_APC_IGS20": "true",
+      "GPS_sample_states_with_clock": "32",
+      "GPS_sample_states_unavailable": "0",
+      "code_1c2w_pairs": "32",
+      "phase_1c2w_pairs": "32",
+      "code_1c2l_pairs": "25",
+      "phase_1c2l_pairs": "32",
+      "gauge_pairs_missing": "0",
+      "max_abs_GPS_IF_code_gauge_m": "5.02657599170674985e-5"
+    },
+    {
+      "date": "20242050000",
+      "frame": "IGS20",
+      "orbit_satellites": "82",
+      "orbit_samples": "23698",
+      "clock_satellites": "82",
+      "clock_samples": "236160",
+      "satellite_bias_rows": "8169",
+      "excluded_receiver_bias_rows": "681",
+      "preserved_byte_comment_lines": "2",
+      "GPS_IF_C1W_C2W_declared": "true",
+      "bias_APC_IGS20": "true",
+      "GPS_sample_states_with_clock": "32",
+      "GPS_sample_states_unavailable": "0",
+      "code_1c2w_pairs": "32",
+      "phase_1c2w_pairs": "32",
+      "code_1c2l_pairs": "25",
+      "phase_1c2l_pairs": "32",
+      "gauge_pairs_missing": "0",
+      "max_abs_GPS_IF_code_gauge_m": "6.34211009264973313e-5"
+    },
+    {
+      "date": "20242060000",
+      "frame": "IGS20",
+      "orbit_satellites": "82",
+      "orbit_samples": "23698",
+      "clock_satellites": "82",
+      "clock_samples": "236160",
+      "satellite_bias_rows": "8243",
+      "excluded_receiver_bias_rows": "686",
+      "preserved_byte_comment_lines": "2",
+      "GPS_IF_C1W_C2W_declared": "true",
+      "bias_APC_IGS20": "true",
+      "GPS_sample_states_with_clock": "32",
+      "GPS_sample_states_unavailable": "0",
+      "code_1c2w_pairs": "32",
+      "phase_1c2w_pairs": "32",
+      "code_1c2l_pairs": "25",
+      "phase_1c2l_pairs": "32",
+      "gauge_pairs_missing": "0",
+      "max_abs_GPS_IF_code_gauge_m": "6.34082287720438842e-5"
+    },
+    {
+      "date": "20242150000",
+      "frame": "IGS20",
+      "orbit_satellites": "81",
+      "orbit_samples": "23409",
+      "clock_satellites": "81",
+      "clock_samples": "233279",
+      "satellite_bias_rows": "7669",
+      "excluded_receiver_bias_rows": "678",
+      "preserved_byte_comment_lines": "2",
+      "GPS_IF_C1W_C2W_declared": "true",
+      "bias_APC_IGS20": "true",
+      "GPS_sample_states_with_clock": "32",
+      "GPS_sample_states_unavailable": "0",
+      "code_1c2w_pairs": "32",
+      "phase_1c2w_pairs": "32",
+      "code_1c2l_pairs": "25",
+      "phase_1c2l_pairs": "32",
+      "gauge_pairs_missing": "0",
+      "max_abs_GPS_IF_code_gauge_m": "5.33164603271352178e-5"
+    },
+    {
+      "date": "20242160000",
+      "frame": "IGS20",
+      "orbit_satellites": "81",
+      "orbit_samples": "23409",
+      "clock_satellites": "81",
+      "clock_samples": "233279",
+      "satellite_bias_rows": "7939",
+      "excluded_receiver_bias_rows": "692",
+      "preserved_byte_comment_lines": "2",
+      "GPS_IF_C1W_C2W_declared": "true",
+      "bias_APC_IGS20": "true",
+      "GPS_sample_states_with_clock": "32",
+      "GPS_sample_states_unavailable": "0",
+      "code_1c2w_pairs": "32",
+      "phase_1c2w_pairs": "32",
+      "code_1c2l_pairs": "25",
+      "phase_1c2l_pairs": "32",
+      "gauge_pairs_missing": "0",
+      "max_abs_GPS_IF_code_gauge_m": "5.26084918774927246e-5"
+    },
+    {
+      "date": "20242170000",
+      "frame": "IGS20",
+      "orbit_satellites": "81",
+      "orbit_samples": "23409",
+      "clock_satellites": "81",
+      "clock_samples": "233278",
+      "satellite_bias_rows": "7779",
+      "excluded_receiver_bias_rows": "675",
+      "preserved_byte_comment_lines": "2",
+      "GPS_IF_C1W_C2W_declared": "true",
+      "bias_APC_IGS20": "true",
+      "GPS_sample_states_with_clock": "32",
+      "GPS_sample_states_unavailable": "0",
+      "code_1c2w_pairs": "32",
+      "phase_1c2w_pairs": "32",
+      "code_1c2l_pairs": "25",
+      "phase_1c2l_pairs": "32",
+      "gauge_pairs_missing": "0",
+      "max_abs_GPS_IF_code_gauge_m": "5.51571782962945178e-5"
+    }
+  ],
+  "retained_SVN_conflicts": [
+    {
+      "date": "20242020000",
+      "family": "CAS",
+      "satellite": "G01",
+      "ANTEX_SVN": "G049",
+      "bias_SVNs": [
+        "G063"
+      ],
+      "bias_sha256": "20e4549ac409d538eebb747dec84dbc058c122cd6511a27d9f07bf530911d72b"
+    },
+    {
+      "date": "20242050000",
+      "family": "CAS",
+      "satellite": "G01",
+      "ANTEX_SVN": "G049",
+      "bias_SVNs": [
+        "G063"
+      ],
+      "bias_sha256": "4f1b5fbbc72119189fd4f96018e65411a289921c6cc56566e56a2d232e6579ab"
+    },
+    {
+      "date": "20242160000",
+      "family": "CAS",
+      "satellite": "G01",
+      "ANTEX_SVN": "G049",
+      "bias_SVNs": [
+        "G063"
+      ],
+      "bias_sha256": "57f217f7abe9c20eef826a3509c435320437e6757605bae431238f11428899b5"
+    }
+  ]
+}

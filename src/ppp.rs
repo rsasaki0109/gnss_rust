@@ -13,7 +13,9 @@ use crate::antenna::{
     SatelliteAntennaModel,
 };
 use crate::coordinates::{ecef_to_enu, ecef_to_geodetic, geometric_distance};
-use crate::dual_frequency::{DualFrequencyConfig, IonosphereFreeObservation, SignalCorrections};
+use crate::dual_frequency::{
+    DualFrequencyConfig, IonosphereFreeObservation, PhaseBiasMode, SignalCorrections,
+};
 use crate::filter::{FilterError, GaussianState, Matrix, measurement_update, zeros};
 use crate::models::niell_hydrostatic_mapping;
 use crate::observation::ObservationEpoch;
@@ -90,6 +92,9 @@ impl PppPositionModel {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PppFilterSettings {
     pub position_model: PppPositionModel,
+    /// Strict calibrated phase remains the default. Explicit raw mode retains
+    /// absent phase OSBs and absorbs constant biases only into FLOAT ambiguities.
+    pub phase_bias_mode: PhaseBiasMode,
     /// Independent initial variance for XYZ, clock_m and zenith_m.
     pub initial_head_variance_m2: [f64; 5],
     /// Additive random-walk variance per second for the same five states.
@@ -109,6 +114,7 @@ impl Default for PppFilterSettings {
     fn default() -> Self {
         Self {
             position_model: PppPositionModel::Static,
+            phase_bias_mode: PhaseBiasMode::RequireSignalCorrections,
             initial_head_variance_m2: [1e6, 1e6, 1e6, 1e8, 100.0],
             head_process_noise_m2_per_s: [0.0, 0.0, 0.0, 100.0, 1e-8],
             initial_ambiguity_variance_m2: 1e14,
@@ -413,6 +419,7 @@ pub struct PppAmbiguity {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PppSolution {
     pub position_model: PppPositionModel,
+    pub phase_bias_mode: PhaseBiasMode,
     /// XYZ state/report reference; model receiver_position_m is instantaneous.
     pub receiver_reference: ReceiverPositionReference,
     pub position: PositionSolution,
@@ -539,7 +546,12 @@ impl PppFilter {
                 }
             }
         }
-        let prepared = self.arcs.prepare_epoch(epoch, corrections, selections);
+        let prepared = self.arcs.prepare_epoch_with_phase_bias_mode(
+            epoch,
+            corrections,
+            selections,
+            self.config.filter.phase_bias_mode,
+        );
         let decisions = match prepared {
             Ok(prepared) => prepared.decisions().clone(),
             Err(error) => {
@@ -620,6 +632,7 @@ impl PppFilter {
                     .sqrt();
                 let solution = PppSolution {
                     position_model: self.config.filter.position_model,
+                    phase_bias_mode: self.config.filter.phase_bias_mode,
                     receiver_reference: self.config.receiver_reference,
                     position,
                     zenith_delay_m: posterior.mean[4],

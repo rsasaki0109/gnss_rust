@@ -4,8 +4,8 @@
 //! Copyright (c) 2024 LibGNSS++ Contributors. See LICENSE.
 
 use crate::dual_frequency::{
-    DualFrequencyConfig, DualFrequencyError, IonosphereFreeObservation, PhaseUnavailable,
-    SignalCorrections, form_ionosphere_free,
+    DualFrequencyConfig, DualFrequencyError, IonosphereFreeObservation, PhaseBiasMode,
+    PhaseUnavailable, SignalCorrections, form_ionosphere_free_with_phase_bias_mode,
 };
 use crate::observation::ObservationEpoch;
 use crate::precise::ClockSource;
@@ -118,6 +118,7 @@ pub enum ArcResetReason {
     SignalChanged,
     ClockDatumChanged,
     PhaseDatumChanged,
+    PhaseBiasModelChanged,
     CodeCorrectionChanged,
     PhaseCorrectionChanged,
     GeometryFreeJump,
@@ -185,8 +186,9 @@ struct Identity {
     clock_source: ClockSource,
     clock_reference: String,
     phase_reference: String,
+    phase_bias_mode: PhaseBiasMode,
     code_correction: [f64; 2],
-    phase_correction: [f64; 2],
+    phase_correction: Option<[f64; 2]>,
 }
 impl Identity {
     fn from_measurement(m: &IonosphereFreeObservation) -> Self {
@@ -199,15 +201,16 @@ impl Identity {
             channel: [m.raw[0].glonass_channel, m.raw[1].glonass_channel],
             clock_source: m.corrections[0].clock_source,
             clock_reference: m.corrections[0].clock_reference.clone(),
-            phase_reference: m.corrections[0]
-                .phase_reference
-                .clone()
-                .expect("builder admits calibrated phase"),
+            phase_reference: m.phase_reference.clone(),
+            phase_bias_mode: m.phase_bias_mode,
             code_correction: [m.corrections[0].code_add_m, m.corrections[1].code_add_m],
-            phase_correction: [
-                m.corrections[0].phase_add_m.unwrap(),
-                m.corrections[1].phase_add_m.unwrap(),
-            ],
+            phase_correction: match m.phase_bias_mode {
+                PhaseBiasMode::RequireSignalCorrections => Some([
+                    m.corrections[0].phase_add_m.unwrap(),
+                    m.corrections[1].phase_add_m.unwrap(),
+                ]),
+                PhaseBiasMode::UncalibratedFloat => None,
+            },
         }
     }
     fn changes(&self, next: &Self) -> Vec<ArcResetReason> {
@@ -223,6 +226,9 @@ impl Identity {
         }
         if self.phase_reference != next.phase_reference {
             r.push(ArcResetReason::PhaseDatumChanged);
+        }
+        if self.phase_bias_mode != next.phase_bias_mode {
+            r.push(ArcResetReason::PhaseBiasModelChanged);
         }
         if self.code_correction != next.code_correction {
             r.push(ArcResetReason::CodeCorrectionChanged);
@@ -313,6 +319,21 @@ impl PhaseArcTracker {
         corrections: &SignalCorrections,
         selections: &BTreeMap<SatelliteId, DualFrequencyConfig>,
     ) -> Result<&PreparedPhaseEpoch, PhaseArcError> {
+        self.prepare_epoch_with_phase_bias_mode(
+            epoch,
+            corrections,
+            selections,
+            PhaseBiasMode::RequireSignalCorrections,
+        )
+    }
+
+    pub fn prepare_epoch_with_phase_bias_mode(
+        &mut self,
+        epoch: &ObservationEpoch,
+        corrections: &SignalCorrections,
+        selections: &BTreeMap<SatelliteId, DualFrequencyConfig>,
+        phase_bias_mode: PhaseBiasMode,
+    ) -> Result<&PreparedPhaseEpoch, PhaseArcError> {
         if self.pending.is_some() {
             return Err(PhaseArcError::PendingUpdate);
         }
@@ -351,7 +372,13 @@ impl PhaseArcTracker {
                 if !present.contains(&sat) {
                     reasons.push(ArcResetReason::MissingSatellite);
                 } else {
-                    match form_ionosphere_free(epoch, sat, corrections, selection) {
+                    match form_ionosphere_free_with_phase_bias_mode(
+                        epoch,
+                        sat,
+                        corrections,
+                        selection,
+                        phase_bias_mode,
+                    ) {
                         Ok(m) => {
                             if let Some(reason) = &m.phase_unavailability {
                                 reasons.push(ArcResetReason::PhaseUnavailable(reason.clone()));

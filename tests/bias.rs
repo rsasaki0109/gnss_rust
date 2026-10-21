@@ -16,6 +16,60 @@ fn file(rows: &str) -> String {
 const ROW: &str = " OSB G080 G01           C1C      2024:039:00600 2024:039:02520 ns 1.234 0.1";
 
 #[test]
+fn legacy_provider_comment_bytes_are_explicit_preserved_and_keep_technical_line_numbers() {
+    let base = file(ROW);
+    let point = base.find("+BIAS/DESCRIPTION").unwrap();
+    let mut data = base.as_bytes()[..point].to_vec();
+    let free = b"+FILE/COMMENT\n Author Sch\xe4r\n-FILE/COMMENT\n";
+    data.extend_from_slice(free);
+    data.extend_from_slice(&base.as_bytes()[point..]);
+    assert!(read_satellite_biases(Cursor::new(&data), Default::default()).is_err());
+    let r =
+        read_satellite_biases_with_byte_comments(Cursor::new(&data), Default::default()).unwrap();
+    assert_eq!(r.preserved_free_text.len(), 1);
+    assert_eq!(r.preserved_free_text[0].bytes, b" Author Sch\xe4r\n");
+    assert_eq!(r.preserved_free_text[0].line, 3);
+    let expected = parse(&base).unwrap();
+    let mut entry = expected.entries()[0].clone();
+    entry.line += 3;
+    assert_eq!(r.selection.products.entries(), [entry]);
+}
+
+#[test]
+fn byte_comment_admission_does_not_sanitize_non_ascii_technical_records() {
+    let mut data = file(ROW).into_bytes();
+    let offset = data.windows(5).position(|v| v == b"1.234").unwrap();
+    data[offset] = 0xe4;
+    assert!(matches!(
+        read_satellite_biases_with_byte_comments(Cursor::new(data), Default::default()),
+        Err(BiasError::Unsupported { .. })
+    ));
+}
+
+#[test]
+fn utf8_comment_bytes_are_not_guessed_or_lost_and_ascii_inputs_remain_identical() {
+    let input = file(ROW);
+    let plain =
+        read_satellite_biases_with_byte_comments(Cursor::new(&input), Default::default()).unwrap();
+    assert!(plain.preserved_free_text.is_empty());
+    assert_eq!(
+        plain.selection.products.entries(),
+        parse(&input).unwrap().entries()
+    );
+    let input = input.replace(
+        "+BIAS/DESCRIPTION",
+        "* Schär provider comment\n+BIAS/DESCRIPTION",
+    );
+    let r =
+        read_satellite_biases_with_byte_comments(Cursor::new(&input), Default::default()).unwrap();
+    assert_eq!(
+        r.preserved_free_text[0].bytes,
+        "* Schär provider comment\n".as_bytes()
+    );
+    assert_eq!(r.selection.products.entries()[0].value, 1.234);
+}
+
+#[test]
 fn free_form_comments_and_explicit_receiver_exclusion_preserve_satellite_biases() {
     let receiver = "DSB G G ABMF C1C C1W 2024:039:00600 2024:039:02520 ns 1.6090 0.0115";
     let text = file(&(ROW.to_owned() + "\n" + receiver)).replacen(
