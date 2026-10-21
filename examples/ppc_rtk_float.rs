@@ -27,8 +27,8 @@ fn write_seed(row: &mut [String], offset: usize, seed: RtkSeedDiagnostic) {
         row[offset + 4] = format!("{error:?}");
     }
 }
-fn write_spp_scope(row: &mut [String], seed: RtkSeedDiagnostic) {
-    let i = row.len() - 4;
+fn write_spp_scope(row: &mut [String], seed: RtkSeedDiagnostic, quality: bool) {
+    let i = row.len() - 4 - if quality { 7 } else { 0 };
     row[i] = seed
         .spp_requested_constellations
         .map_or_else(String::new, |c| format!("{c:?}"));
@@ -39,6 +39,22 @@ fn write_spp_scope(row: &mut [String], seed: RtkSeedDiagnostic) {
     row[i + 3] = seed
         .spp_galileo_clock_bias_s
         .map_or_else(String::new, |v| format!("{v:.17e}"));
+    if let Some(q) = seed.spp_quality {
+        for (j, v) in [
+            q.pre_qc_satellites.to_string(),
+            format!("{:.17e}", q.pre_qc_residual_rms_m),
+            format!("{:.17e}", q.final_residual_rms_m),
+            q.outlier_rejections.to_string(),
+            q.raim_attempts.to_string(),
+            q.raim_rejections.to_string(),
+            format!("{:.17e}", q.independent_clock_gdop),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            row[i + 4 + j] = v;
+        }
+    }
 }
 
 fn write_slips(row: &mut [String], offset: usize, evidence: &[RtkSlipDiagnostic]) {
@@ -138,10 +154,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     if args.len() != 3 {
         return Err(
-            "usage: ppc_rtk_float CASE_DIRECTORY MODE BASE_X,BASE_Y,BASE_Z (MODE: static, kinematic, kinematic-gdop50, kinematic-spp, kinematic-cmc, kinematic-doppler, kinematic-slips; Galileo: kinematic-galileo with optional -spp / -slips; append -prefit3 to supported gate modes; append -align to enable per-system SD ambiguity datum alignment)".into(),
+            "usage: ppc_rtk_float CASE_DIRECTORY MODE BASE_X,BASE_Y,BASE_Z (MODE: static, kinematic, kinematic-gdop50, kinematic-spp, kinematic-cmc, kinematic-doppler, kinematic-slips; Galileo: kinematic-galileo with optional -spp / -slips; append -prefit3 to supported gate modes; suffix order: -align, -ggspp, -nativevar, -sppqc)".into(),
         );
     }
     let requested_mode = args[1].to_str().ok_or("non-UTF8 positioning mode")?;
+    let spp_quality = requested_mode.ends_with("-sppqc");
+    let requested_mode = requested_mode
+        .strip_suffix("-sppqc")
+        .unwrap_or(requested_mode);
     let native_variance = requested_mode.ends_with("-nativevar");
     let requested_mode = requested_mode
         .strip_suffix("-nativevar")
@@ -156,6 +176,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or(requested_mode);
     if native_variance && !mixed_spp {
         return Err("-nativevar requires an explicit -ggspp mode".into());
+    }
+    if spp_quality && !mixed_spp {
+        return Err("-sppqc requires an explicit -ggspp mode".into());
     }
     let position_mode = match Some(mode) {
         Some("static") => RtkPositionMode::Static,
@@ -263,6 +286,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             } else {
                 gnss_rust::spp_quality::SppVarianceModel::ElevationOnly
             },
+            kinematic_spp_quality: spp_quality.then(gnss_rust::spp_qc::SppQualityConfig::default),
             slip_detection,
             max_prefit_residual_m: use_prefit.then_some(3.0),
             max_geometry_gdop: if mode == "kinematic-gdop50" {
@@ -298,7 +322,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         ""
     };
-    writeln!(out, "{header}{suffix}{datum_suffix}{spp_suffix}")?;
+    let quality_suffix = if spp_quality {
+        ",spp_pre_qc_satellites,spp_pre_qc_rms_m,spp_final_rms_m,spp_outlier_rejections,spp_raim_attempts,spp_raim_rejections,spp_independent_clock_gdop"
+    } else {
+        ""
+    };
+    writeln!(
+        out,
+        "{header}{suffix}{datum_suffix}{spp_suffix}{quality_suffix}"
+    )?;
     let (
         mut pairs,
         mut floated,
@@ -322,7 +354,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         } else {
             26
         };
-        let columns = columns + if align_datums { 3 } else { 0 } + if mixed_spp { 4 } else { 0 };
+        let columns = columns
+            + if align_datums { 3 } else { 0 }
+            + if mixed_spp { 4 } else { 0 }
+            + if spp_quality { 7 } else { 0 };
         let mut row = vec![String::new(); columns];
         match event? {
             EpochMatch::Unmatched { side, epoch } => {
@@ -366,10 +401,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                     match filter.process_pair(&rover, &base, &navigation.navigation) {
                         Ok(result) => {
                             if mixed_spp {
-                                write_spp_scope(&mut row, result.position_seed);
+                                write_spp_scope(&mut row, result.position_seed, spp_quality);
                             }
                             if align_datums {
-                                let last = columns - if mixed_spp { 4 } else { 0 } - 3;
+                                let last = columns
+                                    - if mixed_spp { 4 } else { 0 }
+                                    - if spp_quality { 7 } else { 0 }
+                                    - 3;
                                 row[last] = result
                                     .ambiguity_datum_alignment
                                     .iter()
@@ -534,7 +572,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 {
                     write_prefit(&mut row, diagnostic);
                     if mixed_spp {
-                        write_spp_scope(&mut row, diagnostic.position_seed);
+                        write_spp_scope(&mut row, diagnostic.position_seed, spp_quality);
                     }
                 }
             }
@@ -553,6 +591,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     }
     if use_spp_seed {
+        if spp_quality {
+            eprintln!(
+                "SPP_QC=MAD_then_RAIM threshold_sigma=3 minimum_improvement_ratio=0.25 minimum_improvement_m=1 max_gdop=50 geometry=independent_clocks native_geometry_common_clock=true default_changed=false recursive_QC=false"
+            );
+        }
         if native_variance {
             eprintln!(
                 "SPP_variance=NativeSnrAtmosphere SNR_reference_dbhz=45 iono_sigma_scale=0.5 trop_sigma_scale=0.1 default_changed=false"

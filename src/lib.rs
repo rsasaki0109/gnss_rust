@@ -68,6 +68,7 @@ pub mod rtk_reference;
 pub mod rtk_slip;
 pub mod spp;
 pub mod spp_multiclock;
+pub mod spp_qc;
 pub mod spp_quality;
 pub mod tides;
 pub mod time;
@@ -99,6 +100,7 @@ pub enum Error {
     MissingEphemeris,
     InsufficientObservations,
     SingularGeometry,
+    SppGeometryTooWeak,
     InvalidConfiguration,
 }
 
@@ -124,6 +126,7 @@ impl std::fmt::Display for Error {
             Self::MissingEphemeris => "no healthy ephemeris within the requested age limit",
             Self::InsufficientObservations => "at least four usable satellites are required",
             Self::SingularGeometry => "satellite geometry is rank deficient",
+            Self::SppGeometryTooWeak => "SPP geometry exceeds the configured GDOP limit",
             Self::InvalidConfiguration => "invalid solver configuration",
         })
     }

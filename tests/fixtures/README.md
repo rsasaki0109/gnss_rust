@@ -1590,3 +1590,17 @@ instead of the native optimistic base-variance fallback, and skips negative
 candidate RMS. The finite physical-domain utility checks are separate from
 synthetic position truth and whole-filter PPC accuracy. MAD and FDE refits
 are not connected to SPP in this milestone.
+
+## Mixed-clock SPP QC refits (2026-10-21)
+
+`tests/spp_qc.rs` reuses the independent native physical mixed fixture above.
+Seven added tests preserve the existing 3 mm / 1e-11 s bounds and exact clean
+baseline/FLOAT covariance, recover a 100 m G01 code error through RAIM, retain
+every raw/alternate/unsupported row, enforce per-clock redundancy and geometry,
+and verify rejected-candidate and RTK seed fallback behavior. A 500 m G01 error
+is intentionally retained as a native MAD masking/swamping limitation: good G07
+is excluded and about 738 m position error remains. That case passes a behavior
+regression, not a positioning accuracy acceptance. The 80 native QC utility
+cases are reused unchanged; final native common-clock DOP and stored child
+initialization differ from the explicit Rust per-system geometry/baseline seed.
+See [`2026-10-21-spp-qc`](../../docs/comparison/2026-10-21-spp-qc/README.md).

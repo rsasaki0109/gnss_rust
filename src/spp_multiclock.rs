@@ -21,6 +21,8 @@ pub enum ObservationDisposition {
     AlternateTracking,
     MissingEphemeris,
     BelowElevationMask,
+    OutlierRejected,
+    RaimFdeRejected,
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct CodeObservationEvidence {
@@ -56,7 +58,7 @@ pub struct MultiClockSppSolution {
     pub variance_model: crate::spp_quality::SppVarianceModel,
 }
 
-fn fit(rows: &[spp::Row], systems: &[GnssSystem]) -> Result<ClockLinearFit, Error> {
+pub(crate) fn fit(rows: &[spp::Row], systems: &[GnssSystem]) -> Result<ClockLinearFit, Error> {
     if systems.len() == 1 {
         let (mean, covariance) = spp::least_squares(rows)?;
         Ok(ClockLinearFit {
@@ -93,6 +95,16 @@ pub fn solve_gps_galileo_epoch_with_variance_model(
     navigation: &NavigationData,
     config: SppConfig,
     variance_model: crate::spp_quality::SppVarianceModel,
+) -> Result<MultiClockSppSolution, Error> {
+    solve_with_initial_clocks(epoch, navigation, config, variance_model, &[])
+}
+
+pub(crate) fn solve_with_initial_clocks(
+    epoch: &ObservationEpoch,
+    navigation: &NavigationData,
+    config: SppConfig,
+    variance_model: crate::spp_quality::SppVarianceModel,
+    initial_clock_biases_s: &[(GnssSystem, f64)],
 ) -> Result<MultiClockSppSolution, Error> {
     config.validate()?;
     if let Some(offset) = epoch.receiver_clock_offset_s {
@@ -150,7 +162,10 @@ pub fn solve_gps_galileo_epoch_with_variance_model(
     if !position.is_finite() {
         return Err(Error::NonFinite);
     }
-    let mut clocks = BTreeMap::<GnssSystem, f64>::new();
+    let mut clocks: BTreeMap<_, _> = initial_clock_biases_s
+        .iter()
+        .map(|&(s, v)| (s, v * c::SPEED_OF_LIGHT))
+        .collect();
     for iteration in 1..=config.max_iterations {
         let (rows, _) = spp::build_rows_with_variance(
             epoch,

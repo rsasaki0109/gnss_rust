@@ -73,6 +73,8 @@ pub struct RtkFloatConfig {
     /// Optional native code/CN0/atmosphere measurement variance for the SPP
     /// seed. The default retains the old elevation-only weighting.
     pub kinematic_spp_variance: crate::spp_quality::SppVarianceModel,
+    /// Opt-in one-pass MAD / leave-one-out RAIM and independent-clock GDOP.
+    pub kinematic_spp_quality: Option<crate::spp_qc::SppQualityConfig>,
     /// Optional SD code/phase and Doppler continuity tests. Only accepted
     /// epochs enter their history; detected slips reset that satellite's SD
     /// ambiguity without discarding its current measurements.
@@ -108,6 +110,7 @@ impl Default for RtkFloatConfig {
             kinematic_spp_seed: None,
             kinematic_spp_constellations: RtkConstellations::Gps,
             kinematic_spp_variance: crate::spp_quality::SppVarianceModel::ElevationOnly,
+            kinematic_spp_quality: None,
             slip_detection: None,
             max_prefit_residual_m: None,
             max_geometry_gdop: None,
@@ -153,6 +156,9 @@ impl RtkFloatConfig {
                 .is_some_and(|config| config.validate().is_err())
             || self.kinematic_spp_seed.is_some_and(|config| {
                 self.position_mode != RtkPositionMode::Kinematic || config.validate().is_err()
+            })
+            || self.kinematic_spp_quality.is_some_and(|config| {
+                self.kinematic_spp_seed.is_none() || config.validate().is_err()
             })
             || self
                 .max_geometry_gdop
@@ -341,6 +347,7 @@ pub struct RtkSeedDiagnostic {
     pub spp_satellites: usize,
     pub spp_gps_clock_bias_s: Option<f64>,
     pub spp_galileo_clock_bias_s: Option<f64>,
+    pub spp_quality: Option<crate::spp_qc::SppQualitySummary>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -799,25 +806,59 @@ impl RtkFloatFilter {
             spp_satellites: 0,
             spp_gps_clock_bias_s: None,
             spp_galileo_clock_bias_s: None,
+            spp_quality: None,
         };
         let mut spp_position = None;
         if let Some(config) = self.config.kinematic_spp_seed {
             let mut seed_epoch = rover.clone();
             seed_epoch.approximate_position = Some(previous_position);
-            let result = match self.config.kinematic_spp_constellations {
-                RtkConstellations::Gps => {
+            let result = if let Some(quality) = self.config.kinematic_spp_quality {
+                if self.config.kinematic_spp_constellations == RtkConstellations::Gps {
                     selected(rover, RtkConstellations::Gps)?;
                     seed_epoch.observations.retain(|o| {
                         o.satellite.system() == GnssSystem::Gps && o.tracking_code == "1C"
                     });
-                    if self.config.kinematic_spp_variance
-                        == crate::spp_quality::SppVarianceModel::ElevationOnly
-                    {
-                        spp::solve_epoch(&seed_epoch, nav, config).map(|s| {
-                            let clocks = vec![(GnssSystem::Gps, s.position.receiver_clock_bias)];
-                            (s, clocks)
-                        })
-                    } else {
+                }
+                crate::spp_qc::solve_gps_galileo_epoch_with_quality_control(
+                    &seed_epoch,
+                    nav,
+                    config,
+                    self.config.kinematic_spp_variance,
+                    quality,
+                )
+                .map(|s| {
+                    (
+                        s.solution.spp,
+                        s.solution.clock_biases_s,
+                        Some(s.evidence.summary),
+                    )
+                })
+            } else {
+                match self.config.kinematic_spp_constellations {
+                    RtkConstellations::Gps => {
+                        selected(rover, RtkConstellations::Gps)?;
+                        seed_epoch.observations.retain(|o| {
+                            o.satellite.system() == GnssSystem::Gps && o.tracking_code == "1C"
+                        });
+                        if self.config.kinematic_spp_variance
+                            == crate::spp_quality::SppVarianceModel::ElevationOnly
+                        {
+                            spp::solve_epoch(&seed_epoch, nav, config).map(|s| {
+                                let clocks =
+                                    vec![(GnssSystem::Gps, s.position.receiver_clock_bias)];
+                                (s, clocks)
+                            })
+                        } else {
+                            crate::spp_multiclock::solve_gps_galileo_epoch_with_variance_model(
+                                &seed_epoch,
+                                nav,
+                                config,
+                                self.config.kinematic_spp_variance,
+                            )
+                            .map(|s| (s.spp, s.clock_biases_s))
+                        }
+                    }
+                    RtkConstellations::GpsGalileo => {
                         crate::spp_multiclock::solve_gps_galileo_epoch_with_variance_model(
                             &seed_epoch,
                             nav,
@@ -827,18 +868,10 @@ impl RtkFloatFilter {
                         .map(|s| (s.spp, s.clock_biases_s))
                     }
                 }
-                RtkConstellations::GpsGalileo => {
-                    crate::spp_multiclock::solve_gps_galileo_epoch_with_variance_model(
-                        &seed_epoch,
-                        nav,
-                        config,
-                        self.config.kinematic_spp_variance,
-                    )
-                    .map(|s| (s.spp, s.clock_biases_s))
-                }
+                .map(|(s, clocks)| (s, clocks, None))
             };
             match result {
-                Ok((solution, clocks)) => {
+                Ok((solution, clocks, quality)) => {
                     // A successful SPP solve always returns a finite position.
                     let position = solution
                         .position
@@ -848,6 +881,7 @@ impl RtkFloatFilter {
                     position_seed.source = RtkSeedSource::SinglePoint;
                     position_seed.position = position;
                     position_seed.spp_satellites = solution.position.num_satellites;
+                    position_seed.spp_quality = quality;
                     position_seed.spp_gps_clock_bias_s = clocks
                         .iter()
                         .find(|(s, _)| *s == GnssSystem::Gps)
