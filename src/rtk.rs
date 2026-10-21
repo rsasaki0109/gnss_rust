@@ -287,6 +287,16 @@ pub(crate) struct FixedResiduals {
     pub code_phase_innovations_m: Vec<f64>,
 }
 impl FixContext {
+    pub(crate) fn with_reference(&self, reference: SatelliteId) -> Result<Self, RtkError> {
+        let index = self
+            .data
+            .iter()
+            .position(|sample| sample.satellite == reference)
+            .ok_or(RtkError::InvalidConfiguration)?;
+        let mut view = self.clone();
+        view.reference = index;
+        Ok(view)
+    }
     pub fn reference_satellite(&self) -> SatelliteId {
         self.data[self.reference].satellite
     }

@@ -1,0 +1,79 @@
+{
+  "checks": [
+    {
+      "name": "rust",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2"
+      ],
+      "returncode": 0,
+      "log": "rust.qualification.log.gz",
+      "uncompressed_sha256": "9f7e51ba54e0b0616e66595d55b6c5d941d883b4f7148f2ad6b7f1b98275677d",
+      "passed_tests": 254
+    },
+    {
+      "name": "examples",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--examples"
+      ],
+      "returncode": 0,
+      "log": "examples.qualification.log.gz",
+      "uncompressed_sha256": "7b99f0750de93f6d93a445c10dea67266160fe90e1a6ca33edff8da8fc11a835"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "returncode": 0,
+      "log": "fmt.qualification.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "returncode": 0,
+      "log": "clippy.qualification.log.gz",
+      "uncompressed_sha256": "d1fdcb9fca6edafd4f13787cbd82bf6aa1d9b7c3ec05eab355e0839c71d8bd20"
+    },
+    {
+      "name": "release",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--release"
+      ],
+      "returncode": 0,
+      "log": "release.qualification.log.gz",
+      "uncompressed_sha256": "eef5db79930e914805e760a53d55d306b0752623e3e7137a936d10b410cf3405"
+    }
+  ],
+  "base_commit": "fdbe9851bba568a7cfc1c5a261560334fe7abb0b",
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "machine": "x86_64",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "test_source_sha256": "ac0c30344b1c7f3e9a7164c649b20d2fbf19fa9589c9455204a03dd4449bbc20"
+}

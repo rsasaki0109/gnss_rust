@@ -1,8 +1,9 @@
 # gnss-rust
 
-2026-10-21時点の作業コピーは ccc9b01 で、前回のCMC実装とPPC比較記録は復旧確認中です。
-今回の[基準衛星変更の診断](docs/comparison/2026-10-21-reference-basis/README.md)は
-C++22ケース・Rust250テストで検証した部品で、PPC性能改善の結果とは区別しています。
+2026-10-21: [同じ整数候補の全基準衛星診断](docs/comparison/2026-10-21-fix-reference-audit/README.md)を追加。
+合成観測の固定位相偏りで、条件付き位置が一致しても局所FIX判定が変わることを確認しました。
+Rust254テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
+PPCでの実用RTK・PPP同等性能は未達です。
 
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。
 移植元は `develop` のコミット

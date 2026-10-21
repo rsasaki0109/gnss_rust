@@ -1,0 +1,9 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/rtk_candidate_reference_audit",
+    "noisy"
+  ],
+  "returncode": 0,
+  "stdout_sha256": "2f6ee99669cc86e28d345dfc7baf25d7fe6ed36010d7317f1016fbe7487ddc31",
+  "stderr_sha256": "e8776d2e13f558672b5f25affd217c6da62ed62933cd387006ab77d0b4ab5a37"
+}

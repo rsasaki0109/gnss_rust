@@ -1,0 +1,9 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/rtk_candidate_reference_audit",
+    "phase-bias"
+  ],
+  "returncode": 0,
+  "stdout_sha256": "2bb0d9ed136c825e4ee0a0aa843c7fc5893e7d446a4b685306f8d3762e99c3d1",
+  "stderr_sha256": "50e4efdabe10e688aace12321603a2e759f3a8397943fde3aba1dabf7b412149"
+}

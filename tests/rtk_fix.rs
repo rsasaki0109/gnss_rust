@@ -5,8 +5,8 @@ use gnss_rust::observation::ObservationEpoch;
 use gnss_rust::rinex::{RinexObservationReader, read_navigation};
 use gnss_rust::rtk::{RtkFloatConfig, RtkFloatFilter};
 use gnss_rust::rtk_fix::{
-    CodePhaseObservation, FixDecision, FixError, RtkFixConfig, RtkFixPolicy, code_phase_check,
-    condition_head, validate_candidate,
+    CodePhaseObservation, FixDecision, FixError, RtkFixConfig, RtkFixPolicy,
+    audit_candidate_references, code_phase_check, condition_head, validate_candidate,
 };
 use gnss_rust::{EcefCoord, SatelliteId, SolutionStatus};
 use std::{collections::BTreeMap, io::Cursor};
@@ -205,6 +205,221 @@ fn filter(f: &Fixture) -> RtkFloatFilter {
 }
 fn distance(a: EcefCoord, b: EcefCoord) -> f64 {
     (a.x - b.x).hypot(a.y - b.y).hypot(a.z - b.z)
+}
+
+#[test]
+fn all_reference_audit_matches_known_sd_integers_without_changing_filter_or_fix_history() {
+    let mut references = 0;
+    for noisy in [false, true] {
+        let f = fixture(noisy);
+        let mut audited_engine = filter(&f);
+        let mut control_engine = filter(&f);
+        let mut audited_policy = RtkFixPolicy::new(RtkFixConfig::default()).unwrap();
+        let mut control_policy = RtkFixPolicy::new(RtkFixConfig::default()).unwrap();
+        for (rover, base) in f.rover.iter().zip(&f.base) {
+            let float = audited_engine.process_pair(rover, base, &f.nav).unwrap();
+            let control = control_engine.process_pair(rover, base, &f.nav).unwrap();
+            assert_eq!(float, control);
+            let before = float.clone();
+            let state = audited_engine.state().unwrap().clone();
+            let integers: Vec<_> = float
+                .ambiguity_satellites
+                .iter()
+                .map(|s| f.sd[&float.reference_satellite] - f.sd[s])
+                .collect();
+            let original = validate_candidate(&float, &integers, RtkFixConfig::default()).unwrap();
+            let audit =
+                audit_candidate_references(&float, &integers, RtkFixConfig::default()).unwrap();
+            assert_eq!(audit.time, rover.time);
+            assert_eq!(audit.source_reference, float.reference_satellite);
+            assert_eq!(audit.references.len(), f.sd.len());
+            for entry in &audit.references {
+                let expected: Vec<_> = entry
+                    .ambiguity_satellites
+                    .iter()
+                    .map(|s| f.sd[&entry.reference_satellite] - f.sd[s])
+                    .collect();
+                assert_eq!(entry.integers, expected);
+                let v = &entry.validation;
+                for i in 0..3 {
+                    close(
+                        v.conditioned.state.mean[i],
+                        original.conditioned.state.mean[i],
+                        1e-7,
+                    );
+                    for j in 0..3 {
+                        close(
+                            v.conditioned.state.covariance[i][j],
+                            original.conditioned.state.covariance[i][j],
+                            1e-10,
+                        );
+                    }
+                }
+                close(
+                    v.conditioned.squared_ambiguity_residual,
+                    original.conditioned.squared_ambiguity_residual,
+                    1e-6,
+                );
+                close(v.postfit_nis_per_row, original.postfit_nis_per_row, 1e-6);
+                let position = EcefCoord::new(
+                    f.base_position.x + v.conditioned.state.mean[0],
+                    f.base_position.y + v.conditioned.state.mean[1],
+                    f.base_position.z + v.conditioned.state.mean[2],
+                );
+                assert!(distance(position, f.truth) < if noisy { 0.005 } else { 0.003 });
+                if entry.reference_satellite == float.reference_satellite {
+                    assert_eq!(*v, original);
+                    assert_eq!(entry.integers, integers);
+                }
+                references += 1;
+            }
+            assert_eq!(float, before);
+            assert_eq!(*audited_engine.state().unwrap(), state);
+            assert_eq!(
+                audited_policy.evaluate(&float).unwrap(),
+                control_policy.evaluate(&control).unwrap()
+            );
+        }
+    }
+    assert_eq!(references, 576);
+}
+
+#[test]
+fn reference_audit_uses_snapshot_identity_and_rejects_unrepresentable_equivalent_integers() {
+    let f = fixture(false);
+    let mut engine = filter(&f);
+    let mut float = engine
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let integers: Vec<_> = float
+        .ambiguity_satellites
+        .iter()
+        .map(|s| f.sd[&float.reference_satellite] - f.sd[s])
+        .collect();
+    let expected = audit_candidate_references(&float, &integers, RtkFixConfig::default()).unwrap();
+    float.reference_satellite = "G99".parse().unwrap();
+    float.ambiguity_satellites.reverse();
+    float.ambiguities.dd_float_cycles.fill(1e6);
+    assert_eq!(
+        audit_candidate_references(&float, &integers, RtkFixConfig::default()).unwrap(),
+        expected
+    );
+    let before = float.clone();
+    assert_eq!(
+        audit_candidate_references(&float, &[], RtkFixConfig::default()),
+        Err(FixError::Filter(FilterError::InvalidDimensions))
+    );
+    for value in [i64::MIN, i64::MAX, 1_i64 << 52] {
+        let mut bad = integers.clone();
+        bad[0] = value;
+        assert_eq!(
+            audit_candidate_references(&float, &bad, RtkFixConfig::default()),
+            Err(FixError::InvalidInteger)
+        );
+    }
+    let mut bad = integers.clone();
+    bad[0] = (1_i64 << 52) - 1;
+    bad[1] = -((1_i64 << 52) - 1);
+    assert_eq!(
+        audit_candidate_references(&float, &bad, RtkFixConfig::default()),
+        Err(FixError::InvalidInteger)
+    );
+    assert_eq!(
+        audit_candidate_references(
+            &float,
+            &integers,
+            RtkFixConfig {
+                max_phase_residual_rms_m: f64::NAN,
+                ..Default::default()
+            }
+        ),
+        Err(FixError::InvalidConfiguration)
+    );
+    assert_eq!(float, before);
+}
+
+#[test]
+fn same_physical_wrong_integer_is_rejected_under_every_reference() {
+    let f = fixture(true);
+    let mut engine = filter(&f);
+    let mut last = None;
+    for i in 0..10 {
+        last = Some(
+            engine
+                .process_pair(&f.rover[i], &f.base[i], &f.nav)
+                .unwrap(),
+        );
+    }
+    let float = last.unwrap();
+    let mut integers: Vec<_> = float
+        .ambiguity_satellites
+        .iter()
+        .map(|s| f.sd[&float.reference_satellite] - f.sd[s])
+        .collect();
+    integers[0] += 1;
+    let audit = audit_candidate_references(&float, &integers, RtkFixConfig::default()).unwrap();
+    for entry in &audit.references {
+        assert!(entry.validation.rejection.is_some(), "{entry:?}");
+        close(
+            entry.validation.conditioned.squared_ambiguity_residual,
+            audit.references[0]
+                .validation
+                .conditioned
+                .squared_ambiguity_residual,
+            1e-6,
+        );
+    }
+}
+
+#[test]
+fn fractional_carrier_bias_exposes_actual_reference_sensitive_local_gates() {
+    let f = fixture(false);
+    let target = *f.sd.keys().next().unwrap();
+    let mut engine = filter(&f);
+    let mut sensitive = 0;
+    for i in 0..32 {
+        let mut rover = f.rover[i].clone();
+        if i >= 10 {
+            *rover
+                .observations
+                .iter_mut()
+                .find(|o| o.satellite == target)
+                .unwrap()
+                .carrier_phase_cycles
+                .as_mut()
+                .unwrap() += 0.15;
+        }
+        let float = engine.process_pair(&rover, &f.base[i], &f.nav).unwrap();
+        let integers: Vec<_> = float
+            .ambiguity_satellites
+            .iter()
+            .map(|s| f.sd[&float.reference_satellite] - f.sd[s])
+            .collect();
+        let audit = audit_candidate_references(&float, &integers, RtkFixConfig::default()).unwrap();
+        if audit.local_rejection_depends_on_reference() {
+            sensitive += 1;
+        }
+        let first = &audit.references[0].validation;
+        for entry in &audit.references {
+            for j in 0..3 {
+                close(
+                    entry.validation.conditioned.state.mean[j],
+                    first.conditioned.state.mean[j],
+                    1e-7,
+                );
+            }
+            close(
+                entry.validation.postfit_nis_per_row,
+                first.postfit_nis_per_row,
+                1e-6,
+            );
+        }
+    }
+    assert!(
+        sensitive > 0,
+        "fixed 0.15-cycle fault did not expose a reference-dependent local rejection"
+    );
+    eprintln!("0.15-cycle G01 fault: reference-sensitive local rejection epochs {sensitive}/32");
 }
 
 #[test]

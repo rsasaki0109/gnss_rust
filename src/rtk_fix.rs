@@ -7,7 +7,7 @@
 
 use crate::filter::{self, FilterError, GaussianState, Matrix};
 use crate::lambda::LambdaConfig;
-use crate::rtk::{RtkError, RtkFloatSolution};
+use crate::rtk::{FixContext, RtkError, RtkFloatSolution};
 use crate::{EcefCoord, GnssTime, PositionSolution, SatelliteId, SolutionStatus};
 use std::{collections::BTreeMap, fmt};
 
@@ -337,8 +337,15 @@ pub fn validate_candidate(
     integers: &[i64],
     config: RtkFixConfig,
 ) -> Result<CandidateValidation, FixError> {
+    validate_context(&float.fix_context, integers, config)
+}
+
+fn validate_context(
+    context: &FixContext,
+    integers: &[i64],
+    config: RtkFixConfig,
+) -> Result<CandidateValidation, FixError> {
     config.validate()?;
-    let context = &float.fix_context;
     let ambiguity = context.ambiguities()?;
     let conditioned = condition_head(
         &context.head_prior(),
@@ -405,6 +412,114 @@ pub fn validate_candidate(
         float_correction_m: correction,
         max_position_std_m: std,
         rejection,
+    })
+}
+
+/// Local validation of the same physical integer candidate in one DD basis.
+/// This is not a fresh LAMBDA search or a policy-level FIX decision.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReferenceCandidateValidation {
+    pub reference_satellite: SatelliteId,
+    pub ambiguity_satellites: Vec<SatelliteId>,
+    pub integers: Vec<i64>,
+    pub validation: CandidateValidation,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct CandidateReferenceAudit {
+    pub time: GnssTime,
+    pub source_reference: SatelliteId,
+    pub references: Vec<ReferenceCandidateValidation>,
+}
+impl CandidateReferenceAudit {
+    pub fn local_rejection_depends_on_reference(&self) -> bool {
+        self.references.first().is_some_and(|first| {
+            self.references
+                .iter()
+                .any(|entry| entry.validation.rejection != first.validation.rejection)
+        })
+    }
+}
+
+/// Re-express one supplied candidate under every reference in the immutable
+/// FLOAT observation snapshot and run the unchanged local validation gates.
+///
+/// Integers use the snapshot's original reference-minus-target ordering.
+/// Rebased values use checked integer differences and the same strict 2^52
+/// bound as condition_head. The complete audit fails if any basis cannot
+/// represent the candidate in that range.
+///
+/// Raw observations, SD state/covariance, filter and FIX-policy history are
+/// unchanged. Public display fields do not override the immutable snapshot.
+/// Passing local validation is distinct from eligibility, ratio, confirmation
+/// and history checks. This function selects no reference or winning result.
+pub fn audit_candidate_references(
+    float: &RtkFloatSolution,
+    integers: &[i64],
+    config: RtkFixConfig,
+) -> Result<CandidateReferenceAudit, FixError> {
+    config.validate()?;
+    let source = &float.fix_context;
+    let satellites = source.satellites();
+    if integers.len() + 1 != satellites.len() {
+        return Err(FilterError::InvalidDimensions.into());
+    }
+    if integers.iter().any(|i| i.unsigned_abs() >= (1_u64 << 52)) {
+        return Err(FixError::InvalidInteger);
+    }
+    let original_reference = source.reference_satellite();
+    let mut original_dd = BTreeMap::from([(original_reference, 0_i64)]);
+    for (satellite, integer) in satellites
+        .iter()
+        .filter(|s| **s != original_reference)
+        .zip(integers)
+    {
+        original_dd.insert(*satellite, *integer);
+    }
+    // Check all bases before numerical evaluation; no partially evaluated
+    // result is returned for an out-of-range equivalent representation.
+    let minimum = original_dd
+        .values()
+        .min()
+        .ok_or(FilterError::InvalidDimensions)?;
+    let maximum = original_dd
+        .values()
+        .max()
+        .ok_or(FilterError::InvalidDimensions)?;
+    let span = maximum
+        .checked_sub(*minimum)
+        .ok_or(FixError::InvalidInteger)?;
+    if span.unsigned_abs() >= (1_u64 << 52) {
+        return Err(FixError::InvalidInteger);
+    }
+    let mut references = Vec::with_capacity(satellites.len());
+    for &reference in &satellites {
+        let targets: Vec<_> = satellites
+            .iter()
+            .copied()
+            .filter(|s| *s != reference)
+            .collect();
+        let equivalent = targets
+            .iter()
+            .map(|satellite| {
+                original_dd[satellite]
+                    .checked_sub(original_dd[&reference])
+                    .ok_or(FixError::InvalidInteger)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let context = source.with_reference(reference)?;
+        let validation = validate_context(&context, &equivalent, config)?;
+        references.push(ReferenceCandidateValidation {
+            reference_satellite: reference,
+            ambiguity_satellites: targets,
+            integers: equivalent,
+            validation,
+        });
+    }
+    Ok(CandidateReferenceAudit {
+        time: source.time,
+        source_reference: original_reference,
+        references,
     })
 }
 

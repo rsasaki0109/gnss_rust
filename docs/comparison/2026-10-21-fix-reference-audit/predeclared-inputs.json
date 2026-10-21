@@ -1,0 +1,32 @@
+{
+  "source_input_sha256": {
+    "src/rtk.rs": "5620934ab52c7619cf5c707154d6ed47dbff8bbe2f245107f3f7c0375add1ea2",
+    "src/rtk_fix.rs": "89330b1487fa806c0adf3f3e9cfd539a7e6e93e80f4b22fbb2d4a34c3e576d84",
+    "src/filter.rs": "31fe26a27f04a5138df4a6c92e2027d6d7f2c665929a40a9da7340669eb8a0bc",
+    "src/lambda.rs": "e4d9ff497a22d291a1409824e0769a894a793d2c8e3d8233e9d50577412cee0f",
+    "examples/rtk_candidate_reference_audit.rs": "ce8fa3fb0a290024ce1ea73557a2bbf907d2185a20206d1670b99ef117d9761e",
+    "scripts/run_rtk_candidate_reference_audit.py": "6023bf63298d77b38a6414ebe784089237769c84b684c8e108689a1cdded00c0",
+    "tests/fixtures/synthetic_rtk.nav": "f2f6cfabd725baddadbed4b633927a714f61ffb3a1faf83ef26d2e4df31daa0e",
+    "tests/fixtures/synthetic_rtk_truth.csv": "f4c3656504adc9206f5395da50b83e64fe91be1aafa239a96cfaea299a32ceac",
+    "tests/fixtures/synthetic_rtk_rover.obs": "8122e0c5f87d0d6691c23ca637aee06f4fc46ef954716bd5d875908c3fd35f06",
+    "tests/fixtures/synthetic_rtk_rover_noisy.obs": "8c8f897d4b2ed6e2f52390a1995ed6b995a533873560acf3ac4d7f2fcfd898c7",
+    "tests/fixtures/synthetic_rtk_base.obs": "f3b8fc9f600a1e0505d81f26f1cc90add3cda5dff55f0a683a05dce7418fa27a",
+    "tests/fixtures/synthetic_rtk_base_noisy.obs": "10df4b919ee85d95dddb9b794f1f976b9c0da3d13e639f2bbe3a2bbb686d78fc"
+  },
+  "binary_sha256": "517c1107b087598cceeeaaac1496449e72c8843ca8b508701afd9b5853f51a79",
+  "cases": [
+    "clean",
+    "noisy",
+    "phase-bias"
+  ],
+  "fixed_phase_bias_cycles": 0.15,
+  "first_zero_based_fault_epoch": 10,
+  "candidate_source": "one original-basis LAMBDA candidate, re-expressed exactly",
+  "best_reference_selected": false,
+  "truth_used_to_select_candidate": false,
+  "truth_used_to_report_synthetic_correctness_only": true,
+  "synthetic_only": true,
+  "new_PPC_execution": false,
+  "new_native_whole_execution": false,
+  "performance_accepted": false
+}
