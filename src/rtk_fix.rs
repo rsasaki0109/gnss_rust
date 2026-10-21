@@ -1,5 +1,6 @@
 //! GPS L1 / Galileo E1 integer validation on immutable FLOAT snapshots.
-//! The initial policy still declares FIX only for GPS static snapshots.
+//! Default FIX uses GPS static snapshots. Kinematic GPS/Galileo is opt-in and
+//! requires timestamped velocity evidence for displacement-history checks.
 //!
 //! Head-state conditioning and position-independent code/phase validation are
 //! derived from libgnss++ rtk_ar_evaluation / rtk_cp_pr_gate components.
@@ -17,6 +18,8 @@ pub enum FixError {
     InvalidConfiguration,
     UnsupportedPositionMode,
     UnsupportedConstellations,
+    MotionEvidenceRequired,
+    InvalidMotionEvidence,
     ReferenceSetLimit,
     InvalidInteger,
     OutOfOrder,
@@ -28,10 +31,16 @@ impl fmt::Display for FixError {
         match self {
             Self::InvalidConfiguration => f.write_str("invalid integer validation configuration"),
             Self::UnsupportedPositionMode => {
-                f.write_str("initial FIX policy requires static position mode")
+                f.write_str("FIX policy position mode does not match the FLOAT snapshot")
             }
             Self::UnsupportedConstellations => {
                 f.write_str("initial FIX validation requires GPS-only observations")
+            }
+            Self::MotionEvidenceRequired => {
+                f.write_str("kinematic FIX requires explicit motion evaluation")
+            }
+            Self::InvalidMotionEvidence => {
+                f.write_str("invalid or mismatched kinematic motion evidence")
             }
             Self::ReferenceSetLimit => {
                 f.write_str("candidate audit exceeds the reference-set limit")
@@ -304,6 +313,8 @@ pub enum FixDecision {
     PostfitInnovation,
     BaselineTooLong,
     HistoryJump,
+    MotionUnavailable,
+    MotionUncertain,
     Confirming,
 }
 impl fmt::Display for FixDecision {
@@ -323,6 +334,8 @@ impl fmt::Display for FixDecision {
             Self::PostfitInnovation => "postfit_innovation",
             Self::BaselineTooLong => "baseline_too_long",
             Self::HistoryJump => "history_jump",
+            Self::MotionUnavailable => "motion_unavailable",
+            Self::MotionUncertain => "motion_uncertain",
             Self::Confirming => "confirming",
         })
     }
@@ -716,6 +729,9 @@ pub struct RtkFixAttempt {
     /// validation above remains the original-reference view; decision applies
     /// the intersection of all references' local gates.
     pub reference_audit: Option<CandidateReferenceAudit>,
+    pub system_reference_audit: Option<SystemCandidateReferenceAudit>,
+    pub motion_max_velocity_std_mps: Option<f64>,
+    pub motion_checks: Vec<MotionHistoryCheck>,
     pub confirmation_count: usize,
     /// Present only after every policy and local validation check passes.
     pub fixed_solution: Option<PositionSolution>,
@@ -727,21 +743,87 @@ pub enum ReferenceGateMode {
     Selected,
     AllReferences,
 }
-struct Pending {
-    key: Vec<(SatelliteId, i64)>,
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct KinematicMotionConfig {
+    pub max_velocity_std_mps: f64,
+    pub max_interval_s: f64,
+}
+impl Default for KinematicMotionConfig {
+    fn default() -> Self {
+        Self {
+            max_velocity_std_mps: 1.0,
+            max_interval_s: 2.0,
+        }
+    }
+}
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct RtkMotionEvidence {
+    pub time: GnssTime,
+    pub velocity_mps: [f64; 3],
+    pub covariance_m2s2: [[f64; 3]; 3],
+}
+impl RtkMotionEvidence {
+    pub fn from_velocity_solution(
+        time: GnssTime,
+        velocity: &crate::velocity::VelocitySolution,
+    ) -> Self {
+        Self {
+            time,
+            velocity_mps: velocity.velocity_mps,
+            covariance_m2s2: std::array::from_fn(|i| {
+                std::array::from_fn(|j| velocity.covariance_m2s2[i][j])
+            }),
+        }
+    }
+    fn validate(self, time: GnssTime) -> Result<f64, FixError> {
+        if self.time.difference_seconds(time).abs() > 1e-7
+            || !self.velocity_mps.iter().all(|v| v.is_finite())
+        {
+            return Err(FixError::InvalidMotionEvidence);
+        }
+        let covariance: Matrix = self.covariance_m2s2.iter().map(|r| r.to_vec()).collect();
+        filter::cholesky(&covariance).map_err(|_| FixError::InvalidMotionEvidence)?;
+        Ok((0..3)
+            .map(|i| self.covariance_m2s2[i][i].sqrt())
+            .fold(0.0, f64::max))
+    }
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MotionHistoryKind {
+    LastFixed,
+    PreviousCandidate,
+}
+#[derive(Debug, Clone, PartialEq)]
+pub struct MotionHistoryCheck {
+    pub kind: MotionHistoryKind,
+    pub interval_s: f64,
+    pub predicted_displacement_m: [f64; 3],
+    pub displacement_residual_m: [f64; 3],
+    pub residual_norm_m: f64,
+    pub maximum_m: f64,
+}
+#[derive(Clone, Copy)]
+struct HistoryPoint {
     position: EcefCoord,
     time: GnssTime,
+    velocity: Option<[f64; 3]>,
+}
+struct Pending {
+    key: Vec<(SatelliteId, i64)>,
+    point: HistoryPoint,
     count: usize,
 }
 /// Conservative initial full-set AR policy. Accepted integers are checked anew
 /// every epoch; no fix-and-hold or conditional state feeds back to FLOAT.
 pub struct RtkFixPolicy {
     config: RtkFixConfig,
+    motion_config: Option<KinematicMotionConfig>,
     reference_gate_mode: ReferenceGateMode,
     locks: BTreeMap<SatelliteId, usize>,
     last_time: Option<GnssTime>,
     pending: Option<Pending>,
-    anchor: Option<(EcefCoord, GnssTime)>,
+    anchor: Option<HistoryPoint>,
 }
 impl RtkFixPolicy {
     pub fn new(config: RtkFixConfig) -> Result<Self, FixError> {
@@ -757,12 +839,32 @@ impl RtkFixPolicy {
         config.validate()?;
         Ok(Self {
             config,
+            motion_config: None,
             reference_gate_mode,
             locks: BTreeMap::new(),
             last_time: None,
             pending: None,
             anchor: None,
         })
+    }
+    /// Opt-in full-set kinematic GPS/Galileo policy. Requires at least two
+    /// confirmations and explicit velocity evidence; no integer holding or
+    /// velocity/position fusion. Existing local thresholds stay unchanged.
+    pub fn for_kinematic(
+        config: RtkFixConfig,
+        motion: KinematicMotionConfig,
+        reference_gate_mode: ReferenceGateMode,
+    ) -> Result<Self, FixError> {
+        if config.min_confirmation_epochs < 2
+            || [motion.max_velocity_std_mps, motion.max_interval_s]
+                .iter()
+                .any(|v| !v.is_finite() || *v <= 0.0)
+        {
+            return Err(FixError::InvalidConfiguration);
+        }
+        let mut policy = Self::with_reference_gates(config, reference_gate_mode)?;
+        policy.motion_config = Some(motion);
+        Ok(policy)
     }
     pub fn reset(&mut self) {
         self.locks.clear();
@@ -772,18 +874,100 @@ impl RtkFixPolicy {
     }
     fn reject(&mut self, mut attempt: RtkFixAttempt, decision: FixDecision) -> RtkFixAttempt {
         self.pending = None;
+        if self.motion_config.is_some()
+            && matches!(
+                decision,
+                FixDecision::MotionUnavailable
+                    | FixDecision::MotionUncertain
+                    | FixDecision::HistoryJump
+            )
+        {
+            self.anchor = None;
+        }
         attempt.decision = decision;
         attempt
     }
+    fn history_age_limit(&self) -> f64 {
+        self.motion_config
+            .map_or(self.config.max_history_age_s, |m| {
+                m.max_interval_s.min(self.config.max_history_age_s)
+            })
+    }
+    fn history_difference(
+        &self,
+        current: HistoryPoint,
+        previous: HistoryPoint,
+        kind: MotionHistoryKind,
+    ) -> (f64, Option<MotionHistoryCheck>) {
+        if self.motion_config.is_none() {
+            return (distance(current.position, previous.position), None);
+        }
+        let dt = current.time.difference_seconds(previous.time);
+        let a = previous.velocity.expect("kinematic history velocity");
+        let b = current.velocity.expect("admitted kinematic velocity");
+        let predicted = std::array::from_fn(|i| (0.5 * a[i] + 0.5 * b[i]) * dt);
+        let observed = [
+            current.position.x - previous.position.x,
+            current.position.y - previous.position.y,
+            current.position.z - previous.position.z,
+        ];
+        let residual: [f64; 3] = std::array::from_fn(|i| observed[i] - predicted[i]);
+        let norm = residual[0].hypot(residual[1]).hypot(residual[2]);
+        (
+            norm,
+            Some(MotionHistoryCheck {
+                kind,
+                interval_s: dt,
+                predicted_displacement_m: predicted,
+                displacement_residual_m: residual,
+                residual_norm_m: norm,
+                maximum_m: self.config.max_history_jump_m,
+            }),
+        )
+    }
     pub fn evaluate(&mut self, float: &RtkFloatSolution) -> Result<RtkFixAttempt, FixError> {
+        if self.motion_config.is_some() {
+            return Err(FixError::MotionEvidenceRequired);
+        }
+        self.evaluate_inner(float, None)
+    }
+    pub fn evaluate_kinematic(
+        &mut self,
+        float: &RtkFloatSolution,
+        motion: Option<&RtkMotionEvidence>,
+    ) -> Result<RtkFixAttempt, FixError> {
+        if self.motion_config.is_none() {
+            return Err(FixError::UnsupportedPositionMode);
+        }
+        self.evaluate_inner(float, motion)
+    }
+    fn evaluate_inner(
+        &mut self,
+        float: &RtkFloatSolution,
+        motion: Option<&RtkMotionEvidence>,
+    ) -> Result<RtkFixAttempt, FixError> {
         let context = &float.fix_context;
-        if context.config.constellations != crate::rtk::RtkConstellations::Gps {
+        if self.motion_config.is_none()
+            && context.config.constellations != crate::rtk::RtkConstellations::Gps
+        {
             return Err(FixError::UnsupportedConstellations);
         }
-        if context.config.position_mode != crate::rtk::RtkPositionMode::Static {
+        let mode = if self.motion_config.is_some() {
+            crate::rtk::RtkPositionMode::Kinematic
+        } else {
+            crate::rtk::RtkPositionMode::Static
+        };
+        if context.config.position_mode != mode {
             return Err(FixError::UnsupportedPositionMode);
         }
         let time = context.time;
+        let velocity_std = motion.map(|m| m.validate(time)).transpose()?;
+        if let Some(motion) = motion {
+            let v = motion.velocity_mps;
+            if !(v[0].hypot(v[1]).hypot(v[2]) * self.history_age_limit()).is_finite() {
+                return Err(FixError::InvalidMotionEvidence);
+            }
+        }
         if self
             .last_time
             .is_some_and(|t| time.difference_seconds(t) <= 0.0)
@@ -819,10 +1003,22 @@ impl RtkFixPolicy {
             integers: Vec::new(),
             validation: None,
             reference_audit: None,
+            system_reference_audit: None,
+            motion_max_velocity_std_mps: velocity_std,
+            motion_checks: Vec::new(),
             confirmation_count: 0,
             fixed_solution: None,
         };
-        if satellites.len() - 1 < self.config.min_ambiguity_pairs {
+        if let Some(config) = self.motion_config {
+            let Some(std) = velocity_std else {
+                return Ok(self.reject(attempt, FixDecision::MotionUnavailable));
+            };
+            if std > config.max_velocity_std_mps {
+                return Ok(self.reject(attempt, FixDecision::MotionUncertain));
+            }
+        }
+        if satellites.len() - context.reference_satellites().len() < self.config.min_ambiguity_pairs
+        {
             return Ok(self.reject(attempt, FixDecision::InsufficientPairs));
         }
         if self
@@ -857,6 +1053,21 @@ impl RtkFixPolicy {
                 validate_candidate(float, &attempt.integers, self.config)
                     .map(|validation| (validation.rejection, validation))
             }
+            ReferenceGateMode::AllReferences if self.motion_config.is_some() => {
+                audit_candidate_system_references(float, &attempt.integers, self.config, 4096)
+                    .and_then(|audit| {
+                        let rejection = audit.conservative_rejection();
+                        let original = audit
+                            .reference_sets
+                            .iter()
+                            .find(|entry| entry.reference_satellites == audit.source_references)
+                            .ok_or(FilterError::InvalidDimensions)?
+                            .validation
+                            .clone();
+                        attempt.system_reference_audit = Some(audit);
+                        Ok((rejection, original))
+                    })
+            }
             ReferenceGateMode::AllReferences => {
                 audit_candidate_references(float, &attempt.integers, self.config).and_then(
                     |audit| {
@@ -883,42 +1094,57 @@ impl RtkFixPolicy {
         if let Some(reason) = rejection {
             return Ok(self.reject(attempt, reason));
         }
-        if let Some((anchor, at)) = self.anchor {
-            if time.difference_seconds(at) > self.config.max_history_age_s {
+        let point = HistoryPoint {
+            position: fixed_position,
+            time,
+            velocity: motion.map(|m| m.velocity_mps),
+        };
+        if let Some(anchor) = self.anchor {
+            if time.difference_seconds(anchor.time) > self.history_age_limit() {
                 self.anchor = None;
-            } else if distance(fixed_position, anchor) > self.config.max_history_jump_m {
-                return Ok(self.reject(attempt, FixDecision::HistoryJump));
+            } else {
+                let (residual, check) =
+                    self.history_difference(point, anchor, MotionHistoryKind::LastFixed);
+                if let Some(check) = check {
+                    attempt.motion_checks.push(check);
+                }
+                if residual > self.config.max_history_jump_m {
+                    return Ok(self.reject(attempt, FixDecision::HistoryJump));
+                }
             }
         }
         // Canonical reference-independent DD labels for repeated confirmation.
         let mut dd = BTreeMap::new();
-        let reference = context.reference_satellite();
-        dd.insert(reference, 0_i64);
-        for (&sat, &integer) in satellites
-            .iter()
-            .filter(|s| **s != reference)
-            .zip(&attempt.integers)
-        {
+        for reference in context.reference_satellites() {
+            dd.insert(reference, 0_i64);
+        }
+        for (&sat, &integer) in context.ambiguity_satellites().iter().zip(&attempt.integers) {
             dd.insert(sat, integer);
         }
-        let root = *dd.values().next().ok_or(FilterError::InvalidDimensions)?;
-        let key: Vec<_> = dd.into_iter().map(|(s, n)| (s, n - root)).collect();
-        let count = match &self.pending {
-            Some(p)
-                if p.key == key
-                    && time.difference_seconds(p.time) <= self.config.max_history_age_s
-                    && distance(fixed_position, p.position) <= self.config.max_history_jump_m =>
-            {
-                p.count.saturating_add(1)
+        let mut roots = BTreeMap::new();
+        for (&sat, &n) in &dd {
+            roots.entry(sat.system()).or_insert(n);
+        }
+        let key: Vec<_> = dd
+            .into_iter()
+            .map(|(s, n)| (s, n - roots[&s.system()]))
+            .collect();
+        let mut count = 1;
+        if let Some(p) = &self.pending {
+            if p.key == key && time.difference_seconds(p.point.time) <= self.history_age_limit() {
+                let (residual, check) =
+                    self.history_difference(point, p.point, MotionHistoryKind::PreviousCandidate);
+                if let Some(check) = check {
+                    attempt.motion_checks.push(check);
+                }
+                if residual <= self.config.max_history_jump_m {
+                    count = p.count.saturating_add(1);
+                } else if self.motion_config.is_some() {
+                    return Ok(self.reject(attempt, FixDecision::HistoryJump));
+                }
             }
-            _ => 1,
-        };
-        self.pending = Some(Pending {
-            key,
-            position: fixed_position,
-            time,
-            count,
-        });
+        }
+        self.pending = Some(Pending { key, point, count });
         attempt.confirmation_count = count;
         if count < self.config.min_confirmation_epochs {
             attempt.decision = FixDecision::Confirming;
@@ -936,7 +1162,7 @@ impl RtkFixPolicy {
             ..PositionSolution::default()
         });
         attempt.decision = FixDecision::Accepted;
-        self.anchor = Some((fixed_position, time));
+        self.anchor = Some(point);
         Ok(attempt)
     }
 }
@@ -947,6 +1173,81 @@ mod tests {
     use crate::rinex::{RinexObservationReader, read_navigation};
     use crate::rtk::{RtkFloatConfig, RtkFloatFilter};
     use std::io::Cursor;
+
+    #[test]
+    fn kinematic_confirmations_survive_independent_reference_changes_in_both_systems() {
+        use crate::rtk::{RtkConstellations, RtkPositionMode};
+        let mut r = RinexObservationReader::new(Cursor::new(include_str!(
+            "../tests/fixtures/synthetic_rtk_mixed_rover.obs"
+        )))
+        .unwrap();
+        let mut b = RinexObservationReader::new(Cursor::new(include_str!(
+            "../tests/fixtures/synthetic_rtk_mixed_base.obs"
+        )))
+        .unwrap();
+        let seed = r.header().approximate_position.unwrap();
+        let base = b.header().approximate_position.unwrap();
+        let nav = read_navigation(Cursor::new(include_str!(
+            "../tests/fixtures/synthetic_rtk_mixed.nav"
+        )))
+        .unwrap();
+        let truth: Vec<Vec<f64>> = include_str!("../tests/fixtures/synthetic_rtk_mixed_truth.csv")
+            .lines()
+            .skip(1)
+            .map(|l| l.split(',').map(|v| v.parse().unwrap()).collect())
+            .collect();
+        let velocity = std::array::from_fn(|j| truth[1][2 + j] - truth[0][2 + j]);
+        let mut engine = RtkFloatFilter::new(
+            base,
+            seed,
+            RtkFloatConfig {
+                constellations: RtkConstellations::GpsGalileo,
+                position_mode: RtkPositionMode::Kinematic,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let mut original = RtkFixPolicy::for_kinematic(
+            RtkFixConfig::default(),
+            KinematicMotionConfig::default(),
+            ReferenceGateMode::AllReferences,
+        )
+        .unwrap();
+        let mut changed = RtkFixPolicy::for_kinematic(
+            RtkFixConfig::default(),
+            KinematicMotionConfig::default(),
+            ReferenceGateMode::AllReferences,
+        )
+        .unwrap();
+        for (i, (ro, ba)) in r.by_ref().zip(b.by_ref()).enumerate() {
+            let ro = ro.unwrap();
+            let float = engine.process_pair(&ro, &ba.unwrap(), &nav).unwrap();
+            let sample = RtkMotionEvidence {
+                time: ro.time,
+                velocity_mps: velocity,
+                covariance_m2s2: [[1e-4, 0.0, 0.0], [0.0, 1e-4, 0.0], [0.0, 0.0, 1e-4]],
+            };
+            let mut rebased = float.clone();
+            let satellites = float.fix_context.satellites();
+            let mut systems = BTreeMap::<_, Vec<_>>::new();
+            for s in satellites {
+                systems.entry(s.system()).or_default().push(s);
+            }
+            let references: Vec<_> = systems
+                .values()
+                .enumerate()
+                .map(|(j, s)| s[(i + j) % s.len()])
+                .collect();
+            rebased.fix_context = float.fix_context.with_references(&references).unwrap();
+            let a = original.evaluate_kinematic(&float, Some(&sample)).unwrap();
+            let z = changed.evaluate_kinematic(&rebased, Some(&sample)).unwrap();
+            assert_eq!(a.decision, z.decision, "epoch {i}");
+            assert_eq!(a.confirmation_count, z.confirmation_count);
+            if let (Some(a), Some(z)) = (a.fixed_solution, z.fixed_solution) {
+                assert!(distance(a.position_ecef.unwrap(), z.position_ecef.unwrap()) < 1e-6);
+            }
+        }
+    }
 
     #[test]
     fn all_reference_gates_survive_actual_snapshot_reference_changes() {

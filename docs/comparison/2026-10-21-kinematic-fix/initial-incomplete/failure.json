@@ -1,0 +1,9 @@
+{
+  "stage": "summary assertion at nagoya-run2.galileo_selected_std1",
+  "cause": "Python x**0.5 vs Rust sqrt rounded differently; all raw velocity/covariance columns equal",
+  "completed_summaries": 12,
+  "retained_solver_runs": 13,
+  "solver_failures": 0,
+  "correction": "Use math.sqrt for the independently recomputed published standard deviation; no solver thresholds or numeric gates changed",
+  "replaced_by": "../report.json"
+}

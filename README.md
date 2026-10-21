@@ -6,14 +6,17 @@
 
 
 **開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
-2026-10-21時点で344テストと標準チェックが通過しています。
+2026-10-21時点で352テストと標準チェックが通過しています。
 
 [PPCの元C++比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)では
 選択観測345,469行の一致を確認し、GPS/Galileo FLOATは検出併用で9,855点を出力。
 [移動局の別時計Doppler比較](docs/comparison/2026-10-21-multiclock-velocity/README.md)では
 速度出力が9,493→9,696点へ増え、最大参考誤差は87.31→34.81 m/s。大外れは残り、
 [位相/LLIの条件](docs/comparison/2026-10-21-carrier-lock-velocity/README.md)による品質と出力数の
-変化も検証しました。大外れは残り、移動体FIX政策とPPP比較は未完了です。
+変化も検証しました。
+[移動GPS/Galileoの初期FIX政策](docs/comparison/2026-10-21-kinematic-fix/README.md)も追加し、
+速度による変位履歴を確認します。PPC72実行で既定条件のFIXは2点、感度分析でも最多6点で、
+元C++の144点と差が残ります。実用FIX性能・部分AR・PPP比較は未達です。
 過去の実装・比較記録は[GOALS.md](GOALS.md)にまとめています。
 
 最終目標は **RTK・PPPが元のlibgnss++と同等の精度・解の状態・処理性能を持つこと**
@@ -21,6 +24,8 @@
 現時点ではコア機能、RINEX 3読み込み、放送暦、初期SPP、LAMBDA候補探索、
 GPS L1の静止/キネマティックFLOAT、選択式のGalileo E1 FLOATと、
 全衛星の整数候補を検証する初期GPS静止FIXを実装しています。
+移動GPS/Galileoでは明示的な速度を要求するFIX政策を選択でき、
+[`ppc_rtk_kinematic_fix`の例](examples/ppc_rtk_kinematic_fix.rs)でPPCを評価できます。
 PPPの土台としてSP3/CLK精密プロダクトの読み込み・補間にも対応しています。
 送信時刻の精密衛星状態と、明示的な信号補正を使う初期コードSPPも実装しています。
 二周波の電離層フリーコード・位相観測モデルも実装しています。

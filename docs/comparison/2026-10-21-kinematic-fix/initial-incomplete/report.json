@@ -1,0 +1,643 @@
+{
+  "practical_PPC_parity_accepted": false,
+  "cases": {
+    "nagoya-run1": {
+      "galileo_selected_std1": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 861,
+          "UNMATCHED": 6091,
+          "INVALID": 660
+        },
+        "valid_RTK_positions": 861,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "motion_uncertain": 853,
+          "motion_unavailable": 8
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.5288431078973774,
+              "vertical_rms_m": 7.30554292712723,
+              "three_dimensional_rms_m": 7.730847620051684,
+              "horizontal_p50_m": 0.3578412474600624,
+              "horizontal_p95_m": 2.3461389086747295,
+              "maximum_3d_m": 142.81658665229443
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.6896962592233358,
+              "vertical_rms_m": 7.2150349300291605,
+              "three_dimensional_rms_m": 7.70007759755841,
+              "horizontal_p50_m": 0.942726435222232,
+              "horizontal_p95_m": 2.484383316207377,
+              "maximum_3d_m": 141.856780688129
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      },
+      "galileo_selected_std2": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 859,
+          "UNMATCHED": 6091,
+          "INVALID": 660,
+          "FIX": 2
+        },
+        "valid_RTK_positions": 861,
+        "FIX_positions": 2,
+        "FIX_rate_among_pairs": 0.0013149243918474688,
+        "decision_counts": {
+          "insufficient_lock": 317,
+          "ratio_rejected": 359,
+          "code_phase_inconsistency": 45,
+          "phase_residuals": 27,
+          "motion_unavailable": 8,
+          "motion_uncertain": 101,
+          "confirming": 2,
+          "accepted": 2
+        },
+        "motion_checks": 3,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.5288415694253543,
+              "vertical_rms_m": 7.3054955220264794,
+              "three_dimensional_rms_m": 7.730802319656262,
+              "horizontal_p50_m": 0.3578412474600624,
+              "horizontal_p95_m": 2.3461389086747295,
+              "maximum_3d_m": 142.81658665229443
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.6897251488042455,
+              "vertical_rms_m": 7.215192923580817,
+              "three_dimensional_rms_m": 7.700235730196883,
+              "horizontal_p50_m": 0.942726435222232,
+              "horizontal_p95_m": 2.484383316207377,
+              "maximum_3d_m": 141.856780688129
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 2,
+              "horizontal_rms_m": 0.1313977194621242,
+              "vertical_rms_m": 0.02556655375620983,
+              "three_dimensional_rms_m": 0.1338619040310433,
+              "horizontal_p50_m": 0.13136396017512147,
+              "horizontal_p95_m": 0.13404448699545288,
+              "maximum_3d_m": 0.13711384250450925
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 2,
+              "horizontal_rms_m": 0.8495660976196509,
+              "vertical_rms_m": 1.2028557072543182,
+              "three_dimensional_rms_m": 1.4726250054575902,
+              "horizontal_p50_m": 0.8495370746205476,
+              "horizontal_p95_m": 0.8558571684943603,
+              "maximum_3d_m": 1.4788554414427406
+            }
+          }
+        }
+      },
+      "galileo_selected_std4": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 859,
+          "UNMATCHED": 6091,
+          "INVALID": 660,
+          "FIX": 2
+        },
+        "valid_RTK_positions": 861,
+        "FIX_positions": 2,
+        "FIX_rate_among_pairs": 0.0013149243918474688,
+        "decision_counts": {
+          "insufficient_lock": 351,
+          "ratio_rejected": 370,
+          "code_phase_inconsistency": 46,
+          "phase_residuals": 28,
+          "motion_unavailable": 8,
+          "motion_uncertain": 35,
+          "insufficient_pairs": 18,
+          "confirming": 3,
+          "accepted": 2
+        },
+        "motion_checks": 3,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.5288415694253543,
+              "vertical_rms_m": 7.3054955220264794,
+              "three_dimensional_rms_m": 7.730802319656262,
+              "horizontal_p50_m": 0.3578412474600624,
+              "horizontal_p95_m": 2.3461389086747295,
+              "maximum_3d_m": 142.81658665229443
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.6897251488042455,
+              "vertical_rms_m": 7.215192923580817,
+              "three_dimensional_rms_m": 7.700235730196883,
+              "horizontal_p50_m": 0.942726435222232,
+              "horizontal_p95_m": 2.484383316207377,
+              "maximum_3d_m": 141.856780688129
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 2,
+              "horizontal_rms_m": 0.1313977194621242,
+              "vertical_rms_m": 0.02556655375620983,
+              "three_dimensional_rms_m": 0.1338619040310433,
+              "horizontal_p50_m": 0.13136396017512147,
+              "horizontal_p95_m": 0.13404448699545288,
+              "maximum_3d_m": 0.13711384250450925
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 2,
+              "horizontal_rms_m": 0.8495660976196509,
+              "vertical_rms_m": 1.2028557072543182,
+              "three_dimensional_rms_m": 1.4726250054575902,
+              "horizontal_p50_m": 0.8495370746205476,
+              "horizontal_p95_m": 0.8558571684943603,
+              "maximum_3d_m": 1.4788554414427406
+            }
+          }
+        }
+      },
+      "galileo_all_std1": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 861,
+          "UNMATCHED": 6091,
+          "INVALID": 660
+        },
+        "valid_RTK_positions": 861,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "motion_uncertain": 853,
+          "motion_unavailable": 8
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.5288431078973774,
+              "vertical_rms_m": 7.30554292712723,
+              "three_dimensional_rms_m": 7.730847620051684,
+              "horizontal_p50_m": 0.3578412474600624,
+              "horizontal_p95_m": 2.3461389086747295,
+              "maximum_3d_m": 142.81658665229443
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.6896962592233358,
+              "vertical_rms_m": 7.2150349300291605,
+              "three_dimensional_rms_m": 7.70007759755841,
+              "horizontal_p50_m": 0.942726435222232,
+              "horizontal_p95_m": 2.484383316207377,
+              "maximum_3d_m": 141.856780688129
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      },
+      "galileo_all_std2": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 861,
+          "UNMATCHED": 6091,
+          "INVALID": 660
+        },
+        "valid_RTK_positions": 861,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "insufficient_lock": 317,
+          "ratio_rejected": 359,
+          "phase_residuals": 56,
+          "motion_unavailable": 8,
+          "motion_uncertain": 101,
+          "code_phase_inconsistency": 13,
+          "code_residuals": 6,
+          "confirming": 1
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.5288431078973774,
+              "vertical_rms_m": 7.30554292712723,
+              "three_dimensional_rms_m": 7.730847620051684,
+              "horizontal_p50_m": 0.3578412474600624,
+              "horizontal_p95_m": 2.3461389086747295,
+              "maximum_3d_m": 142.81658665229443
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.6896962592233358,
+              "vertical_rms_m": 7.2150349300291605,
+              "three_dimensional_rms_m": 7.70007759755841,
+              "horizontal_p50_m": 0.942726435222232,
+              "horizontal_p95_m": 2.484383316207377,
+              "maximum_3d_m": 141.856780688129
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      },
+      "galileo_all_std4": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 861,
+          "UNMATCHED": 6091,
+          "INVALID": 660
+        },
+        "valid_RTK_positions": 861,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "insufficient_lock": 351,
+          "ratio_rejected": 370,
+          "phase_residuals": 57,
+          "motion_unavailable": 8,
+          "motion_uncertain": 35,
+          "insufficient_pairs": 18,
+          "confirming": 2,
+          "code_phase_inconsistency": 14,
+          "code_residuals": 6
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.5288431078973774,
+              "vertical_rms_m": 7.30554292712723,
+              "three_dimensional_rms_m": 7.730847620051684,
+              "horizontal_p50_m": 0.3578412474600624,
+              "horizontal_p95_m": 2.3461389086747295,
+              "maximum_3d_m": 142.81658665229443
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 861,
+              "horizontal_rms_m": 2.6896962592233358,
+              "vertical_rms_m": 7.2150349300291605,
+              "three_dimensional_rms_m": 7.70007759755841,
+              "horizontal_p50_m": 0.942726435222232,
+              "horizontal_p95_m": 2.484383316207377,
+              "maximum_3d_m": 141.856780688129
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      },
+      "galileo_slips_selected_std1": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 867,
+          "UNMATCHED": 6091,
+          "INVALID": 654
+        },
+        "valid_RTK_positions": 867,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "motion_uncertain": 859,
+          "motion_unavailable": 8
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.587011216777153,
+              "vertical_rms_m": 7.249786260964347,
+              "three_dimensional_rms_m": 7.697533882055877,
+              "horizontal_p50_m": 0.34440241444849345,
+              "horizontal_p95_m": 2.992332830424475,
+              "maximum_3d_m": 142.81712412406938
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.730567956540299,
+              "vertical_rms_m": 7.185752408549478,
+              "three_dimensional_rms_m": 7.687069600456294,
+              "horizontal_p50_m": 0.9454186380017792,
+              "horizontal_p95_m": 2.9725157191349085,
+              "maximum_3d_m": 141.85731771553324
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      },
+      "galileo_slips_selected_std2": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 867,
+          "UNMATCHED": 6091,
+          "INVALID": 654
+        },
+        "valid_RTK_positions": 867,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "insufficient_lock": 596,
+          "ratio_rejected": 151,
+          "motion_uncertain": 103,
+          "motion_unavailable": 8,
+          "code_phase_inconsistency": 9
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.587011216777153,
+              "vertical_rms_m": 7.249786260964347,
+              "three_dimensional_rms_m": 7.697533882055877,
+              "horizontal_p50_m": 0.34440241444849345,
+              "horizontal_p95_m": 2.992332830424475,
+              "maximum_3d_m": 142.81712412406938
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.730567956540299,
+              "vertical_rms_m": 7.185752408549478,
+              "three_dimensional_rms_m": 7.687069600456294,
+              "horizontal_p50_m": 0.9454186380017792,
+              "horizontal_p95_m": 2.9725157191349085,
+              "maximum_3d_m": 141.85731771553324
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      },
+      "galileo_slips_selected_std4": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 867,
+          "UNMATCHED": 6091,
+          "INVALID": 654
+        },
+        "valid_RTK_positions": 867,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "insufficient_lock": 646,
+          "ratio_rejected": 151,
+          "motion_unavailable": 8,
+          "motion_uncertain": 35,
+          "insufficient_pairs": 18,
+          "code_phase_inconsistency": 9
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.587011216777153,
+              "vertical_rms_m": 7.249786260964347,
+              "three_dimensional_rms_m": 7.697533882055877,
+              "horizontal_p50_m": 0.34440241444849345,
+              "horizontal_p95_m": 2.992332830424475,
+              "maximum_3d_m": 142.81712412406938
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.730567956540299,
+              "vertical_rms_m": 7.185752408549478,
+              "three_dimensional_rms_m": 7.687069600456294,
+              "horizontal_p50_m": 0.9454186380017792,
+              "horizontal_p95_m": 2.9725157191349085,
+              "maximum_3d_m": 141.85731771553324
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      },
+      "galileo_slips_all_std1": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 867,
+          "UNMATCHED": 6091,
+          "INVALID": 654
+        },
+        "valid_RTK_positions": 867,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "motion_uncertain": 859,
+          "motion_unavailable": 8
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.587011216777153,
+              "vertical_rms_m": 7.249786260964347,
+              "three_dimensional_rms_m": 7.697533882055877,
+              "horizontal_p50_m": 0.34440241444849345,
+              "horizontal_p95_m": 2.992332830424475,
+              "maximum_3d_m": 142.81712412406938
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.730567956540299,
+              "vertical_rms_m": 7.185752408549478,
+              "three_dimensional_rms_m": 7.687069600456294,
+              "horizontal_p50_m": 0.9454186380017792,
+              "horizontal_p95_m": 2.9725157191349085,
+              "maximum_3d_m": 141.85731771553324
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      },
+      "galileo_slips_all_std2": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 867,
+          "UNMATCHED": 6091,
+          "INVALID": 654
+        },
+        "valid_RTK_positions": 867,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "insufficient_lock": 596,
+          "ratio_rejected": 151,
+          "motion_uncertain": 103,
+          "motion_unavailable": 8,
+          "phase_residuals": 6,
+          "code_residuals": 1,
+          "code_phase_inconsistency": 2
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.587011216777153,
+              "vertical_rms_m": 7.249786260964347,
+              "three_dimensional_rms_m": 7.697533882055877,
+              "horizontal_p50_m": 0.34440241444849345,
+              "horizontal_p95_m": 2.992332830424475,
+              "maximum_3d_m": 142.81712412406938
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.730567956540299,
+              "vertical_rms_m": 7.185752408549478,
+              "three_dimensional_rms_m": 7.687069600456294,
+              "horizontal_p50_m": 0.9454186380017792,
+              "horizontal_p95_m": 2.9725157191349085,
+              "maximum_3d_m": 141.85731771553324
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      },
+      "galileo_slips_all_std4": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 867,
+          "UNMATCHED": 6091,
+          "INVALID": 654
+        },
+        "valid_RTK_positions": 867,
+        "FIX_positions": 0,
+        "FIX_rate_among_pairs": 0.0,
+        "decision_counts": {
+          "insufficient_lock": 646,
+          "ratio_rejected": 151,
+          "motion_unavailable": 8,
+          "motion_uncertain": 35,
+          "insufficient_pairs": 18,
+          "phase_residuals": 6,
+          "code_residuals": 1,
+          "code_phase_inconsistency": 2
+        },
+        "motion_checks": 0,
+        "all_FLOAT_positions_residuals_covariance_satellites_and_resets_unchanged": true,
+        "all_Doppler_velocities_and_covariances_identical_to_previous_carrier_lock_diagnostic": true,
+        "all_RTK_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.587011216777153,
+              "vertical_rms_m": 7.249786260964347,
+              "three_dimensional_rms_m": 7.697533882055877,
+              "horizontal_p50_m": 0.34440241444849345,
+              "horizontal_p95_m": 2.992332830424475,
+              "maximum_3d_m": 142.81712412406938
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 867,
+              "horizontal_rms_m": 2.730567956540299,
+              "vertical_rms_m": 7.185752408549478,
+              "three_dimensional_rms_m": 7.687069600456294,
+              "horizontal_p50_m": 0.9454186380017792,
+              "horizontal_p95_m": 2.9725157191349085,
+              "maximum_3d_m": 141.85731771553324
+            }
+          }
+        },
+        "FIX_reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {}
+        }
+      }
+    }
+  }
+}
