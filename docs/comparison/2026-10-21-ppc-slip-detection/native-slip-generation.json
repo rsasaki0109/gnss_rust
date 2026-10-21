@@ -1,0 +1,19 @@
+{
+  "command": [
+    "g++",
+    "-std=gnu++20",
+    "-O2",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "scripts/upstream_rtk_slip.cpp",
+    "-o",
+    "/tmp/upstream-rtk-slip-verify-20261021"
+  ],
+  "compile_returncode": 0,
+  "generate_returncode": 0,
+  "cases": 28,
+  "source_sha256": "567ceebec7b3fb906444b2b95675b8114c7de3ec0d924c133d50e180f01c5743",
+  "fixture_sha256": "a679c59efc9787b74c92e33e528ad7905750f854d9ea801c3432c7dcb91263c1",
+  "upstream_header_sha256": "8faf6d43ee6cd47d15e1ee96deb88f5b7dbfd906faae6b32c73d8b7d08d40538",
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "generated_fixture_exactly_matches": true
+}

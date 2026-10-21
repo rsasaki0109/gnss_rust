@@ -1,10 +1,10 @@
 # gnss-rust
 
-2026-10-21: [RustのSPP初期化を全6走行で評価](docs/comparison/2026-10-21-rust-spp-seed/README.md)。
-[元C++](docs/comparison/2026-10-21-native-default-seed/README.md)と違い、初期値の変更だけでは
-Rustの外れ値は改善しなかったため、選択肢は既定無効のままです。観測品質処理を調査しています。
+2026-10-21: [CMC・Doppler検出を移植し全6走行で評価](docs/comparison/2026-10-21-ppc-slip-detection/README.md)。
+Doppler検出でFLOAT出力は8,258→8,269へ増えましたが、大きな外れは残っています。
+検出は既定無効の選択式とし、初回採用の品質と残差処理を調査しています。
 Rustにも最大約938 mの外れが残り、同等性能の受け入れには至っていません。
-Rust280テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
+Rust291テストが通過。前回の作業記録の一部は復旧確認中で、
 PPCでの実用RTK・PPP同等性能は未達です。
 
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。

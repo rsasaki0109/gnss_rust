@@ -7,6 +7,14 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[CMC/Doppler検出](docs/comparison/2026-10-21-ppc-slip-detection/README.md)を選択式で接続。
+元C++28ケースと符号・閾値境界を照合し、検出した衛星のambiguityだけを初期化する。
+採用時だけ履歴を確定し、初回・欠測・既知イベント・失敗後を跨いで検出しない。
+全6走行×4設定でFLOATは8,258→8,269、採用解のDoppler超過リセットは6,198衛星アーク。
+CMCのみは既存列が完全一致し、採用解でのCMCリセットは0。最大約938 mの外れは残る。
+既定Noneを維持し、初回採用の品質と残差処理を次に調べる。
+11テスト追加でRust291・examples・fmt/clippy/release通過。全体18/24（75%）を維持。
+
 [RustのSPP初期化](docs/comparison/2026-10-21-rust-spp-seed/README.md)を選択式で接続。
 GPS 1CだけのSPPを位置の初期値に使い、失敗時のfallback理由と出典を記録する。
 SD ambiguityは保持し、SPP共分散は重ねて使わない。既定None・従来全CSVの完全一致を確認。

@@ -58,6 +58,7 @@ pub mod rinex;
 pub mod rtk;
 pub mod rtk_fix;
 pub mod rtk_reference;
+pub mod rtk_slip;
 pub mod spp;
 pub mod tides;
 pub mod time;

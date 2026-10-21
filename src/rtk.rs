@@ -12,6 +12,7 @@ use crate::lambda::{self, LambdaConfig, LambdaError, LambdaResult};
 use crate::models::saastamoinen;
 use crate::navigation::NavigationData;
 use crate::observation::{Observation, ObservationEpoch};
+use crate::rtk_slip::{self, RtkSlipConfig, SlipTest};
 use crate::spp::{self, SppConfig};
 use crate::{
     EcefCoord, Error, GnssSystem, GnssTime, PositionSolution, SatelliteId, SolutionStatus,
@@ -37,6 +38,10 @@ pub struct RtkFloatConfig {
     /// position (or initial position), and report the error in the solution.
     /// Static mode requires None; None preserves the existing seed policy.
     pub kinematic_spp_seed: Option<SppConfig>,
+    /// Optional SD code/phase and Doppler continuity tests. Only accepted
+    /// epochs enter their history; detected slips reset that satellite's SD
+    /// ambiguity without discarding its current measurements.
+    pub slip_detection: Option<RtkSlipConfig>,
     /// Optional unweighted geometry gate, evaluated before committing a
     /// posterior. None preserves the existing admission policy.
     pub max_geometry_gdop: Option<f64>,
@@ -60,6 +65,7 @@ impl Default for RtkFloatConfig {
         Self {
             position_mode: RtkPositionMode::Static,
             kinematic_spp_seed: None,
+            slip_detection: None,
             max_geometry_gdop: None,
             elevation_mask_rad: 10_f64.to_radians(),
             pseudorange_sigma_m: 0.3,
@@ -95,11 +101,15 @@ impl RtkFloatConfig {
             self.ambiguity_process_noise_cycles2_per_s,
             self.max_ephemeris_age_s,
         ];
-        if self.kinematic_spp_seed.is_some_and(|config| {
-            self.position_mode != RtkPositionMode::Kinematic || config.validate().is_err()
-        }) || self
-            .max_geometry_gdop
-            .is_some_and(|v| !v.is_finite() || v <= 0.0)
+        if self
+            .slip_detection
+            .is_some_and(|config| config.validate().is_err())
+            || self.kinematic_spp_seed.is_some_and(|config| {
+                self.position_mode != RtkPositionMode::Kinematic || config.validate().is_err()
+            })
+            || self
+                .max_geometry_gdop
+                .is_some_and(|v| !v.is_finite() || v <= 0.0)
             || positive.iter().any(|v| !v.is_finite() || *v <= 0.0)
             || nonnegative.iter().any(|v| !v.is_finite() || *v < 0.0)
             || !self.elevation_mask_rad.is_finite()
@@ -280,9 +290,27 @@ pub struct RtkSeedDiagnostic {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct RtkSlipDiagnostic {
+    pub satellite: SatelliteId,
+    /// Tests are absent across a known continuity break or without history.
+    pub code: Option<SlipTest>,
+    pub doppler: Option<SlipTest>,
+    /// Missing Doppler remains unavailable; a measured zero remains valid.
+    pub doppler_available: bool,
+    pub doppler_error: Option<Error>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct SlipHistory {
+    code_minus_phase_m: f64,
+    doppler_phase_m: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct RtkFloatSolution {
     pub position: PositionSolution,
     pub position_seed: RtkSeedDiagnostic,
+    pub slip_diagnostics: Vec<RtkSlipDiagnostic>,
     pub reference_satellite: SatelliteId,
     pub ambiguity_satellites: Vec<SatelliteId>,
     pub ambiguities: AmbiguityTransform,
@@ -421,7 +449,8 @@ struct MeasurementSystem {
 
 /// Static or epoch-wise kinematic baseline and one SD ambiguity per GPS 1C satellite. Satellite
 /// loss, LLI loss of lock, power failure, a long gap or explicit invalidation
-/// starts new ambiguity arcs. Unflagged slip detection remains pending.
+/// starts new ambiguity arcs. Optional code/phase and Doppler tests can also
+/// reset individual GPS 1C arcs; they do not identify every possible slip.
 pub struct RtkFloatFilter {
     base_position: EcefCoord,
     initial_rover_position: EcefCoord,
@@ -430,6 +459,7 @@ pub struct RtkFloatFilter {
     satellites: Vec<SatelliteId>,
     last_time: Option<GnssTime>,
     continuity_lost: bool,
+    slip_history: BTreeMap<SatelliteId, SlipHistory>,
 }
 impl RtkFloatFilter {
     pub fn new(
@@ -451,6 +481,7 @@ impl RtkFloatFilter {
             satellites: Vec::new(),
             last_time: None,
             continuity_lost: false,
+            slip_history: BTreeMap::new(),
         })
     }
     pub fn state(&self) -> Option<&GaussianState> {
@@ -553,7 +584,7 @@ impl RtkFloatFilter {
                 Err(error) => position_seed.spp_failure = Some(error),
             }
         }
-        let (data, rejected) = prepare(
+        let (mut data, rejected) = prepare(
             rover,
             base,
             nav,
@@ -575,6 +606,8 @@ impl RtkFloatFilter {
             || rover.flag == 1
             || base.flag == 1
             || dt > self.config.max_phase_gap_s;
+        let (slip_diagnostics, next_slip_history) =
+            self.detect_slips(&mut data, rover, base, dt, reset_all)?;
         let (prior, resets) = self.prior(&data, dt, reset_all, spp_position);
         let mut estimate = prior.mean.clone();
         let mut accepted = None;
@@ -659,6 +692,7 @@ impl RtkFloatFilter {
         let ambiguities = ambiguity_transform(&posterior, 3, &differences)?;
         let result = RtkFloatSolution {
             position_seed,
+            slip_diagnostics,
             position: PositionSolution {
                 time: rover.time,
                 status: SolutionStatus::Float,
@@ -693,7 +727,87 @@ impl RtkFloatFilter {
         self.satellites = result.fix_context.satellites();
         self.last_time = Some(rover.time);
         self.continuity_lost = false;
+        self.slip_history = next_slip_history;
         Ok(result)
+    }
+
+    fn detect_slips(
+        &self,
+        data: &mut [SatelliteData],
+        rover: &ObservationEpoch,
+        base: &ObservationEpoch,
+        dt: f64,
+        reset_all: bool,
+    ) -> Result<(Vec<RtkSlipDiagnostic>, BTreeMap<SatelliteId, SlipHistory>), RtkError> {
+        let Some(config) = self.config.slip_detection else {
+            return Ok((Vec::new(), BTreeMap::new()));
+        };
+        let r = selected(rover)?;
+        let b = selected(base)?;
+        let mut diagnostics = Vec::with_capacity(data.len());
+        let mut next = BTreeMap::new();
+        for d in data {
+            let code_minus_phase_m = d.code_sd_m - d.phase_sd_cycles * c::GPS_L1_WAVELENGTH;
+            let phase_m = d.phase_sd_cycles * c::GPS_L1_WAVELENGTH;
+            if !code_minus_phase_m.is_finite() || !phase_m.is_finite() {
+                return Err(Error::NonFinite.into());
+            }
+            let mut diagnostic = RtkSlipDiagnostic {
+                satellite: d.satellite,
+                code: None,
+                doppler: None,
+                doppler_available: false,
+                doppler_error: None,
+            };
+            let mut rate = None;
+            if config.doppler_threshold_m.is_some()
+                && let (Some(rd), Some(bd)) =
+                    (r[&d.satellite].doppler_hz, b[&d.satellite].doppler_hz)
+            {
+                match rtk_slip::single_difference_range_rate_mps(rd, bd, c::GPS_L1_WAVELENGTH) {
+                    Ok(value) => {
+                        rate = Some(value);
+                        diagnostic.doppler_available = true;
+                    }
+                    Err(error) => diagnostic.doppler_error = Some(error),
+                }
+            }
+            if !reset_all
+                && !d.loss_of_lock
+                && let Some(previous) = self.slip_history.get(&d.satellite)
+            {
+                if let Some(threshold) = config.code_threshold_m {
+                    diagnostic.code = Some(rtk_slip::test_code_minus_phase(
+                        previous.code_minus_phase_m,
+                        code_minus_phase_m,
+                        threshold,
+                    )?);
+                }
+                if let (Some(threshold), Some(previous_phase), Some(rate)) =
+                    (config.doppler_threshold_m, previous.doppler_phase_m, rate)
+                    && dt <= config.max_doppler_interval_s
+                {
+                    diagnostic.doppler = Some(rtk_slip::test_doppler_phase(
+                        previous_phase,
+                        phase_m,
+                        rate,
+                        dt,
+                        threshold,
+                    )?);
+                }
+            }
+            d.loss_of_lock |= diagnostic.code.is_some_and(|v| v.detected)
+                || diagnostic.doppler.is_some_and(|v| v.detected);
+            next.insert(
+                d.satellite,
+                SlipHistory {
+                    code_minus_phase_m,
+                    doppler_phase_m: rate.map(|_| phase_m),
+                },
+            );
+            diagnostics.push(diagnostic);
+        }
+        Ok((diagnostics, next))
     }
     fn prior(
         &self,

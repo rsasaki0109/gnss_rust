@@ -1441,3 +1441,23 @@ Regeneration was byte-identical. SHA-256:
 EOP-product reading, automatic celestial ephemerides/precession-nutation
 and IERS PPP integration remain pending. No real-data accuracy/runtime
 or full native PPP equivalence was measured.
+
+## Single-frequency RTK slip components (2026-10-21)
+
+`scripts/upstream_rtk_slip.cpp` calls the unmodified pinned
+`rtk_slip_detection.hpp` to produce `upstream_rtk_slip.csv` (28 finite-input cases).
+They cover SD Doppler sign/zero, code-minus-phase, common code offset cancellation,
+strict 5 m/0.2 m thresholds and one-ULP boundaries. Boolean decisions must match
+exactly; numeric component tolerance is 1e-12 relative to max(1, abs(reference)).
+Rust returns explicit errors for invalid/overflowing inputs rather than the
+native helper's zero/false sentinel. These error contracts are tested separately.
+
+```bash
+g++ -std=gnu++20 -O2 \
+  -I/workspace/.cloud-setup/reference/gnssplusplus-library/include \
+  scripts/upstream_rtk_slip.cpp -o /tmp/upstream-rtk-slip
+/tmp/upstream-rtk-slip > /tmp/upstream-rtk-slip.csv
+diff -u tests/fixtures/upstream_rtk_slip.csv /tmp/upstream-rtk-slip.csv
+```
+
+This checks slip equations, not whole RTK history policies or real-data accuracy.

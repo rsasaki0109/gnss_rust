@@ -509,6 +509,369 @@ fn spp_seed_rejects_static_mode_and_invalid_spp_configuration() {
 }
 
 #[test]
+fn code_phase_detection_resets_only_an_unflagged_slipped_satellite() {
+    use gnss_rust::rtk_slip::RtkSlipConfig;
+    let f = fixture(false);
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            slip_detection: Some(RtkSlipConfig {
+                doppler_threshold_m: None,
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let first = filter
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    assert!(
+        first
+            .slip_diagnostics
+            .iter()
+            .all(|d| d.code.is_none() && d.doppler.is_none())
+    );
+    let target = f.rover[1].observations[0].satellite;
+    for index in 1..4 {
+        let mut rover = f.rover[index].clone();
+        *rover.observations[0].carrier_phase_cycles.as_mut().unwrap() += 50.0;
+        let result = filter.process_pair(&rover, &f.base[index], &f.nav).unwrap();
+        assert_eq!(
+            result.reset_ambiguities,
+            if index == 1 { vec![target] } else { vec![] }
+        );
+        let evidence = result
+            .slip_diagnostics
+            .iter()
+            .find(|d| d.satellite == target)
+            .unwrap();
+        assert_eq!(evidence.code.unwrap().detected, index == 1);
+        assert!(distance(result.position.position_ecef.unwrap(), f.truth) < 0.003);
+    }
+}
+
+#[test]
+fn doppler_detects_a_small_unflagged_phase_jump_below_the_code_threshold() {
+    use gnss_rust::constants::GPS_L1_WAVELENGTH as wavelength;
+    use gnss_rust::rtk_slip::RtkSlipConfig;
+    let f = moving_fixture();
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            position_mode: gnss_rust::rtk::RtkPositionMode::Kinematic,
+            slip_detection: Some(RtkSlipConfig::default()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let mut previous_rover = f.rover[0].clone();
+    let mut previous_base = f.base[0].clone();
+    for o in previous_rover
+        .observations
+        .iter_mut()
+        .chain(&mut previous_base.observations)
+    {
+        o.doppler_hz = Some(0.0);
+    }
+    filter
+        .process_pair(&previous_rover, &previous_base, &f.nav)
+        .unwrap();
+    let mut rover = f.rover[1].clone();
+    let mut base = f.base[1].clone();
+    for i in 0..rover.observations.len() {
+        let phase = |r: &ObservationEpoch, b: &ObservationEpoch| {
+            (r.observations[i].carrier_phase_cycles.unwrap()
+                - b.observations[i].carrier_phase_cycles.unwrap())
+                * wavelength
+        };
+        let delta = phase(&rover, &base) - phase(&previous_rover, &previous_base);
+        rover.observations[i].doppler_hz = Some(-delta / wavelength);
+        base.observations[i].doppler_hz = Some(0.0);
+    }
+    *rover.observations[0].carrier_phase_cycles.as_mut().unwrap() += 2.0;
+    let result = filter.process_pair(&rover, &base, &f.nav).unwrap();
+    assert_eq!(
+        result.reset_ambiguities,
+        vec![rover.observations[0].satellite]
+    );
+    let evidence = &result.slip_diagnostics[0];
+    assert!(!evidence.code.unwrap().detected);
+    assert!(evidence.doppler.unwrap().detected);
+    close(
+        evidence.doppler.unwrap().residual_m,
+        2.0 * wavelength,
+        1e-10,
+    );
+    let v: Vec<f64> = include_str!("fixtures/synthetic_rtk_moving_truth.csv")
+        .lines()
+        .nth(2)
+        .unwrap()
+        .split(',')
+        .map(|v| v.parse().unwrap())
+        .collect();
+    assert!(
+        distance(
+            result.position.position_ecef.unwrap(),
+            EcefCoord::new(v[2], v[3], v[4])
+        ) < 0.003
+    );
+}
+
+#[test]
+fn missing_invalid_and_measured_zero_doppler_are_distinct() {
+    use gnss_rust::rtk_slip::RtkSlipConfig;
+    let f = moving_fixture();
+    for missing in 0..3 {
+        let mut filter = RtkFloatFilter::new(
+            f.base_position,
+            f.seed,
+            RtkFloatConfig {
+                position_mode: gnss_rust::rtk::RtkPositionMode::Kinematic,
+                slip_detection: Some(RtkSlipConfig {
+                    code_threshold_m: None,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        for index in 0..2 {
+            let mut rover = f.rover[index].clone();
+            let mut base = f.base[index].clone();
+            for o in rover.observations.iter_mut().chain(&mut base.observations) {
+                o.doppler_hz = Some(0.0);
+            }
+            if index == 1 {
+                base.observations[0].doppler_hz = match missing {
+                    0 => Some(0.0),
+                    1 => None,
+                    _ => Some(f64::NAN),
+                };
+            }
+            let result = filter.process_pair(&rover, &base, &f.nav).unwrap();
+            if index == 1 {
+                let d = &result.slip_diagnostics[0];
+                assert_eq!(d.doppler_available, missing == 0, "diagnostic {d:?}");
+                assert_eq!(d.doppler.is_some(), missing == 0);
+                assert_eq!(
+                    d.doppler_error,
+                    if missing == 2 {
+                        Some(Error::NonFinite)
+                    } else {
+                        None
+                    }
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn dropped_and_reacquired_satellites_do_not_reuse_slip_history() {
+    use gnss_rust::rtk_slip::RtkSlipConfig;
+    let f = fixture(false);
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            slip_detection: Some(RtkSlipConfig::default()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    filter
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let target = f.rover[0].observations[0].satellite;
+    let mut missing = f.rover[1].clone();
+    missing.observations.retain(|o| o.satellite != target);
+    filter.process_pair(&missing, &f.base[1], &f.nav).unwrap();
+    let mut reacquired = f.rover[2].clone();
+    *reacquired.observations[0]
+        .carrier_phase_cycles
+        .as_mut()
+        .unwrap() += 50.0;
+    let result = filter
+        .process_pair(&reacquired, &f.base[2], &f.nav)
+        .unwrap();
+    assert_eq!(result.reset_ambiguities, vec![target]);
+    let d = result
+        .slip_diagnostics
+        .iter()
+        .find(|d| d.satellite == target)
+        .unwrap();
+    assert!(d.code.is_none() && d.doppler.is_none());
+    assert!(
+        result
+            .slip_diagnostics
+            .iter()
+            .filter(|d| d.satellite != target)
+            .all(|d| d.code.is_some())
+    );
+}
+
+#[test]
+fn failed_updates_keep_numeric_state_and_restart_slip_history_on_recovery() {
+    use gnss_rust::rtk_slip::RtkSlipConfig;
+    let f = fixture(false);
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            slip_detection: Some(RtkSlipConfig::default()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    filter
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let before = filter.state().unwrap().clone();
+    let mut bad = f.rover[1].clone();
+    *bad.observations[0].pseudorange_m.as_mut().unwrap() += 10000.0;
+    assert!(filter.process_pair(&bad, &f.base[1], &f.nav).is_err());
+    assert_eq!(filter.state(), Some(&before));
+    let recovered = filter
+        .process_pair(&f.rover[2], &f.base[2], &f.nav)
+        .unwrap();
+    assert_eq!(recovered.reset_ambiguities.len(), 9);
+    assert!(
+        recovered
+            .slip_diagnostics
+            .iter()
+            .all(|d| d.code.is_none() && d.doppler.is_none())
+    );
+    let next = filter
+        .process_pair(&f.rover[3], &f.base[3], &f.nav)
+        .unwrap();
+    assert!(
+        next.slip_diagnostics
+            .iter()
+            .all(|d| d.code.is_some_and(|v| !v.detected))
+    );
+}
+
+#[test]
+fn doppler_interval_includes_five_seconds_and_reanchors_after_longer_gap() {
+    use gnss_rust::rtk_slip::RtkSlipConfig;
+    let f = moving_fixture();
+    for index in [5, 6] {
+        let mut filter = RtkFloatFilter::new(
+            f.base_position,
+            f.seed,
+            RtkFloatConfig {
+                position_mode: gnss_rust::rtk::RtkPositionMode::Kinematic,
+                slip_detection: Some(RtkSlipConfig::default()),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        for (step, epoch) in [0, index, index + 1].into_iter().enumerate() {
+            let mut rover = f.rover[epoch].clone();
+            let mut base = f.base[epoch].clone();
+            for o in rover.observations.iter_mut().chain(&mut base.observations) {
+                o.doppler_hz = Some(0.0);
+            }
+            let result = filter.process_pair(&rover, &base, &f.nav).unwrap();
+            assert!(
+                result
+                    .slip_diagnostics
+                    .iter()
+                    .all(|d| d.doppler.is_some() == (step == 2 || (step == 1 && index == 5)))
+            );
+        }
+    }
+}
+
+#[test]
+fn known_lli_and_skipped_events_restart_evidence_without_an_unflagged_detection() {
+    use gnss_rust::rtk_slip::RtkSlipConfig;
+    let f = fixture(false);
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            slip_detection: Some(RtkSlipConfig::default()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    filter
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let mut rover = f.rover[1].clone();
+    rover.observations[0].lli = Some(1);
+    *rover.observations[0].carrier_phase_cycles.as_mut().unwrap() += 50.0;
+    let result = filter.process_pair(&rover, &f.base[1], &f.nav).unwrap();
+    assert_eq!(
+        result.reset_ambiguities,
+        vec![rover.observations[0].satellite]
+    );
+    assert_eq!(
+        result
+            .slip_diagnostics
+            .iter()
+            .filter(|d| d.code.is_none())
+            .count(),
+        1
+    );
+    let mut event = f.rover[1].clone();
+    event.flag = 6;
+    assert!(filter.observe_skipped_epoch(&event));
+    let result = filter
+        .process_pair(&f.rover[2], &f.base[2], &f.nav)
+        .unwrap();
+    assert_eq!(result.reset_ambiguities.len(), 9);
+    assert!(
+        result
+            .slip_diagnostics
+            .iter()
+            .all(|d| d.code.is_none() && d.doppler.is_none())
+    );
+}
+
+#[test]
+fn slip_configuration_rejects_invalid_thresholds_and_intervals() {
+    use gnss_rust::rtk_slip::RtkSlipConfig;
+    let f = fixture(false);
+    let mut invalid = vec![RtkSlipConfig {
+        code_threshold_m: None,
+        doppler_threshold_m: None,
+        ..Default::default()
+    }];
+    for value in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+        invalid.push(RtkSlipConfig {
+            code_threshold_m: Some(value),
+            ..Default::default()
+        });
+        invalid.push(RtkSlipConfig {
+            doppler_threshold_m: Some(value),
+            ..Default::default()
+        });
+        invalid.push(RtkSlipConfig {
+            max_doppler_interval_s: value,
+            ..Default::default()
+        });
+    }
+    for config in invalid {
+        assert!(matches!(
+            RtkFloatFilter::new(
+                f.base_position,
+                f.seed,
+                RtkFloatConfig {
+                    slip_detection: Some(config),
+                    ..Default::default()
+                }
+            ),
+            Err(RtkError::InvalidConfiguration)
+        ));
+    }
+}
+
+#[test]
 fn static_fix_policy_explicitly_rejects_kinematic_float_without_advancing_history() {
     use gnss_rust::rtk::RtkPositionMode;
     use gnss_rust::rtk_fix::{FixError, RtkFixPolicy};
@@ -656,6 +1019,19 @@ fn fixture(noisy: bool) -> Fixture {
         seed: coord(6),
         sd,
     }
+}
+
+fn moving_fixture() -> Fixture {
+    let mut f = fixture(false);
+    let read = |text| {
+        RinexObservationReader::new(Cursor::new(text))
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
+    };
+    f.rover = read(include_str!("fixtures/synthetic_rtk_moving_rover.obs"));
+    f.base = read(include_str!("fixtures/synthetic_rtk_moving_base.obs"));
+    f
 }
 fn distance(a: EcefCoord, b: EcefCoord) -> f64 {
     (a.x - b.x).hypot(a.y - b.y).hypot(a.z - b.z)

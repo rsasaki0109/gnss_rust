@@ -2,6 +2,7 @@
 use gnss_rust::epoch_match::{EpochMatch, EpochMatcher, EpochSide};
 use gnss_rust::rinex::{RinexObservationReader, read_navigation_for_systems};
 use gnss_rust::rtk::{RtkFloatConfig, RtkFloatFilter, RtkPositionMode};
+use gnss_rust::rtk_slip::RtkSlipConfig;
 use gnss_rust::spp::SppConfig;
 use gnss_rust::{EcefCoord, GnssSystem};
 use std::{
@@ -15,15 +16,30 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     if args.len() != 3 {
         return Err(
-            "usage: ppc_rtk_float CASE_DIRECTORY static|kinematic|kinematic-gdop50|kinematic-spp BASE_X,BASE_Y,BASE_Z".into(),
+            "usage: ppc_rtk_float CASE_DIRECTORY static|kinematic|kinematic-gdop50|kinematic-spp|kinematic-cmc|kinematic-doppler|kinematic-slips BASE_X,BASE_Y,BASE_Z".into(),
         );
     }
     let position_mode = match args[1].to_str() {
         Some("static") => RtkPositionMode::Static,
-        Some("kinematic" | "kinematic-gdop50" | "kinematic-spp") => RtkPositionMode::Kinematic,
-        _ => return Err("expected static, kinematic, kinematic-gdop50 or kinematic-spp".into()),
+        Some(
+            "kinematic" | "kinematic-gdop50" | "kinematic-spp" | "kinematic-cmc"
+            | "kinematic-doppler" | "kinematic-slips",
+        ) => RtkPositionMode::Kinematic,
+        _ => return Err("unsupported positioning mode; see ppc_rtk_float usage".into()),
     };
     let use_spp_seed = args[1] == "kinematic-spp";
+    let slip_detection = match args[1].to_str() {
+        Some("kinematic-cmc") => Some(RtkSlipConfig {
+            doppler_threshold_m: None,
+            ..Default::default()
+        }),
+        Some("kinematic-doppler") => Some(RtkSlipConfig {
+            code_threshold_m: None,
+            ..Default::default()
+        }),
+        Some("kinematic-slips") => Some(RtkSlipConfig::default()),
+        _ => None,
+    };
     let xyz: Vec<f64> = args[2]
         .to_str()
         .ok_or("non-UTF8 base position")?
@@ -50,6 +66,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         RtkFloatConfig {
             position_mode,
             kinematic_spp_seed: use_spp_seed.then(SppConfig::default),
+            slip_detection,
             max_geometry_gdop: if args[1] == "kinematic-gdop50" {
                 Some(50.0)
             } else {
@@ -62,6 +79,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let header = "kind,week,tow,side,rover_flag,base_flag,base_dt_s,status,x_m,y_m,z_m,satellites,reference,nis,code_rms_m,phase_rms_m,ambiguity_resets,reason,geometry_gdop,geometry_pdop,position_covariance_trace_m2,position_qxx_m2,position_qyy_m2,position_qzz_m2,used_satellites,geometry_error";
     let suffix = if use_spp_seed {
         ",seed_source,seed_x_m,seed_y_m,seed_z_m,spp_failure"
+    } else if slip_detection.is_some() {
+        ",code_slips,doppler_slips,code_tests,doppler_tests,slip_satellites,doppler_errors"
     } else {
         ""
     };
@@ -76,7 +95,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         mut continuity,
     ) = (0, 0, 0, 0, 0, 0, 0);
     for event in EpochMatcher::new(rover, base) {
-        let mut row = vec![String::new(); if use_spp_seed { 31 } else { 26 }];
+        let columns = if use_spp_seed {
+            31
+        } else if slip_detection.is_some() {
+            32
+        } else {
+            26
+        };
+        let mut row = vec![String::new(); columns];
         match event? {
             EpochMatch::Unmatched { side, epoch } => {
                 row[0] = "unmatched".into();
@@ -118,6 +144,45 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     match filter.process_pair(&rover, &base, &navigation.navigation) {
                         Ok(result) => {
+                            if slip_detection.is_some() {
+                                let evidence = &result.slip_diagnostics;
+                                row[26] = evidence
+                                    .iter()
+                                    .filter(|d| d.code.is_some_and(|t| t.detected))
+                                    .count()
+                                    .to_string();
+                                row[27] = evidence
+                                    .iter()
+                                    .filter(|d| d.doppler.is_some_and(|t| t.detected))
+                                    .count()
+                                    .to_string();
+                                row[28] = evidence
+                                    .iter()
+                                    .filter(|d| d.code.is_some())
+                                    .count()
+                                    .to_string();
+                                row[29] = evidence
+                                    .iter()
+                                    .filter(|d| d.doppler.is_some())
+                                    .count()
+                                    .to_string();
+                                row[30] = evidence
+                                    .iter()
+                                    .filter(|d| {
+                                        d.code.is_some_and(|t| t.detected)
+                                            || d.doppler.is_some_and(|t| t.detected)
+                                    })
+                                    .map(|d| d.satellite.to_string())
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[31] = evidence
+                                    .iter()
+                                    .filter_map(|d| {
+                                        d.doppler_error.map(|e| format!("{}:{e:?}", d.satellite))
+                                    })
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                            }
                             if use_spp_seed {
                                 let seed = result.position_seed;
                                 row[26] = format!("{:?}", seed.source);
@@ -188,6 +253,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
     if use_spp_seed {
         eprintln!("kinematic_spp_seed=GPS_1C_only default_SppConfig no_SPP_covariance_fusion=true");
+    }
+    if let Some(config) = slip_detection {
+        eprintln!(
+            "slip_detection={config:?} accepted_epoch_history=true thresholds_from_pinned_native_defaults=true"
+        );
     }
     Ok(())
 }

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_float",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3",
+    "kinematic-doppler",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875"
+  ],
+  "returncode": 0,
+  "csv_sha256": "01b3100e7b438e7aac284945b916cad8421f5170d5fc26a925f0dc5fafb203d1",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "c615e6fb82f71d3d7109772504133f16100b583301838f7008fd8ff9f5440816"
+}

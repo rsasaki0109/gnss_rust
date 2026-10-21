@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_float",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3",
+    "kinematic-cmc",
+    "-3817680.730073338,3562839.5233945786,3650159.241788432"
+  ],
+  "returncode": 0,
+  "csv_sha256": "8c8c8997e722a78830c2224373735159c3ec0e0beaa8581066b23a35eb5b017e",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "780df927d481a93a7e3c4a5b739d77d4dc3d238156c8b5eb35d750f139b0d4a9"
+}
