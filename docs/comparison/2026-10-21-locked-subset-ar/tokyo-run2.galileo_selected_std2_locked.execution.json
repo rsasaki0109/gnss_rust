@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_kinematic_fix",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2",
+    "selected-locked",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875",
+    "2"
+  ],
+  "returncode": 0,
+  "csv_sha256": "693a7f6d160f11bb4b0855ef2d69533997db54aa930ec0de11d7f0f27f090ef6",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "eed13c4471f4acaccb2ad5bc703d316abbfff85831bfea139860d10ce87d7114"
+}

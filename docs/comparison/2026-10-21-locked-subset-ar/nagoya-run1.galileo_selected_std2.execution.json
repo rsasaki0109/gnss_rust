@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_kinematic_fix",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1",
+    "selected",
+    "-3817680.730073338,3562839.5233945786,3650159.241788432",
+    "2"
+  ],
+  "returncode": 0,
+  "csv_sha256": "8ff16ff63110012a655ee83251248027518c0486e3388bfa7fd0c8d1fcfab2c4",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "ca7323c329e8ad3d1f77cc28885c92d7186a0d77f4e58ced7358c2699dc3734b"
+}

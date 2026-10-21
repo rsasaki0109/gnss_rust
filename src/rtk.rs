@@ -7,6 +7,9 @@
 
 use crate::coordinates::{ecef_to_enu, ecef_to_geodetic, geometric_distance};
 use crate::filter::{self, FilterError, GaussianState, Matrix};
+#[cfg(test)]
+#[path = "rtk_locked_subset_tests.rs"]
+mod locked_subset_tests;
 use crate::geometry::{
     DilutionOfPrecision, dilution_of_precision, dilution_of_precision_by_system,
 };
@@ -445,6 +448,66 @@ pub(crate) struct FixedResiduals {
     pub code_phase_innovations_m: Vec<f64>,
 }
 impl FixContext {
+    /// Marginal snapshot for lock-qualified satellites. Omitted SD states are
+    /// integrated out by taking the full principal covariance block; they are
+    /// never assigned zero covariance or treated as fixed. The FLOAT posterior
+    /// already used all observations and is not reprocessed here.
+    pub(crate) fn locked_subset(
+        &self,
+        locks: &BTreeMap<SatelliteId, usize>,
+        minimum_lock: usize,
+    ) -> Result<Option<Self>, RtkError> {
+        let mut groups = BTreeMap::<_, Vec<usize>>::new();
+        for (i, d) in self.data.iter().enumerate() {
+            if locks.get(&d.satellite).copied().unwrap_or(0) >= minimum_lock {
+                groups.entry(d.satellite.system()).or_default().push(i);
+            }
+        }
+        let mut kept = Vec::new();
+        let mut references = Vec::new();
+        for members in groups.values().filter(|members| members.len() >= 2) {
+            let mut best = members[0];
+            for &i in members {
+                if self.data[i].elevation > self.data[best].elevation {
+                    best = i;
+                }
+            }
+            references.push(kept.len() + members.iter().position(|&i| i == best).unwrap());
+            kept.extend_from_slice(members);
+        }
+        if kept.is_empty() {
+            return Ok(None);
+        }
+        let indices: Vec<_> = (0..3).chain(kept.iter().map(|i| 3 + i)).collect();
+        let state = GaussianState {
+            mean: indices.iter().map(|&i| self.state.mean[i]).collect(),
+            covariance: indices
+                .iter()
+                .map(|&i| {
+                    indices
+                        .iter()
+                        .map(|&j| self.state.covariance[i][j])
+                        .collect()
+                })
+                .collect(),
+        };
+        filter::cholesky(&state.covariance)?;
+        Ok(Some(Self {
+            state,
+            data: kept.iter().map(|&i| self.data[i].clone()).collect(),
+            reference: references[0],
+            references,
+            reset_satellites: self
+                .reset_satellites
+                .iter()
+                .copied()
+                .filter(|s| kept.iter().any(|&i| self.data[i].satellite == *s))
+                .collect(),
+            base_position: self.base_position,
+            config: self.config,
+            time: self.time,
+        }))
+    }
     pub(crate) fn with_reference(&self, reference: SatelliteId) -> Result<Self, RtkError> {
         if self.config.constellations != RtkConstellations::Gps {
             return Err(Error::UnsupportedConstellation.into());

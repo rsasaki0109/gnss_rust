@@ -79,6 +79,14 @@ fn policy(mode: ReferenceGateMode) -> RtkFixPolicy {
     )
     .unwrap()
 }
+fn locked_policy(mode: ReferenceGateMode) -> RtkFixPolicy {
+    RtkFixPolicy::for_kinematic_locked_subset(
+        RtkFixConfig::default(),
+        KinematicMotionConfig::default(),
+        mode,
+    )
+    .unwrap()
+}
 fn distance(a: EcefCoord, b: EcefCoord) -> f64 {
     (a.x - b.x).hypot(a.y - b.y).hypot(a.z - b.z)
 }
@@ -406,4 +414,149 @@ fn gps_only_kinematic_path_preserves_the_original_moving_truth_tolerance() {
         }
     }
     assert_eq!(count, 59);
+}
+
+#[test]
+fn lock_filtered_policy_matches_full_set_when_all_arcs_are_qualified() {
+    for mode in [
+        ReferenceGateMode::Selected,
+        ReferenceGateMode::AllReferences,
+    ] {
+        let d = data();
+        let mut engine = filter(&d);
+        let mut full = policy(mode);
+        let mut subset = locked_policy(mode);
+        for i in 0..d.rover.len() {
+            let float = engine
+                .process_pair(&d.rover[i], &d.base[i], &d.nav)
+                .unwrap();
+            let before = engine.state().cloned();
+            let v = motion(d.rover[i].time);
+            let a = full.evaluate_kinematic(&float, Some(&v)).unwrap();
+            let b = subset.evaluate_kinematic(&float, Some(&v)).unwrap();
+            assert_eq!(a.decision, b.decision, "epoch {i}");
+            assert_eq!(a.fixed_solution, b.fixed_solution);
+            assert_eq!(a.motion_checks, b.motion_checks);
+            assert_eq!(engine.state(), before.as_ref());
+        }
+    }
+}
+
+#[test]
+fn new_unqualified_arc_does_not_disrupt_fixed_qualified_subset_but_maturity_reconfirms() {
+    let mut d = data();
+    let satellite = d.rover[0].observations[0].satellite;
+    for epoch in d.rover.iter_mut().take(10) {
+        epoch.observations.retain(|o| o.satellite != satellite);
+    }
+    let mut engine = filter(&d);
+    let mut subset = locked_policy(ReferenceGateMode::AllReferences);
+    let mut full = policy(ReferenceGateMode::AllReferences);
+    for i in 0..18 {
+        let float = engine
+            .process_pair(&d.rover[i], &d.base[i], &d.nav)
+            .unwrap();
+        let before = engine.state().cloned();
+        let v = motion(d.rover[i].time);
+        let a = full.evaluate_kinematic(&float, Some(&v)).unwrap();
+        let b = subset.evaluate_kinematic(&float, Some(&v)).unwrap();
+        if (10..14).contains(&i) {
+            assert_eq!(a.decision, FixDecision::InsufficientLock);
+            assert_eq!(b.decision, FixDecision::Accepted, "epoch {i}");
+            assert!(!b.ar_satellites.contains(&satellite));
+        }
+        if i == 14 {
+            assert_eq!(b.decision, FixDecision::Confirming);
+            assert!(b.ar_satellites.contains(&satellite));
+        }
+        if let Some(fixed) = b.fixed_solution {
+            assert!(distance(fixed.position_ecef.unwrap(), truth(i)) < 0.003);
+        }
+        assert_eq!(engine.state(), before.as_ref());
+    }
+}
+
+#[test]
+fn slipping_old_reference_is_excluded_and_qualified_references_are_reselected() {
+    let mut d = data();
+    let mut engine = filter(&d);
+    let mut subset = locked_policy(ReferenceGateMode::AllReferences);
+    let mut old_reference = None;
+    for i in 0..18 {
+        if i >= 7 {
+            for o in &mut d.rover[i].observations {
+                if Some(o.satellite) == old_reference {
+                    o.lli = Some(1);
+                }
+            }
+        }
+        let float = engine
+            .process_pair(&d.rover[i], &d.base[i], &d.nav)
+            .unwrap();
+        let before = engine.state().cloned();
+        if i == 6 {
+            old_reference = Some(float.reference_satellites[0]);
+        }
+        let attempt = subset
+            .evaluate_kinematic(&float, Some(&motion(d.rover[i].time)))
+            .unwrap();
+        if i >= 7 {
+            assert!(!attempt.ar_satellites.contains(&old_reference.unwrap()));
+            assert!(
+                !attempt
+                    .ar_reference_satellites
+                    .contains(&old_reference.unwrap())
+            );
+            assert_eq!(attempt.ar_satellites.len(), 7);
+        }
+        if i >= 8 {
+            assert_eq!(attempt.decision, FixDecision::Accepted, "epoch {i}");
+            assert!(
+                distance(
+                    attempt.fixed_solution.unwrap().position_ecef.unwrap(),
+                    truth(i)
+                ) < 0.003
+            );
+        }
+        assert_eq!(engine.state(), before.as_ref());
+    }
+}
+
+#[test]
+fn singleton_qualified_system_is_omitted_without_counting_cross_system_differences() {
+    let mut d = data();
+    let galileo: Vec<_> = d.rover[0]
+        .observations
+        .iter()
+        .filter(|o| o.satellite.system() == gnss_rust::GnssSystem::Galileo)
+        .map(|o| o.satellite)
+        .collect();
+    for e in &mut d.rover {
+        for o in &mut e.observations {
+            if galileo[..3].contains(&o.satellite) {
+                o.lli = Some(1);
+            }
+        }
+    }
+    let mut engine = filter(&d);
+    let mut subset = locked_policy(ReferenceGateMode::Selected);
+    for i in 0..12 {
+        let float = engine
+            .process_pair(&d.rover[i], &d.base[i], &d.nav)
+            .unwrap();
+        let a = subset
+            .evaluate_kinematic(&float, Some(&motion(d.rover[i].time)))
+            .unwrap();
+        if i >= 4 {
+            assert_eq!(a.decision, FixDecision::InsufficientPairs);
+            assert_eq!(a.ar_satellites.len(), 4);
+            assert_eq!(a.ar_reference_satellites.len(), 1);
+            assert!(
+                a.ar_satellites
+                    .iter()
+                    .all(|s| s.system() == gnss_rust::GnssSystem::Gps)
+            );
+        }
+        assert!(a.fixed_solution.is_none());
+    }
 }

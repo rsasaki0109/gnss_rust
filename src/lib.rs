@@ -6,8 +6,9 @@
 //! foundation, streaming RINEX 3 input, broadcast navigation and initial
 //! GPS/QZSS L1 SPP, LAMBDA integer ambiguity search, and an initial
 //! GPS L1 C/A static/kinematic FLOAT filter with optional Galileo E1.
-//! Initial full-set integer FIX supports GPS static snapshots and an opt-in
-//! kinematic GPS/Galileo policy with explicit velocity-history evidence.
+//! Initial integer FIX supports GPS static snapshots and opt-in kinematic
+//! GPS/Galileo policies with explicit velocity-history evidence, including
+//! a lock-qualified subset without integer holding or FLOAT feedback.
 //! SP3-c/d and RINEX satellite CLK products provide interpolated precise
 //! positions, velocities and published clocks with explicit coverage/quality.
 //! Precise transmit states feed an initial code-only SPP with explicit signal

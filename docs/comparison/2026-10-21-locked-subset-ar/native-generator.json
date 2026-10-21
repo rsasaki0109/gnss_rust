@@ -1,0 +1,49 @@
+{
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "scripts/upstream_rtk_locked_subset.cpp",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "-o",
+    "/workspace/.cloud-setup/solver-reference-20261021/upstream_rtk_locked_subset"
+  ],
+  "returncode": 0,
+  "build_log_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+  "source_sha256": "f8f1bed25906e1c69c1a3f2eccf6cc6326583b36afa92853aa7e40f70770d59b",
+  "binary_sha256": "82881b63ab0793600e5d89813f246b4b10737c458407d0db176b2182a12a2347",
+  "native_library_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86"
+  },
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "repeat_runs": [
+    {
+      "command": [
+        "/workspace/.cloud-setup/solver-reference-20261021/upstream_rtk_locked_subset",
+        "/tmp/locked-subset-native-0.csv"
+      ],
+      "returncode": 0,
+      "fixture_sha256": "f3785c49da8e4efa94441b7a3f1c80ad076b56fdf6c1a9613fe6ce08ddd02023",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/workspace/.cloud-setup/solver-reference-20261021/upstream_rtk_locked_subset",
+        "/tmp/locked-subset-native-1.csv"
+      ],
+      "returncode": 0,
+      "fixture_sha256": "f3785c49da8e4efa94441b7a3f1c80ad076b56fdf6c1a9613fe6ce08ddd02023",
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "cases": 24
+}

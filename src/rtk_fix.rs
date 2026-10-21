@@ -732,6 +732,12 @@ pub struct RtkFixAttempt {
     pub system_reference_audit: Option<SystemCandidateReferenceAudit>,
     pub motion_max_velocity_std_mps: Option<f64>,
     pub motion_checks: Vec<MotionHistoryCheck>,
+    /// Satellites/references used by integer search and local validation.
+    /// FLOAT observations remain unchanged when a lock-qualified subset is used.
+    pub ar_satellites: Vec<SatelliteId>,
+    pub ar_reference_satellites: Vec<SatelliteId>,
+    /// All original FLOAT lock counts, including excluded satellites.
+    pub satellite_lock_epochs: Vec<(SatelliteId, usize)>,
     pub confirmation_count: usize,
     /// Present only after every policy and local validation check passes.
     pub fixed_solution: Option<PositionSolution>,
@@ -814,11 +820,12 @@ struct Pending {
     point: HistoryPoint,
     count: usize,
 }
-/// Conservative initial full-set AR policy. Accepted integers are checked anew
+/// Conservative AR policy with an opt-in lock-qualified subset. Integers are checked anew
 /// every epoch; no fix-and-hold or conditional state feeds back to FLOAT.
 pub struct RtkFixPolicy {
     config: RtkFixConfig,
     motion_config: Option<KinematicMotionConfig>,
+    locked_subset: bool,
     reference_gate_mode: ReferenceGateMode,
     locks: BTreeMap<SatelliteId, usize>,
     last_time: Option<GnssTime>,
@@ -840,6 +847,7 @@ impl RtkFixPolicy {
         Ok(Self {
             config,
             motion_config: None,
+            locked_subset: false,
             reference_gate_mode,
             locks: BTreeMap::new(),
             last_time: None,
@@ -864,6 +872,19 @@ impl RtkFixPolicy {
         }
         let mut policy = Self::with_reference_gates(config, reference_gate_mode)?;
         policy.motion_config = Some(motion);
+        Ok(policy)
+    }
+    /// Opt-in lock-filtered partial AR. Each system needs two lock-qualified
+    /// satellites, and the unchanged minimum DD count applies to their union.
+    /// Select the highest-elevation qualified reference per system and search
+    /// this one subset only. No ratio-driven dropping, holding or FLOAT update.
+    pub fn for_kinematic_locked_subset(
+        config: RtkFixConfig,
+        motion: KinematicMotionConfig,
+        reference_gate_mode: ReferenceGateMode,
+    ) -> Result<Self, FixError> {
+        let mut policy = Self::for_kinematic(config, motion, reference_gate_mode)?;
+        policy.locked_subset = true;
         Ok(policy)
     }
     pub fn reset(&mut self) {
@@ -981,7 +1002,15 @@ impl RtkFixPolicy {
         if history_gap {
             self.locks.clear();
         }
-        if !context.reset_satellites.is_empty() || history_gap {
+        let relevant_reset = if self.locked_subset {
+            context
+                .reset_satellites
+                .iter()
+                .any(|s| self.locks.get(s).copied().unwrap_or(0) >= self.config.min_lock_epochs)
+        } else {
+            !context.reset_satellites.is_empty()
+        };
+        if relevant_reset || history_gap {
             self.pending = None;
             self.anchor = None;
         }
@@ -1006,9 +1035,25 @@ impl RtkFixPolicy {
             system_reference_audit: None,
             motion_max_velocity_std_mps: velocity_std,
             motion_checks: Vec::new(),
+            ar_satellites: satellites.clone(),
+            ar_reference_satellites: context.reference_satellites(),
+            satellite_lock_epochs: self.locks.iter().map(|(&s, &n)| (s, n)).collect(),
             confirmation_count: 0,
             fixed_solution: None,
         };
+        let subset = if self.locked_subset {
+            context.locked_subset(&self.locks, self.config.min_lock_epochs)?
+        } else {
+            None
+        };
+        if self.locked_subset {
+            attempt.ar_satellites = subset
+                .as_ref()
+                .map_or_else(Vec::new, FixContext::satellites);
+            attempt.ar_reference_satellites = subset
+                .as_ref()
+                .map_or_else(Vec::new, FixContext::reference_satellites);
+        }
         if let Some(config) = self.motion_config {
             let Some(std) = velocity_std else {
                 return Ok(self.reject(attempt, FixDecision::MotionUnavailable));
@@ -1017,14 +1062,25 @@ impl RtkFixPolicy {
                 return Ok(self.reject(attempt, FixDecision::MotionUncertain));
             }
         }
+        if self.locked_subset && subset.is_none() {
+            return Ok(self.reject(attempt, FixDecision::InsufficientLock));
+        }
+        let selected_float = subset.map(|context| {
+            let mut view = float.clone();
+            view.fix_context = context;
+            view
+        });
+        let selected_float = selected_float.as_ref().unwrap_or(float);
+        let context = &selected_float.fix_context;
+        let satellites = context.satellites();
         if satellites.len() - context.reference_satellites().len() < self.config.min_ambiguity_pairs
         {
             return Ok(self.reject(attempt, FixDecision::InsufficientPairs));
         }
         if self
             .locks
-            .values()
-            .any(|count| *count < self.config.min_lock_epochs)
+            .iter()
+            .any(|(s, count)| satellites.contains(s) && *count < self.config.min_lock_epochs)
         {
             return Ok(self.reject(attempt, FixDecision::InsufficientLock));
         }
@@ -1050,26 +1106,31 @@ impl RtkFixPolicy {
         }
         let local_result = match self.reference_gate_mode {
             ReferenceGateMode::Selected => {
-                validate_candidate(float, &attempt.integers, self.config)
+                validate_candidate(selected_float, &attempt.integers, self.config)
                     .map(|validation| (validation.rejection, validation))
             }
             ReferenceGateMode::AllReferences if self.motion_config.is_some() => {
-                audit_candidate_system_references(float, &attempt.integers, self.config, 4096)
-                    .and_then(|audit| {
-                        let rejection = audit.conservative_rejection();
-                        let original = audit
-                            .reference_sets
-                            .iter()
-                            .find(|entry| entry.reference_satellites == audit.source_references)
-                            .ok_or(FilterError::InvalidDimensions)?
-                            .validation
-                            .clone();
-                        attempt.system_reference_audit = Some(audit);
-                        Ok((rejection, original))
-                    })
+                audit_candidate_system_references(
+                    selected_float,
+                    &attempt.integers,
+                    self.config,
+                    4096,
+                )
+                .and_then(|audit| {
+                    let rejection = audit.conservative_rejection();
+                    let original = audit
+                        .reference_sets
+                        .iter()
+                        .find(|entry| entry.reference_satellites == audit.source_references)
+                        .ok_or(FilterError::InvalidDimensions)?
+                        .validation
+                        .clone();
+                    attempt.system_reference_audit = Some(audit);
+                    Ok((rejection, original))
+                })
             }
             ReferenceGateMode::AllReferences => {
-                audit_candidate_references(float, &attempt.integers, self.config).and_then(
+                audit_candidate_references(selected_float, &attempt.integers, self.config).and_then(
                     |audit| {
                         let rejection = audit.conservative_rejection();
                         let original = audit
