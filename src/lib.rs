@@ -5,7 +5,8 @@
 //! does not include UTC leap seconds. This crate currently provides the core
 //! foundation, streaming RINEX 3 input, broadcast navigation and initial
 //! GPS/QZSS L1 SPP, LAMBDA integer ambiguity search, and an initial static
-//! GPS L1 C/A FLOAT filter with initial full-set integer FIX validation.
+//! GPS L1 C/A static/kinematic FLOAT filter. Initial full-set integer FIX
+//! validation supports the static model; kinematic FIX policy is pending.
 //! SP3-c/d and RINEX satellite CLK products provide interpolated precise
 //! positions, velocities and published clocks with explicit coverage/quality.
 //! Precise transmit states feed an initial code-only SPP with explicit signal
@@ -40,6 +41,7 @@ pub mod constants;
 pub mod coordinates;
 pub mod dual_frequency;
 pub mod earth_rotation;
+pub mod epoch_match;
 pub mod filter;
 pub mod iers2010;
 pub mod lambda;

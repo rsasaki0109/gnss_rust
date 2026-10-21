@@ -1,0 +1,89 @@
+{
+  "checks": [
+    {
+      "name": "rust",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2"
+      ],
+      "returncode": 0,
+      "log": "rust.qualification.log.gz",
+      "uncompressed_sha256": "d0cdbdda35a9ab34a257052e159edd79e97db58cd64cf2169feac2f324c0df0d",
+      "passed_tests": 272
+    },
+    {
+      "name": "examples",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--examples"
+      ],
+      "returncode": 0,
+      "log": "examples.qualification.log.gz",
+      "uncompressed_sha256": "3b20afdfdcf5f10108eb65cc6612ed6f07c6b0732b04e5b4864d08101f065c25"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "returncode": 0,
+      "log": "fmt.qualification.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "returncode": 0,
+      "log": "clippy.qualification.log.gz",
+      "uncompressed_sha256": "02db5a66fa0c60ca8618bd08aac556eac4f3ec863e8630a0d353dba6a0f6e126"
+    },
+    {
+      "name": "release",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--release"
+      ],
+      "returncode": 0,
+      "log": "release.qualification.log.gz",
+      "uncompressed_sha256": "73b600e4172753bf1c4bb005948b20b779ffeae7934bb8fde1c66b0738756b96"
+    }
+  ],
+  "base_commit": "2073c08185a8c2846b8d4c049df7815db36db310",
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "predeclared_inputs_sha256": "81180f4ba3cd8872ef897e4dcfdbb09ca50824c9bcb0151c0a1f9b2115d37fa3",
+  "test_generator_fixture_sha256": {
+    "tests/epoch_match.rs": "e2c6d4e0c7448788f10adde1918ef46ddf9c6d9cc1ad8d450a92b6e0765e1610",
+    "tests/rtk_float.rs": "1a6b82f59b0d9857f58d5bce5a52414918915fbf97a4f9d59627524e7af712e6",
+    "scripts/upstream_rtk_moving.cpp": "a310d8289d146b83fb96853177b211735a51f5726911e9ea06b3308a62a3fe4c",
+    "scripts/upstream_rtk_float.cpp": "49f3179ac1abf34a8be481ec6b10a63d1215745778b5548831bc997a9ffc9dfa",
+    "scripts/upstream_navigation.cpp": "82dd53a255187def0cbac562b94bf798e9030353728e5ab2562a0333fde35214",
+    "tests/fixtures/synthetic_rtk_moving_base.obs": "fa47fc591dd9be12fc9d6c5604cb3feff93ac3f4a14dd2f3f95136e81353ffcc",
+    "tests/fixtures/synthetic_rtk_moving_rover_noisy.obs": "bb0c34f9e93c5c92f7d3de5c71c46de640b7802663235e054fba98d14ac499f1",
+    "tests/fixtures/synthetic_rtk_moving_rover.obs": "fd7845c903fa911fb6bb70531dbc16a5f3470ea3afb0977e5853b9119b708dc8",
+    "tests/fixtures/synthetic_rtk_moving_truth.csv": "2c2f2259801d7f3f1468283809e26e7f144c1fdf7c087107e8de40d3b86fa934",
+    "tests/fixtures/synthetic_rtk_moving_base_noisy.obs": "cc4989795020b05069248db7732efdb742a86f46dbb99f36539ba1785cf4af5d"
+  }
+}

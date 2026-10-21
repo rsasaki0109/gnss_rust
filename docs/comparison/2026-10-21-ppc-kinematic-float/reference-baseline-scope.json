@@ -1,0 +1,32 @@
+{
+  "nagoya-run1": {
+    "maximum_reference_baseline_m": 10250.659925400641,
+    "reference_epochs_over_configured_10km_limit": 1378,
+    "reference_epochs": 7651
+  },
+  "nagoya-run2": {
+    "maximum_reference_baseline_m": 9521.871937936916,
+    "reference_epochs_over_configured_10km_limit": 0,
+    "reference_epochs": 9451
+  },
+  "nagoya-run3": {
+    "maximum_reference_baseline_m": 8097.894374623595,
+    "reference_epochs_over_configured_10km_limit": 0,
+    "reference_epochs": 5201
+  },
+  "tokyo-run1": {
+    "maximum_reference_baseline_m": 3353.431791519335,
+    "reference_epochs_over_configured_10km_limit": 0,
+    "reference_epochs": 11951
+  },
+  "tokyo-run2": {
+    "maximum_reference_baseline_m": 1479.925464696371,
+    "reference_epochs_over_configured_10km_limit": 0,
+    "reference_epochs": 9151
+  },
+  "tokyo-run3": {
+    "maximum_reference_baseline_m": 5669.18920336533,
+    "reference_epochs_over_configured_10km_limit": 0,
+    "reference_epochs": 15301
+  }
+}

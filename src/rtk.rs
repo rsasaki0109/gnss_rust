@@ -1,4 +1,4 @@
-//! Initial static-baseline GPS L1 C/A FLOAT filter.
+//! Initial static/kinematic-baseline GPS L1 C/A FLOAT filter.
 //!
 //! Ports DD signs, correlated noise, SD ambiguity states and ambiguity
 //! transformation from libgnss++ RTK measurement/filter components.
@@ -18,8 +18,18 @@ use crate::{
 use std::collections::BTreeMap;
 use std::fmt;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RtkPositionMode {
+    Static,
+    /// Reinitialize position uncertainty/cross-covariance each epoch, while
+    /// retaining the SD ambiguity block and its continuity. The previous
+    /// position is a linearization seed, not a static position constraint.
+    Kinematic,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RtkFloatConfig {
+    pub position_mode: RtkPositionMode,
     pub elevation_mask_rad: f64,
     pub pseudorange_sigma_m: f64,
     pub carrier_phase_sigma_m: f64,
@@ -38,6 +48,7 @@ pub struct RtkFloatConfig {
 impl Default for RtkFloatConfig {
     fn default() -> Self {
         Self {
+            position_mode: RtkPositionMode::Static,
             elevation_mask_rad: 10_f64.to_radians(),
             pseudorange_sigma_m: 0.3,
             carrier_phase_sigma_m: 0.002,
@@ -366,7 +377,7 @@ struct MeasurementSystem {
     noise: Matrix,
 }
 
-/// Static baseline and one SD ambiguity per tracked GPS 1C satellite. Satellite
+/// Static or epoch-wise kinematic baseline and one SD ambiguity per GPS 1C satellite. Satellite
 /// loss, LLI loss of lock, power failure, a long gap or explicit invalidation
 /// starts new ambiguity arcs. Unflagged slips and kinematic motion are pending.
 pub struct RtkFloatFilter {
@@ -410,6 +421,22 @@ impl RtkFloatFilter {
     /// state is retained, but all ambiguity arcs restart at the next valid pair.
     pub fn invalidate_ambiguities(&mut self) {
         self.continuity_lost = true;
+    }
+    /// Preserve continuity evidence when an input is not used for a paired
+    /// update (for example 5 Hz rover data between 1 Hz common epochs).
+    /// A power/slip event or GPS 1C LLI loss/half-cycle conservatively resets
+    /// all ambiguity arcs on the next update. No numeric state/time advances.
+    pub fn observe_skipped_epoch(&mut self, epoch: &ObservationEpoch) -> bool {
+        let broken = matches!(epoch.flag, 1 | 6)
+            || epoch.observations.iter().any(|o| {
+                o.satellite.system() == GnssSystem::Gps
+                    && o.tracking_code == "1C"
+                    && (o.loss_of_lock() || o.half_cycle_ambiguity())
+            });
+        if broken {
+            self.invalidate_ambiguities();
+        }
+        broken
     }
     pub fn process_pair(
         &mut self,
@@ -613,7 +640,11 @@ impl RtkFloatFilter {
                     mean[i] = old.mean[oi];
                     for j in 0..n {
                         if let Some(oj) = old_indices[j] {
-                            covariance[i][j] = old.covariance[oi][oj];
+                            if self.config.position_mode == RtkPositionMode::Static
+                                || (i >= 3 && j >= 3)
+                            {
+                                covariance[i][j] = old.covariance[oi][oj];
+                            }
                         }
                     }
                 }

@@ -1,0 +1,18 @@
+{
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "native_whole_rtk": false,
+  "command": [
+    "/tmp/upstream-rtk-moving",
+    "/tmp/rtk-moving-regenerated-20261021"
+  ],
+  "returncode": 0,
+  "regenerated_sha256": {
+    "synthetic_rtk_moving_base.obs": "fa47fc591dd9be12fc9d6c5604cb3feff93ac3f4a14dd2f3f95136e81353ffcc",
+    "synthetic_rtk_moving_base_noisy.obs": "cc4989795020b05069248db7732efdb742a86f46dbb99f36539ba1785cf4af5d",
+    "synthetic_rtk_moving_rover.obs": "fd7845c903fa911fb6bb70531dbc16a5f3470ea3afb0977e5853b9119b708dc8",
+    "synthetic_rtk_moving_rover_noisy.obs": "bb0c34f9e93c5c92f7d3de5c71c46de640b7802663235e054fba98d14ac499f1",
+    "synthetic_rtk_moving_truth.csv": "2c2f2259801d7f3f1468283809e26e7f144c1fdf7c087107e8de40d3b86fa934"
+  },
+  "generator_source_sha256": "a310d8289d146b83fb96853177b211735a51f5726911e9ea06b3308a62a3fe4c",
+  "generator_binary_sha256": "34a00e33462cd22114d8fdff85dd77c1994c4d911369f54795769aceb37767ae"
+}

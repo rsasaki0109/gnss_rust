@@ -215,6 +215,20 @@ Linux x86_64, pinned libgnss++ above):
 | synthetic_rtk_truth.csv | f4c3656504adc9206f5395da50b83e64fe91be1aafa239a96cfaea299a32ceac |
 | upstream_rtk_update.csv | 7d7c6a645d85327791791b174f3176a08f58a110dba8cba7c7628f81f1499175 |
 
+## Kinematic RTK FLOAT fixtures
+
+The new moving fixtures synthetic_rtk_moving_{base,rover}[_noisy].obs and
+synthetic_rtk_moving_truth.csv come from scripts/upstream_rtk_moving.cpp.
+They use the same pinned native geometry and satellite set as the static fixture,
+with 64 one-second epochs and a known ENU velocity (1.2, -0.8, 0.1) m/s.
+The four observation files preserve blank trailing LLI/SNR slots; their scoped
+Git attributes permit that fixed-width padding.
+The generator calls native geometry components, not the complete RTKProcessor.
+The existing compile recipe also builds this generator by replacing the source
+filename and output executable. Output directory must already exist.
+Hashes and a byte-for-byte regeneration result are retained in
+[the moving evidence](../../docs/comparison/2026-10-21-ppc-kinematic-float/native-moving-generation.json).
+
 ## Initial RTK integer conditioning and FIX validation
 
 `scripts/upstream_rtk_fix.cpp` calls the pinned, unmodified native

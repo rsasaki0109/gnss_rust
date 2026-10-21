@@ -14,6 +14,7 @@ use std::{collections::BTreeMap, fmt};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FixError {
     InvalidConfiguration,
+    UnsupportedPositionMode,
     InvalidInteger,
     OutOfOrder,
     Filter(FilterError),
@@ -23,6 +24,9 @@ impl fmt::Display for FixError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidConfiguration => f.write_str("invalid integer validation configuration"),
+            Self::UnsupportedPositionMode => {
+                f.write_str("initial FIX policy requires static position mode")
+            }
             Self::InvalidInteger => {
                 f.write_str("integer candidate exceeds the exact arithmetic range")
             }
@@ -614,6 +618,9 @@ impl RtkFixPolicy {
     }
     pub fn evaluate(&mut self, float: &RtkFloatSolution) -> Result<RtkFixAttempt, FixError> {
         let context = &float.fix_context;
+        if context.config.position_mode != crate::rtk::RtkPositionMode::Static {
+            return Err(FixError::UnsupportedPositionMode);
+        }
         let time = context.time;
         if self
             .last_time

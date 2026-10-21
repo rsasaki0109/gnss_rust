@@ -1,8 +1,8 @@
 # gnss-rust
 
-2026-10-21: [PPC全6走行の読込と精密製品取得](docs/comparison/2026-10-21-ppc-input-readiness/README.md)を検証。
-IGS軌道・時計とCAS DSBを9日分、計27製品取得しました。Rust266テストが通過。
-実データへの測位モデル接続を進めています。前回のCMC実装とPPC比較記録は復旧確認中で、
+2026-10-21: [PPC全6走行のキネマティックFLOAT](docs/comparison/2026-10-21-ppc-kinematic-float/README.md)を実行。
+11,733同時刻対のうち8,258でFLOATを出力しましたが、大きな外れ値が残ります。
+Rust272テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
 PPCでの実用RTK・PPP同等性能は未達です。
 
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。

@@ -213,6 +213,160 @@ struct Fixture {
     seed: EcefCoord,
     sd: std::collections::BTreeMap<SatelliteId, f64>,
 }
+
+#[test]
+fn native_generated_moving_epochs_require_kinematic_position_uncertainty() {
+    use gnss_rust::rtk::RtkPositionMode;
+    let truth: Vec<_> = include_str!("fixtures/synthetic_rtk_moving_truth.csv")
+        .lines()
+        .skip(1)
+        .map(|line| {
+            line.split(',')
+                .map(|v| v.parse::<f64>().unwrap())
+                .collect::<Vec<_>>()
+        })
+        .collect();
+    assert_eq!(truth.len(), 64);
+    assert!(
+        distance(
+            EcefCoord::new(truth[0][2], truth[0][3], truth[0][4]),
+            EcefCoord::new(truth[63][2], truth[63][3], truth[63][4])
+        ) > 80.0
+    );
+    for noisy in [false, true] {
+        let f = fixture(noisy);
+        let read = |text| {
+            RinexObservationReader::new(Cursor::new(text))
+                .unwrap()
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap()
+        };
+        let rover = read(if noisy {
+            include_str!("fixtures/synthetic_rtk_moving_rover_noisy.obs")
+        } else {
+            include_str!("fixtures/synthetic_rtk_moving_rover.obs")
+        });
+        let base = read(if noisy {
+            include_str!("fixtures/synthetic_rtk_moving_base_noisy.obs")
+        } else {
+            include_str!("fixtures/synthetic_rtk_moving_base.obs")
+        });
+        let mut kinematic = RtkFloatFilter::new(
+            f.base_position,
+            f.seed,
+            RtkFloatConfig {
+                position_mode: RtkPositionMode::Kinematic,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let mut static_filter =
+            RtkFloatFilter::new(f.base_position, f.seed, Default::default()).unwrap();
+        let (mut maximum, mut static_failures) = (0.0_f64, 0);
+        for (i, (rover, base)) in rover.iter().zip(&base).enumerate() {
+            let expected = EcefCoord::new(truth[i][2], truth[i][3], truth[i][4]);
+            let result = kinematic.process_pair(rover, base, &f.nav).unwrap();
+            assert_eq!(result.position.status, SolutionStatus::Float);
+            assert_eq!(rover.time.week(), truth[i][0] as i32);
+            close(rover.time.tow(), truth[i][1], 1e-12);
+            let error = distance(result.position.position_ecef.unwrap(), expected);
+            maximum = maximum.max(error);
+            assert!(
+                error < if noisy { 0.15 } else { 0.003 },
+                "epoch {i}, noisy={noisy}: {error}"
+            );
+            assert_eq!(result.reset_ambiguities.len(), if i == 0 { 9 } else { 0 });
+            let covariance = &kinematic.state().unwrap().covariance;
+            let mut factor = vec![vec![0.0; covariance.len()]; covariance.len()];
+            for row in 0..covariance.len() {
+                for column in 0..=row {
+                    close(covariance[row][column], covariance[column][row], 1e-12);
+                    let value = covariance[row][column]
+                        - (0..column)
+                            .map(|k| factor[row][k] * factor[column][k])
+                            .sum::<f64>();
+                    assert!(value.is_finite());
+                    if row == column {
+                        assert!(value > 0.0);
+                        factor[row][column] = value.sqrt();
+                    } else {
+                        factor[row][column] = value / factor[column][column];
+                    }
+                }
+            }
+            match static_filter.process_pair(rover, base, &f.nav) {
+                Err(_) => static_failures += 1,
+                Ok(result) if distance(result.position.position_ecef.unwrap(), expected) > 0.15 => {
+                    static_failures += 1
+                }
+                _ => {}
+            }
+        }
+        assert!(static_failures > 0);
+        eprintln!(
+            "moving noisy={noisy}: max 3-D FLOAT error {maximum:.12} m, static failed/drifted {static_failures}/64"
+        );
+    }
+}
+
+#[test]
+fn skipped_epoch_lli_power_and_slip_evidence_reset_arcs_without_advancing_state() {
+    for event in 0..5 {
+        let f = fixture(false);
+        let mut engine = RtkFloatFilter::new(f.base_position, f.seed, Default::default()).unwrap();
+        engine
+            .process_pair(&f.rover[0], &f.base[0], &f.nav)
+            .unwrap();
+        let before = engine.state().unwrap().clone();
+        let mut skipped = f.rover[0].clone();
+        skipped.time = skipped.time.checked_add_seconds(0.2).unwrap();
+        match event {
+            0 => skipped.observations[0].lli = Some(1),
+            1 => skipped.observations[0].lli = Some(2),
+            2 => skipped.flag = 1,
+            3 => skipped.flag = 6,
+            _ => {}
+        }
+        assert_eq!(engine.observe_skipped_epoch(&skipped), event < 4);
+        assert_eq!(*engine.state().unwrap(), before);
+        let result = engine
+            .process_pair(&f.rover[1], &f.base[1], &f.nav)
+            .unwrap();
+        assert_eq!(
+            result.reset_ambiguities.len(),
+            if event < 4 { 9 } else { 0 }
+        );
+    }
+}
+
+#[test]
+fn static_fix_policy_explicitly_rejects_kinematic_float_without_advancing_history() {
+    use gnss_rust::rtk::RtkPositionMode;
+    use gnss_rust::rtk_fix::{FixError, RtkFixPolicy};
+    let f = fixture(false);
+    let mut moving = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            position_mode: RtkPositionMode::Kinematic,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let float = moving
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let mut policy = RtkFixPolicy::new(Default::default()).unwrap();
+    assert_eq!(
+        policy.evaluate(&float),
+        Err(FixError::UnsupportedPositionMode)
+    );
+    let mut stationary = RtkFloatFilter::new(f.base_position, f.seed, Default::default()).unwrap();
+    let float = stationary
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    assert!(policy.evaluate(&float).is_ok());
+}
 fn fixture(noisy: bool) -> Fixture {
     let file = include_str!("fixtures/synthetic_rtk_truth.csv");
     let mut lines = file.lines().filter(|l| !l.starts_with('#'));

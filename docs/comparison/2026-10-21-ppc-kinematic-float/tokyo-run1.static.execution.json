@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_float",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1",
+    "static",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875"
+  ],
+  "returncode": 0,
+  "stdout_sha256": "77c47137a2002746fae4a4c3efca6114323e43296c03eae2b6dffc4525d0ddea",
+  "stderr_sha256": "43c4449074c9f80f00bb4437febf9de335e9e37885193f6268761792be605158"
+}
