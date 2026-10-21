@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_rtk_default_seed",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3",
+    "-3817680.730073338",
+    "3562839.5233945786",
+    "3650159.241788432",
+    "/tmp/native-default-seed-rm9leekg/native.csv",
+    "/tmp/native-default-seed-rm9leekg/ledger.csv"
+  ],
+  "returncode": 0,
+  "csv_sha256": "e5d84f9b5546a90ed69240f611ebf314b7427ac474ea9e89bc7b971ec3e71c59",
+  "csv_capture": "explicit native output file",
+  "stderr_sha256": "a7cf7f3d6c570118b600e3c9aadec9d7a8093f733b34d90e82f5e067bb1df7b1"
+}

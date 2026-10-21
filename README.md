@@ -1,8 +1,8 @@
 # gnss-rust
 
-2026-10-21: [元C++全RTKとのPPC比較](docs/comparison/2026-10-21-native-rtk-common-inputs/README.md)を追加。
-全6走行で観測値184,453行の一致を確認しました。制限したGPS単周波の設定では
-元C++にも大きな外れとSPP退避があり、実用設定と初期位置更新を調査しています。
+2026-10-21: [元C++の初期位置設定を切り分け](docs/comparison/2026-10-21-native-default-seed/README.md)。
+既定のSPP初期化でRTK出力は1,359→7,038エポックへ増えました。
+GPS単周波の制限した設定では大きな外れが残り、移動FIX・QCと併せて開発中です。
 Rustにも最大約938 mの外れが残り、同等性能の受け入れには至っていません。
 Rust276テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
 PPCでの実用RTK・PPP同等性能は未達です。

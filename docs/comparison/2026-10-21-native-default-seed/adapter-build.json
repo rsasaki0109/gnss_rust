@@ -1,0 +1,26 @@
+{
+  "command": [
+    "g++",
+    "-std=gnu++20",
+    "-O3",
+    "-DNDEBUG",
+    "-DGNSSPP_HAS_MADOCALIB_BRIDGE=0",
+    "-DGNSSPP_HAS_MADOCALIB_ORACLE=0",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "/workspace/gnss_rust/docs/comparison/2026-10-21-native-default-seed/native_ppc_rtk_default_seed.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "-Wl,--end-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-o",
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_rtk_default_seed"
+  ],
+  "returncode": 0,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "source_sha256": "1d236d2a17a1186800b09c249f59012e3f8a5813204b2ee006816b89449e7c6f",
+  "upstream_library_reused_unmodified": true
+}

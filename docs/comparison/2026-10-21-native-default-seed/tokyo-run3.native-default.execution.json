@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_rtk_default_seed",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3",
+    "-3961905.0275412495",
+    "3348993.752559677",
+    "3698211.783149875",
+    "/tmp/native-default-seed-rm9leekg/native.csv",
+    "/tmp/native-default-seed-rm9leekg/ledger.csv"
+  ],
+  "returncode": 0,
+  "csv_sha256": "8cfce436f82206198aaa40ccbef1339ab78cca195741bf66789c379885f4b2b5",
+  "csv_capture": "explicit native output file",
+  "stderr_sha256": "12b04e68b151edb958c32cd865d12f4a59f98705be930863809e1a0f4e9bb913"
+}

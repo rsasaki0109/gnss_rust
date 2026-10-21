@@ -7,6 +7,13 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[元C++の既定SPP初期化](docs/comparison/2026-10-21-native-default-seed/README.md)を切り分けた。
+prefer_rover_position_seedだけを既定falseへ戻し、入力台帳・AR/QC・衛星選択を変えずに
+全6走行を再実行。RTK出力は1,359→7,038、SPP退避は5,765→1,421になった。
+Tokyo run1の水平RMSは約1,180→17.3 m。ただし最大約768 mの外れは残る。
+初期位置設定の影響を確認した結果であり、全機能の性能受け入れには使わない。
+RustのSPP初期化接続と移動FIX・QCが次の課題。全体18/24（75%）を維持。
+
 [元C++全RTKとのPPC比較](docs/comparison/2026-10-21-native-rtk-common-inputs/README.md)を追加。
 元ソース2,091ファイルを照合して再ビルドし、全6走行の11,733対を両者で実行。
 独立デコーダのGPS 1C観測184,453行は数値・欠測・reset通知が一致した。
