@@ -14,13 +14,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     if args.len() != 3 {
         return Err(
-            "usage: ppc_rtk_float CASE_DIRECTORY static|kinematic BASE_X,BASE_Y,BASE_Z".into(),
+            "usage: ppc_rtk_float CASE_DIRECTORY static|kinematic|kinematic-gdop50 BASE_X,BASE_Y,BASE_Z".into(),
         );
     }
     let position_mode = match args[1].to_str() {
         Some("static") => RtkPositionMode::Static,
-        Some("kinematic") => RtkPositionMode::Kinematic,
-        _ => return Err("expected static or kinematic".into()),
+        Some("kinematic" | "kinematic-gdop50") => RtkPositionMode::Kinematic,
+        _ => return Err("expected static, kinematic or kinematic-gdop50".into()),
     };
     let xyz: Vec<f64> = args[2]
         .to_str()
@@ -47,13 +47,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         seed,
         RtkFloatConfig {
             position_mode,
+            max_geometry_gdop: if args[1] == "kinematic-gdop50" {
+                Some(50.0)
+            } else {
+                None
+            },
             ..Default::default()
         },
     )?;
     let mut out = BufWriter::new(std::io::stdout().lock());
     writeln!(
         out,
-        "kind,week,tow,side,rover_flag,base_flag,base_dt_s,status,x_m,y_m,z_m,satellites,reference,nis,code_rms_m,phase_rms_m,ambiguity_resets,reason"
+        "kind,week,tow,side,rover_flag,base_flag,base_dt_s,status,x_m,y_m,z_m,satellites,reference,nis,code_rms_m,phase_rms_m,ambiguity_resets,reason,geometry_gdop,geometry_pdop,position_covariance_trace_m2,position_qxx_m2,position_qyy_m2,position_qzz_m2,used_satellites,geometry_error"
     )?;
     let (
         mut pairs,
@@ -65,7 +70,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         mut continuity,
     ) = (0, 0, 0, 0, 0, 0, 0);
     for event in EpochMatcher::new(rover, base) {
-        let mut row = vec![String::new(); 18];
+        let mut row = vec![String::new(); 26];
         match event? {
             EpochMatch::Unmatched { side, epoch } => {
                 row[0] = "unmatched".into();
@@ -122,6 +127,28 @@ fn main() -> Result<(), Box<dyn Error>> {
                             row[14] = format!("{:.17e}", result.code_residual_rms_m);
                             row[15] = format!("{:.17e}", result.phase_residual_rms_m);
                             row[16] = result.reset_ambiguities.len().to_string();
+                            match &result.geometry {
+                                Ok(dop) => {
+                                    row[18] = format!("{:.17e}", dop.gdop);
+                                    row[19] = format!("{:.17e}", dop.pdop);
+                                }
+                                Err(error) => row[25] = format!("{error:?}"),
+                            }
+                            let covariance = result
+                                .position
+                                .position_covariance
+                                .ok_or("missing FLOAT covariance")?;
+                            row[20] =
+                                format!("{:.17e}", (0..3).map(|i| covariance[i][i]).sum::<f64>());
+                            for i in 0..3 {
+                                row[21 + i] = format!("{:.17e}", covariance[i][i]);
+                            }
+                            row[24] = result
+                                .used_satellites()
+                                .iter()
+                                .map(ToString::to_string)
+                                .collect::<Vec<_>>()
+                                .join(";");
                         }
                         Err(error) => {
                             failed += 1;

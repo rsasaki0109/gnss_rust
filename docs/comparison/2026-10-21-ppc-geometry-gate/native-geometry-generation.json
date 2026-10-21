@@ -1,0 +1,12 @@
+{
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "native_whole_comparison": false,
+  "cases": 16,
+  "default_native_spp_gdop_limit": 50,
+  "command": [
+    "/tmp/upstream-geometry"
+  ],
+  "returncode": 0,
+  "fixture_sha256": "de3b09a83c026730e4e32b3a68f1579013bb17757095b2c06f7919b05d4868c9",
+  "generator_source_sha256": "d3487cd39cebce5375b3e825c2d9f8bef79a4f7842f936e4a490481d0aacb6a4"
+}

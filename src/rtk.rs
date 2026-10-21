@@ -7,6 +7,7 @@
 
 use crate::coordinates::{ecef_to_enu, ecef_to_geodetic, geometric_distance};
 use crate::filter::{self, FilterError, GaussianState, Matrix};
+use crate::geometry::{DilutionOfPrecision, dilution_of_precision};
 use crate::lambda::{self, LambdaConfig, LambdaError, LambdaResult};
 use crate::models::saastamoinen;
 use crate::navigation::NavigationData;
@@ -30,6 +31,9 @@ pub enum RtkPositionMode {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RtkFloatConfig {
     pub position_mode: RtkPositionMode,
+    /// Optional unweighted geometry gate, evaluated before committing a
+    /// posterior. None preserves the existing admission policy.
+    pub max_geometry_gdop: Option<f64>,
     pub elevation_mask_rad: f64,
     pub pseudorange_sigma_m: f64,
     pub carrier_phase_sigma_m: f64,
@@ -49,6 +53,7 @@ impl Default for RtkFloatConfig {
     fn default() -> Self {
         Self {
             position_mode: RtkPositionMode::Static,
+            max_geometry_gdop: None,
             elevation_mask_rad: 10_f64.to_radians(),
             pseudorange_sigma_m: 0.3,
             carrier_phase_sigma_m: 0.002,
@@ -83,7 +88,10 @@ impl RtkFloatConfig {
             self.ambiguity_process_noise_cycles2_per_s,
             self.max_ephemeris_age_s,
         ];
-        if positive.iter().any(|v| !v.is_finite() || *v <= 0.0)
+        if self
+            .max_geometry_gdop
+            .is_some_and(|v| !v.is_finite() || v <= 0.0)
+            || positive.iter().any(|v| !v.is_finite() || *v <= 0.0)
             || nonnegative.iter().any(|v| !v.is_finite() || *v < 0.0)
             || !self.elevation_mask_rad.is_finite()
             || !(0.0..std::f64::consts::FRAC_PI_2).contains(&self.elevation_mask_rad)
@@ -105,6 +113,7 @@ pub enum RtkError {
     InsufficientCommonSatellites,
     BaselineTooLong,
     NonConvergent,
+    GeometryTooWeak,
     Gnss(Error),
     Filter(FilterError),
 }
@@ -119,6 +128,7 @@ impl fmt::Display for RtkError {
             Self::InsufficientCommonSatellites => f.write_str("at least four common GPS L1 C/A code/phase satellites are required"),
             Self::BaselineTooLong => f.write_str("baseline exceeds the configured short-baseline limit"),
             Self::NonConvergent => f.write_str("RTK FLOAT iteration did not converge"),
+            Self::GeometryTooWeak => f.write_str("RTK geometry exceeds the configured GDOP limit"),
             Self::Gnss(e) => e.fmt(f), Self::Filter(e) => e.fmt(f),
         }
     }
@@ -256,9 +266,15 @@ pub struct RtkFloatSolution {
     pub iterations: usize,
     pub reset_ambiguities: Vec<SatelliteId>,
     pub rejected: Vec<(SatelliteId, RtkRejection)>,
+    /// Independent common-clock geometry at the final estimated position.
+    /// An unavailable diagnostic is retained explicitly when its gate is off.
+    pub geometry: Result<DilutionOfPrecision, Error>,
     pub(crate) fix_context: FixContext,
 }
 impl RtkFloatSolution {
+    pub fn used_satellites(&self) -> Vec<SatelliteId> {
+        self.fix_context.satellites()
+    }
     /// Diagnostic candidates only. The filter never changes FLOAT to FIX.
     pub fn integer_candidates(&self, config: LambdaConfig) -> Result<LambdaResult, LambdaError> {
         lambda::search(
@@ -543,6 +559,20 @@ impl RtkFloatFilter {
         }
         let (update, iterations) = accepted.ok_or(RtkError::NonConvergent)?;
         let posterior = update.posterior;
+        let geometry = dilution_of_precision(
+            add(self.base_position, &posterior.mean[..3]),
+            &data
+                .iter()
+                .map(|d| (d.satellite, d.rover_position))
+                .collect::<Vec<_>>(),
+        );
+        if let Some(maximum) = self.config.max_geometry_gdop {
+            match &geometry {
+                Ok(dop) if dop.gdop <= maximum => {}
+                Ok(_) => return Err(RtkError::GeometryTooWeak),
+                Err(error) => return Err((*error).into()),
+            }
+        }
         let final_system = build_system(
             &data,
             reference,
@@ -582,6 +612,7 @@ impl RtkFloatFilter {
             iterations,
             reset_ambiguities: resets.clone(),
             rejected,
+            geometry,
             fix_context: FixContext {
                 state: posterior.clone(),
                 base_position: self.base_position,

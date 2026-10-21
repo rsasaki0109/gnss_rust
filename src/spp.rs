@@ -286,7 +286,7 @@ fn build_rows(
 /// Householder QR for the four-column code problem. Avoids squaring the
 /// condition number via normal equations. Covariance uses the configured code
 /// variance and elevation weights, not a zero residual variance estimate.
-fn least_squares(rows: &[Row]) -> Result<([f64; 4], [[f64; 4]; 4]), Error> {
+pub(crate) fn least_squares(rows: &[Row]) -> Result<([f64; 4], [[f64; 4]; 4]), Error> {
     let mut a: Vec<[f64; 4]> = rows
         .iter()
         .map(|r| r.design.map(|x| x * r.weight))

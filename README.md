@@ -1,8 +1,8 @@
 # gnss-rust
 
-2026-10-21: [PPC全6走行のキネマティックFLOAT](docs/comparison/2026-10-21-ppc-kinematic-float/README.md)を実行。
-11,733同時刻対のうち8,258でFLOATを出力しましたが、大きな外れ値が残ります。
-Rust272テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
+2026-10-21: [PPCのGDOP・共分散・原観測診断](docs/comparison/2026-10-21-ppc-geometry-gate/README.md)を追加。
+大きな外れ値はGDOPだけでは防げず、再捕捉時の観測品質を調査しています。
+Rust276テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
 PPCでの実用RTK・PPP同等性能は未達です。
 
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。

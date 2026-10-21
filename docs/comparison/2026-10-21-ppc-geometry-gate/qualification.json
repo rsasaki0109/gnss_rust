@@ -1,0 +1,84 @@
+{
+  "checks": [
+    {
+      "name": "rust",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2"
+      ],
+      "returncode": 0,
+      "log": "rust.qualification.log.gz",
+      "uncompressed_sha256": "98c50c03c623c7a26616045ab0c80ff718b1c27d1f3b1d47ade6ed0ec26ed0ec",
+      "passed_tests": 276
+    },
+    {
+      "name": "examples",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--examples"
+      ],
+      "returncode": 0,
+      "log": "examples.qualification.log.gz",
+      "uncompressed_sha256": "f64e8969a6195c214a1ac2225d200e2a9ff7ce432304e2dc12a5bdb64bcd207b"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "returncode": 0,
+      "log": "fmt.qualification.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "returncode": 0,
+      "log": "clippy.qualification.log.gz",
+      "uncompressed_sha256": "6a85179adc593a26772c6168c96f7d08bb391ef4002b914394bf1640ff39aaa7"
+    },
+    {
+      "name": "release",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--release"
+      ],
+      "returncode": 0,
+      "log": "release.qualification.log.gz",
+      "uncompressed_sha256": "9576f1f7e73fc2bb1ec2336aae60cb485c591eadc60a1b998573411c34057e08"
+    }
+  ],
+  "base_commit": "e6502f456f5ab5073c572c4dd5d60f903d2de1b3",
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "predeclared_inputs_sha256": "02ca59a6279d73afeeb948edb5288f09efc964ebf59a8cab4bc925978f5fac5e",
+  "additional_source_fixture_sha256": {
+    "tests/geometry.rs": "66c96f5e98fdf45396aa91540259cb4842d2e241574c82c7ad5592458b1d828f",
+    "tests/rtk_float.rs": "4bb90ef87c3e53d934e7184a305f22df4d8c1dfda9372a7b577c83f06c90b707",
+    "tests/fixtures/upstream_geometry.csv": "de3b09a83c026730e4e32b3a68f1579013bb17757095b2c06f7919b05d4868c9",
+    "scripts/upstream_geometry.cpp": "d3487cd39cebce5375b3e825c2d9f8bef79a4f7842f936e4a490481d0aacb6a4",
+    "examples/ppc_phase_diagnostics.rs": "a5ce909c13531824e0f2ae6b7a30b2171059f0d959b4c87428f501a2d67f11a4"
+  }
+}

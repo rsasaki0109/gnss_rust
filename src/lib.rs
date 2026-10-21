@@ -43,6 +43,7 @@ pub mod dual_frequency;
 pub mod earth_rotation;
 pub mod epoch_match;
 pub mod filter;
+pub mod geometry;
 pub mod iers2010;
 pub mod lambda;
 pub mod models;

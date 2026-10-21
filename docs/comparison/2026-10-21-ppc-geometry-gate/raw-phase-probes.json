@@ -1,0 +1,31 @@
+{
+  "executions": [
+    {
+      "case": "nagoya-run2",
+      "command": [
+        "target/release/examples/ppc_phase_diagnostics",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2",
+        "556755",
+        "556765"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "ba94cc23ee2d862785f3750e56aafabda3076c7f66935a30e239fda84aff4146",
+      "stderr": "raw_pair_diagnostics_only=true slip_policy_applied=false\n",
+      "window_selection": "post-execution worst-position investigation; not an applied gate"
+    },
+    {
+      "case": "tokyo-run1",
+      "command": [
+        "target/release/examples/ppc_phase_diagnostics",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1",
+        "189008",
+        "189018"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "36bd5d8b688041d9ebd5bf001e8dd379cbcb89e188d2d440e22630a3a26586e1",
+      "stderr": "raw_pair_diagnostics_only=true slip_policy_applied=false\n",
+      "window_selection": "post-execution worst-position investigation; not an applied gate"
+    }
+  ],
+  "source_sha256": "a5ce909c13531824e0f2ae6b7a30b2171059f0d959b4c87428f501a2d67f11a4"
+}

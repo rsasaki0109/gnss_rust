@@ -367,6 +367,87 @@ fn static_fix_policy_explicitly_rejects_kinematic_float_without_advancing_histor
         .unwrap();
     assert!(policy.evaluate(&float).is_ok());
 }
+
+#[test]
+fn geometry_gate_checks_exact_boundary_and_invalid_configuration() {
+    let f = fixture(false);
+    let mut original = processor(&f);
+    let expected = original
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let gdop = expected.geometry.as_ref().unwrap().gdop;
+    for (limit, accepted) in [(gdop, true), (f64::from_bits(gdop.to_bits() - 1), false)] {
+        let mut filter = RtkFloatFilter::new(
+            f.base_position,
+            f.seed,
+            RtkFloatConfig {
+                max_geometry_gdop: Some(limit),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let result = filter.process_pair(&f.rover[0], &f.base[0], &f.nav);
+        if accepted {
+            // The diagnostic and gate do not perturb the measurement update.
+            assert_eq!(result.unwrap().position, expected.position);
+            assert_eq!(filter.state(), original.state());
+        } else {
+            assert_eq!(result, Err(RtkError::GeometryTooWeak));
+            assert!(filter.state().is_none());
+        }
+    }
+    for value in [f64::NAN, f64::INFINITY, 0.0, -1.0] {
+        assert!(matches!(
+            RtkFloatFilter::new(
+                f.base_position,
+                f.seed,
+                RtkFloatConfig {
+                    max_geometry_gdop: Some(value),
+                    ..Default::default()
+                }
+            ),
+            Err(RtkError::InvalidConfiguration)
+        ));
+    }
+}
+
+#[test]
+fn geometry_rejection_does_not_commit_and_restarts_ambiguities_on_recovery() {
+    let f = fixture(false);
+    let mut control = processor(&f);
+    let full = control
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let keep: std::collections::BTreeSet<_> = full.used_satellites().into_iter().take(4).collect();
+    let mut four = f.rover[1].clone();
+    four.observations.retain(|o| keep.contains(&o.satellite));
+    let subset = control.process_pair(&four, &f.base[1], &f.nav).unwrap();
+    let lower = full.geometry.as_ref().unwrap().gdop;
+    let upper = subset.geometry.as_ref().unwrap().gdop;
+    assert!(upper > lower);
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            max_geometry_gdop: Some((lower + upper) / 2.0),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    filter
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let before = filter.state().unwrap().clone();
+    assert_eq!(
+        filter.process_pair(&four, &f.base[1], &f.nav),
+        Err(RtkError::GeometryTooWeak)
+    );
+    assert_eq!(*filter.state().unwrap(), before);
+    let recovered = filter
+        .process_pair(&f.rover[2], &f.base[2], &f.nav)
+        .unwrap();
+    assert_eq!(recovered.reset_ambiguities.len(), 9);
+}
 fn fixture(noisy: bool) -> Fixture {
     let file = include_str!("fixtures/synthetic_rtk_truth.csv");
     let mut lines = file.lines().filter(|l| !l.starts_with('#'));

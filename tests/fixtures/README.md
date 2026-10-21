@@ -217,6 +217,15 @@ Linux x86_64, pinned libgnss++ above):
 
 ## Kinematic RTK FLOAT fixtures
 
+The 16 cases in upstream_geometry.csv call the pinned native
+ObservationData::calculateDOP; the geometry covariance is an independent Eigen
+inverse of H transpose H. Generate with scripts/upstream_geometry.cpp, linking
+the upstream src/core/observation.cpp and src/core/types.cpp and using the
+upstream/Eigen include paths. Ordinary cases use relative 1e-10 and weak cases
+relative 1e-6 to allow the native normal-inverse precision loss. Rust uses QR.
+The fixture also records the native SPP default GDOP limit of 50.
+This is a geometry component comparison, not a whole RTK policy comparison.
+
 The new moving fixtures synthetic_rtk_moving_{base,rover}[_noisy].obs and
 synthetic_rtk_moving_truth.csv come from scripts/upstream_rtk_moving.cpp.
 They use the same pinned native geometry and satellite set as the static fixture,
