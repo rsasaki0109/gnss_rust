@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp",
+    "satellite"
+  ],
+  "returncode": 0,
+  "csv_sha256": "b9407fecdcd6a1465e68765d925a133c6fc7a178c72e85c57c06375c212de2da",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "c253ddfdcc11be0b2ac596b06fbb8a66534d197137a46bf538907f42708c6c40"
+}

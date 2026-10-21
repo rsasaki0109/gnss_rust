@@ -1,0 +1,71 @@
+{
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/src/core",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "scripts/upstream_ppp_kinematic.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-Wl,--end-group",
+    "-o",
+    "/workspace/.cloud-setup/solver-reference-20261021/upstream_ppp_kinematic"
+  ],
+  "returncode": 0,
+  "build_log_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+  "source_sha256": {
+    "scripts/upstream_ppp_kinematic.cpp": "a05581dea6cfd789525bf0ce72447f67db7aaf0692817247379057a5a3d80a9d",
+    "scripts/upstream_precise_transmit.cpp": "3b2dacc68d4705142de78578a54f4fb28e9b96670f77c4469960014856eb5be1",
+    "scripts/upstream_precise.cpp": "1891e8bcd2ce9d3ce8be09070a7fdd750e8b6bc975d8c8a6fa383dc43e9962b9",
+    "scripts/upstream_navigation.cpp": "82dd53a255187def0cbac562b94bf798e9030353728e5ab2562a0333fde35214"
+  },
+  "binary_sha256": "7106b625e065a36cf47fd1abf75be16911ac643d38fe6fcd094c88069d8760a5",
+  "native_library_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "pinned_upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "upstream_source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "earlier_native_source_proof": {
+    "docs/comparison/2026-10-21-native-rtk-common-inputs/native-build.json": "7ae5001f6365d1d2730e00ea24e975c12042b47a57ef945a3fe5272bbb0ec093"
+  },
+  "repeat_runs": [
+    {
+      "returncode": 0,
+      "fixture_sha256": {
+        "synthetic_ppp_kinematic_noisy.obs": "3a248da9c7b6db981cce1e89d32dcd0b34f1eecb0badcab14ebd1a781e589757",
+        "synthetic_ppp_kinematic.obs": "c7b1a328f933d1045fd3b25bd29ec532dfce9b642bd8619cd26674326daa0643",
+        "upstream_ppp_kinematic_unrounded.csv": "7d69aedab0b8e8e8e07b5936f827a8043c36589d7c526cfd1024e7aea717a866",
+        "synthetic_ppp_kinematic_truth.csv": "416a2aa1c055995789705fd26b472d1409564864474c6f420b6d526dd327de42",
+        "upstream_ppp_kinematic_predict.csv": "946d0a8260bb57a1ff890c7b0ab5fc99bd8a47c93273ecccd41dd760ed8497b3"
+      }
+    },
+    {
+      "returncode": 0,
+      "fixture_sha256": {
+        "synthetic_ppp_kinematic_noisy.obs": "3a248da9c7b6db981cce1e89d32dcd0b34f1eecb0badcab14ebd1a781e589757",
+        "synthetic_ppp_kinematic.obs": "c7b1a328f933d1045fd3b25bd29ec532dfce9b642bd8619cd26674326daa0643",
+        "upstream_ppp_kinematic_unrounded.csv": "7d69aedab0b8e8e8e07b5936f827a8043c36589d7c526cfd1024e7aea717a866",
+        "synthetic_ppp_kinematic_truth.csv": "416a2aa1c055995789705fd26b472d1409564864474c6f420b6d526dd327de42",
+        "upstream_ppp_kinematic_predict.csv": "946d0a8260bb57a1ff890c7b0ab5fc99bd8a47c93273ecccd41dd760ed8497b3"
+      }
+    }
+  ],
+  "actual_native_PPP_predictState_calls_per_repeat": 24,
+  "moving_physical_epochs_per_variant": 64,
+  "unrounded_observable_rows": 576,
+  "whole_native_PPP_executed": false,
+  "upstream_source_patched": false,
+  "private_access_exposed_in_adapter_only": true,
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0"
+}

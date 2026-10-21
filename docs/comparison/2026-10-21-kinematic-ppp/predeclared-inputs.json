@@ -1,0 +1,233 @@
+{
+  "base_commit": "101240b9c2b6eaaf0a3bfdaa1a343a07338ca9b5",
+  "source_sha256": {
+    "src/antenna.rs": "816447af7cd62f67a73c2cbc54c076454ae97f27f74bf35dfa4fa4f4c65ccf77",
+    "src/bias.rs": "9c12da40ae5041760ec7f290557035a97c5a8817ddd2f74dda5d37e4af73ef98",
+    "src/constants.rs": "fe73314fb2be9c9a184793f2927def20d72b164eb475fb748a430ea816798237",
+    "src/coordinates.rs": "af281e4bd44b3b96be97c26321be07ca13e192830cd4deffc7ba98c96fdae1cc",
+    "src/dual_frequency.rs": "0d114189c1722525f1b395118f918bf1ac54e2bfee9723f2347fc15cf89b51f1",
+    "src/earth_rotation.rs": "2736a8596929dec8a9f97d19c43540b566dcb94f59bcf9c9b5d7253e5d3addf7",
+    "src/filter.rs": "31fe26a27f04a5138df4a6c92e2027d6d7f2c665929a40a9da7340669eb8a0bc",
+    "src/iers2010.rs": "29f266c47778aef329aac189d476ad413f2cc18fec5a3eb2c432e526f050787c",
+    "src/lambda.rs": "e4d9ff497a22d291a1409824e0769a894a793d2c8e3d8233e9d50577412cee0f",
+    "src/lib.rs": "24526c2ff346a0fe1270eec3c8ff35e640de0d812ffd16256f878f559cf65aa9",
+    "src/models.rs": "725c07567a936bdd54a262ac5d46a0500b176854ca38e5c810654754cd54777d",
+    "src/navigation.rs": "367f857fbfede358a3e022e06a6fd7a13bec20acd636daaf824a03a961ee84d2",
+    "src/observation.rs": "35ea8e683bdbce366247c0062891252665938ae224b240a0a4c911a01852995e",
+    "src/phase_arc.rs": "b192b2b9da11c536016263ca795c3bfdebd317d8d195e254f0f916facd0e2609",
+    "src/ppp.rs": "b7b268f137d24c5b93d3d4eb7b6cf79f89ea28790759181654e5697d6b1fb956",
+    "src/precise.rs": "00edf742f78f5bac9aa0886270a83a175b247613bec1c226ceb02319424375be",
+    "src/precise_spp.rs": "30391616f027f51d20be9bf1b1a481aa9209234052e406b9a84021e01b15449c",
+    "src/precise_transmit.rs": "aee6f7a85438770506650bd451f535bc73de5e45dde17656cafb46aba3eb8327",
+    "src/rinex.rs": "b32259bb56dd33ed3b4fa3326a6491c0e7ce5a0872a0c6a501273919b37f7bce",
+    "src/rtk.rs": "629dd59afc41de4e877494def77fed44831735304364844c7ab9fb629c181af2",
+    "src/rtk_fix.rs": "4dac3b6a403b79f2bcc358e9e61ce28bb8de496e33ff87116472bd4b824c0250",
+    "src/spp.rs": "6e6446bd1f72786c0873a1eebb6b40390f5c3b39cc20857f9ac0a64613dab56d",
+    "src/tides.rs": "c74bc4284aae7999dc7c30abfd03bfaea03cc619ec68a814e2766f083c011454",
+    "src/time.rs": "79654eace47779444e436e6238f855c62b8029c2bf020e7a6f0f02323cd0bebb",
+    "src/types.rs": "178f7573ff8d63b71f8d006cdd2fe335766409c583f2322137770e24969ccbb7",
+    "src/windup.rs": "6c7bf9be11eef7c67e925d29f8aac372bcf4e9d1ecde09c333afa4e0b3a329b8",
+    "src/spp_qc.rs": "a35109fbf92f8a8ea3971a14e4947909d6b8721b2111fc655c36cd4cc13c9227",
+    "src/clock_fit.rs": "d72b7f1568096c71e37647124b3209b10a5d3893ef16a19c12129b9ab74979e2",
+    "src/rtk_ambiguity.rs": "df82b65d70660ebe3c2278732fd24f4a22e149bb2e4aecfc47101e43da51003f",
+    "src/rtk_slip.rs": "1e488848d610cdb58ccac0cc82523398c41ea0709ed2a9f7994a7df6588795ad",
+    "src/spp_multiclock.rs": "e90f869eda78c421c66965f960b421d7bfe8a3c904feebb96828a007eb8d6b86",
+    "src/dsb_clock.rs": "8f6dd40fc956ce0e5655626e00f49bd7d23649f36160531201850936e03993ff",
+    "src/spp_quality.rs": "b7007ae741d48a5e866aae763c7af624c6b99c7636ab4d83d5a08f601bf4b4ec",
+    "src/velocity.rs": "abffa12b2047054a6091b65dfb1b3156fad89f88d4936f578de1443842992c2f",
+    "src/epoch_match.rs": "460d48489996f092a10a4b2210b1804c02a525f0d4337f708429954bfddae048",
+    "src/rtk_quality.rs": "bb62feb84c13c1c78d954935453afe830e6678d0f12987765a91a6c815cb6c49",
+    "src/rtk_locked_subset_tests.rs": "573cf03266d70f21041dd2a4e7a3b18174a72afe23f52db450b76af824968a81",
+    "src/rtk_reference.rs": "22889bff9eb63aeafd0d352bc7aba833343439921eb7893d4c14933824737a30",
+    "src/geometry.rs": "8897dbbbb5465e9000fb7812e4ebee8076b9a87545d1f7877de36c56e25ca373",
+    "src/rtk_ar_selection.rs": "88ee27eab69aa43ecca51cd027ba3b04d6e173e3c32dd52e80b9929b73ecf541",
+    "src/bin/gnss.rs": "20d1c9cb3797cab630cd3cd38919a6a2b4bfb6a7ed51a498d8fae5aad5236a92",
+    "examples/ppp.rs": "1ae1c49ad1665c9ced673688289d2eb4559760e9bb42ef76e7448114340694ca",
+    "examples/ppp_kinematic.rs": "5d18533f9f5f1ddea962d51dfb8db031193d089e8f5c642bb88704a7ba149da8",
+    "scripts/run_ppp_kinematic.py": "922eea386f333a8aaa3d3b9274f344d4e7d52037b623c1ddb505f8017c114464",
+    "scripts/build_ppp_static_control.py": "c3ff441559366adce59f4164b4a37e92caed3a54f2c99268f1782a2a6b4b49ae",
+    "scripts/upstream_ppp_kinematic.cpp": "a05581dea6cfd789525bf0ce72447f67db7aaf0692817247379057a5a3d80a9d",
+    "scripts/upstream_precise_transmit.cpp": "3b2dacc68d4705142de78578a54f4fb28e9b96670f77c4469960014856eb5be1",
+    "scripts/upstream_precise.cpp": "1891e8bcd2ce9d3ce8be09070a7fdd750e8b6bc975d8c8a6fa383dc43e9962b9",
+    "scripts/upstream_navigation.cpp": "82dd53a255187def0cbac562b94bf798e9030353728e5ab2562a0333fde35214",
+    "scripts/run_native_ppc_comparison.py": "05b5acaef483a445440452ecbd41dbd1a1d9b266c03b5181c5cf4502bff7a911",
+    "tests/ppp.rs": "51ee6710ed29a589f8cd041e1557d3e482a4a90050aad431ce713c498c24d206",
+    "tests/ppp_kinematic.rs": "046b9c7960a5f2ba07431993141bd8b0ff4d00afe652a14644752657e2e72e39",
+    "docs/kinematic-ppp.md": "828069f7bca2223a0f1bda2ca5e9dbdf6c1b90fd6607dba383226e4fc2468df5",
+    "Cargo.toml": "a75dfc295e396c45cf14edde4a7a4c80c868eac21e5b47a7bec21d8bd6dc8036",
+    "Cargo.lock": "a42fa27792b22f650bd632df017329b7c4c0c1dd29c93c8e37b55d029e26d713",
+    "rust-toolchain.toml": "2ad6f15416572b4836585087f1d4abc53b8fa2dbd616f8dacfaa587ed6714228",
+    "tests/fixtures/synthetic_ppp.clk": "c61a7a2996623bda7b22921ab889755b595e92318da7fa44cd8c663a48fe755e",
+    "tests/fixtures/synthetic_ppp.obs": "244f6420d3282eb09fb23df0b01e40a8f499fc9c5a26cb72b57f7550c1923fc3",
+    "tests/fixtures/synthetic_ppp.sp3": "c6ebf5ed0d57bd3ef30dfe23d7856d7242e8c82f48c4656cd64b26f38fb0bdcf",
+    "tests/fixtures/synthetic_ppp_antenna.obs": "99858de8d373f718736e5fdce378df8e0a99d16b77b93d6ac8a623005fdd116e",
+    "tests/fixtures/synthetic_ppp_antenna_noisy.obs": "098ffcbcd28ac72689e7b75af75a5db5954138c229f3adf59b37d2354990231d",
+    "tests/fixtures/synthetic_ppp_bias.csv": "467c09d1cb1e6f634d3c19a73f3c8dfd34cbc04861f969129de334fe1925a44d",
+    "tests/fixtures/synthetic_ppp_com.sp3": "e90f662c59c18d154020e3cd64eb3a839d9f44ac77885cb1c771791ee9553a39",
+    "tests/fixtures/synthetic_ppp_legacy_tide.obs": "b3e806d39c62f7ed441bd6b8186e1871ab0afae9fa720b98243e3de314363478",
+    "tests/fixtures/synthetic_ppp_legacy_tide_noisy.obs": "c7c8ede85dfa9635c5eea73afdc4e188fe361693d679c53e287e202398c06409",
+    "tests/fixtures/synthetic_ppp_legacy_tide_truth.csv": "8ab97d091ea9398f64c1b81c4c2c7eb52e9abff98ba2b23be5e26dab66f2b985",
+    "tests/fixtures/synthetic_ppp_noisy.obs": "08980086facc45f19d6acd31a65e375f283f488540bf3ab120bd2bc493872886",
+    "tests/fixtures/synthetic_ppp_osb.bsx": "a1ea413f8d15e1bf5b98bdd356dabed0e0b332834045d3a3b1c1aa05b047e2b4",
+    "tests/fixtures/synthetic_ppp_satellite_antenna.obs": "3bf500b7c2dacaad0938e21a42826ad2265892191f67f7a92088d9e4ea5e7850",
+    "tests/fixtures/synthetic_ppp_satellite_antenna_noisy.obs": "18ed6d6f753cbfb1229f13799f6edbd09092c6dff47216415e6dc44089801a71",
+    "tests/fixtures/synthetic_ppp_truth.csv": "2c3aac2ef1d32dee3218286b4a007410873270527759a4ebdc88f18c876c4e5b",
+    "tests/fixtures/synthetic_ppp_windup.obs": "4b57422490bb300090659499af23a09c176155c52f5e59e02e98da6862f35d45",
+    "tests/fixtures/synthetic_ppp_windup_noisy.obs": "2ab952499a30e10ccae381c2c2bda1763687c45b13466ecdc42db83226516a7a",
+    "tests/fixtures/upstream_ppp_admission.csv": "6fcac96be2cb897a5775a4a6b824c410892cf8a95867874df3200665f92da62e",
+    "tests/fixtures/upstream_ppp_legacy_tide.csv": "949cbdb4a8b5b7dde43dca24512efb805c69e3a6ba8324ab8d6b212ad15b1d3d",
+    "tests/fixtures/upstream_ppp_legacy_tide_model.csv": "87255b2db19ba78a10edace46ff12d8c96aad82c8562e43fcd215d1be432ec57",
+    "tests/fixtures/upstream_ppp_legacy_tide_unrounded.csv": "7b07634b9f865ae40d43fe570f19a09f61e938cc72437257af29f23976e9b676",
+    "tests/fixtures/upstream_ppp_model.csv": "e0830e9409aa96f75e3a7ab96597139f759684d1f71a82a2ccb81a21b9ed065f",
+    "tests/fixtures/upstream_ppp_receiver_antenna.csv": "0d2efa93f4f85c25e874a16e70c2917b421f1ae55a69de7ee7e3037765e0d412",
+    "tests/fixtures/upstream_ppp_satellite_antenna.csv": "59b46b8b9ef448fc4a7fe1121957682df21f59b792a98c653180564d89c7864d",
+    "tests/fixtures/upstream_ppp_windup.csv": "c8c476b2ceb3d9ce98acd032c1aacd93e9941709b92a0395a62b111e12645d8d",
+    "tests/fixtures/synthetic_ppp_kinematic_truth.csv": "416a2aa1c055995789705fd26b472d1409564864474c6f420b6d526dd327de42",
+    "tests/fixtures/synthetic_ppp_kinematic.obs": "c7b1a328f933d1045fd3b25bd29ec532dfce9b642bd8619cd26674326daa0643",
+    "tests/fixtures/synthetic_ppp_kinematic_noisy.obs": "3a248da9c7b6db981cce1e89d32dcd0b34f1eecb0badcab14ebd1a781e589757",
+    "tests/fixtures/upstream_ppp_kinematic_unrounded.csv": "7d69aedab0b8e8e8e07b5936f827a8043c36589d7c526cfd1024e7aea717a866",
+    "tests/fixtures/upstream_ppp_kinematic_predict.csv": "946d0a8260bb57a1ff890c7b0ab5fc99bd8a47c93273ecccd41dd760ed8497b3"
+  },
+  "binary_sha256": {
+    "moving": "eee8c34a8fff078f75d4b02a0af550115df979bd5ff6504d0d1cd05305e9d9d7",
+    "static": "a553e96038657a2e49739405c1f2fd5e49544d38dfcaebc0c1bf3d9ed7064df4",
+    "old_static": "9c9c080fa3202a4b595f12714060e2d483f20c3e9c92c7c8b67b048b46f932ce"
+  },
+  "moving_profiles": {
+    "static_clean": {
+      "arguments": [
+        "static",
+        "clean"
+      ],
+      "moving": false,
+      "velocity_variance": null
+    },
+    "static_noisy": {
+      "arguments": [
+        "static",
+        "noisy"
+      ],
+      "moving": false,
+      "velocity_variance": null
+    },
+    "kinematic_clean": {
+      "arguments": [
+        "kinematic",
+        "clean"
+      ],
+      "moving": true,
+      "velocity_variance": 100
+    },
+    "kinematic_noisy": {
+      "arguments": [
+        "kinematic",
+        "noisy"
+      ],
+      "moving": true,
+      "velocity_variance": 100
+    },
+    "kinematic_clean_v10": {
+      "arguments": [
+        "kinematic",
+        "clean",
+        "10"
+      ],
+      "moving": true,
+      "velocity_variance": 10
+    },
+    "kinematic_noisy_v10": {
+      "arguments": [
+        "kinematic",
+        "noisy",
+        "10"
+      ],
+      "moving": true,
+      "velocity_variance": 10
+    },
+    "kinematic_clean_v1000": {
+      "arguments": [
+        "kinematic",
+        "clean",
+        "1000"
+      ],
+      "moving": true,
+      "velocity_variance": 1000
+    },
+    "kinematic_noisy_v1000": {
+      "arguments": [
+        "kinematic",
+        "noisy",
+        "1000"
+      ],
+      "moving": true,
+      "velocity_variance": 1000
+    },
+    "kinematic_unrounded_phase": {
+      "arguments": [
+        "kinematic",
+        "unrounded-phase"
+      ],
+      "moving": true,
+      "velocity_variance": 100
+    },
+    "kinematic_unrounded_code": {
+      "arguments": [
+        "kinematic",
+        "unrounded-code"
+      ],
+      "moving": true,
+      "velocity_variance": 100
+    },
+    "kinematic_unrounded_both": {
+      "arguments": [
+        "kinematic",
+        "unrounded-both"
+      ],
+      "moving": true,
+      "velocity_variance": 100
+    }
+  },
+  "static_profiles": {
+    "plain_clean": [],
+    "plain_noisy": [
+      "noisy"
+    ],
+    "windup_clean": [
+      "windup"
+    ],
+    "windup_noisy": [
+      "noisy",
+      "windup"
+    ],
+    "antenna_clean": [
+      "antenna"
+    ],
+    "antenna_noisy": [
+      "noisy",
+      "antenna"
+    ],
+    "satellite_clean": [
+      "satellite"
+    ],
+    "satellite_noisy": [
+      "noisy",
+      "satellite"
+    ],
+    "legacy_tide_clean": [
+      "legacy-tide"
+    ],
+    "legacy_tide_noisy": [
+      "noisy",
+      "legacy-tide"
+    ]
+  },
+  "old_static_build_sha256": "b9cb654263b38ed9ed1b29c55c77831966b44bd2749826fabfe61d5956ceaabc",
+  "original_full_trace_clean_target_m": 0.002,
+  "default_position_model_changed": false,
+  "native_predict_component_calls": 24,
+  "whole_native_PPP_executed": false,
+  "real_PPC_PPP_executed": false,
+  "truth_used_by_solver": false,
+  "existing_thresholds_changed": false,
+  "practical_parity_accepted": false
+}

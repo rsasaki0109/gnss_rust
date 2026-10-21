@@ -1,5 +1,6 @@
-//! Initial static GPS ionosphere-free PPP FLOAT with precise products.
-//! State is [ECEF XYZ, clock metres, zenith total delay metres, IF ambiguities].
+//! Initial GPS ionosphere-free PPP FLOAT with precise products.
+//! State is [ECEF XYZ, clock metres, zenith total delay metres, optional
+//! ECEF velocity m/s, IF ambiguities]. Static remains the default.
 //! Optional nominal-yaw phase wind-up; Bias-SINEX OSB is bound externally.
 //! Optional fixed receiver calibration and nominal-yaw satellite IF-PCO.
 //! Optional explicit legacy solid Earth tide. No satellite PCV or AR.
@@ -41,7 +42,54 @@ use std::{
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PppKinematicConfig {
+    pub initial_velocity_mps: [f64; 3],
+    /// Independent initial variance for each ECEF velocity component.
+    pub initial_velocity_variance_m2_s2: f64,
+    /// Velocity random-walk spectral density, (m/s)^2 per second.
+    pub velocity_process_noise_m2_s3: f64,
+}
+impl Default for PppKinematicConfig {
+    fn default() -> Self {
+        Self {
+            initial_velocity_mps: [0.0; 3],
+            initial_velocity_variance_m2_s2: 100.0,
+            velocity_process_noise_m2_s3: 1e-4,
+        }
+    }
+}
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum PppPositionModel {
+    #[default]
+    Static,
+    /// Ordinary precise-PPP F(position,velocity)=dt and diagonal velocity Q.
+    /// Does not fuse Doppler, SPP seeds, acceleration, inertial data or truth.
+    ConstantVelocity(PppKinematicConfig),
+}
+impl PppPositionModel {
+    fn head_len(self) -> usize {
+        match self {
+            Self::Static => 5,
+            Self::ConstantVelocity(_) => 8,
+        }
+    }
+    fn validate(self) -> bool {
+        match self {
+            Self::Static => true,
+            Self::ConstantVelocity(c) => {
+                c.initial_velocity_mps.iter().all(|v| v.is_finite())
+                    && c.initial_velocity_variance_m2_s2.is_finite()
+                    && c.initial_velocity_variance_m2_s2 > 0.0
+                    && c.velocity_process_noise_m2_s3.is_finite()
+                    && c.velocity_process_noise_m2_s3 >= 0.0
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PppFilterSettings {
+    pub position_model: PppPositionModel,
     /// Independent initial variance for XYZ, clock_m and zenith_m.
     pub initial_head_variance_m2: [f64; 5],
     /// Additive random-walk variance per second for the same five states.
@@ -60,6 +108,7 @@ pub struct PppFilterSettings {
 impl Default for PppFilterSettings {
     fn default() -> Self {
         Self {
+            position_model: PppPositionModel::Static,
             initial_head_variance_m2: [1e6, 1e6, 1e6, 1e8, 100.0],
             head_process_noise_m2_per_s: [0.0, 0.0, 0.0, 100.0, 1e-8],
             initial_ambiguity_variance_m2: 1e14,
@@ -164,7 +213,8 @@ impl PppConfig {
         let f = self.filter;
         ecef_to_geodetic(self.initial_position)?;
         self.transmit.validate()?;
-        if !self.initial_receiver_clock_s.is_finite()
+        if !f.position_model.validate()
+            || !self.initial_receiver_clock_s.is_finite()
             || !(self.initial_receiver_clock_s * c::SPEED_OF_LIGHT).is_finite()
             || !self.initial_zenith_delay_m.is_finite()
             || self.initial_zenith_delay_m < 0.0
@@ -362,6 +412,7 @@ pub struct PppAmbiguity {
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct PppSolution {
+    pub position_model: PppPositionModel,
     /// XYZ state/report reference; model receiver_position_m is instantaneous.
     pub receiver_reference: ReceiverPositionReference,
     pub position: PositionSolution,
@@ -402,17 +453,24 @@ impl PppFilter {
     pub fn new(config: PppConfig) -> Result<Self, PppError> {
         config.validate()?;
         let arcs = PhaseArcTracker::new(config.arcs)?;
-        let mut covariance = zeros(5, 5);
-        for (i, row) in covariance.iter_mut().enumerate() {
+        let head_len = config.filter.position_model.head_len();
+        let mut covariance = zeros(head_len, head_len);
+        for (i, row) in covariance.iter_mut().take(5).enumerate() {
             row[i] = config.filter.initial_head_variance_m2[i];
         }
-        let mean = vec![
+        let mut mean = vec![
             config.initial_position.x,
             config.initial_position.y,
             config.initial_position.z,
             config.initial_receiver_clock_s * c::SPEED_OF_LIGHT,
             config.initial_zenith_delay_m,
         ];
+        if let PppPositionModel::ConstantVelocity(c) = config.filter.position_model {
+            mean.extend(c.initial_velocity_mps);
+            for (i, row) in covariance.iter_mut().enumerate().skip(5) {
+                row[i] = c.initial_velocity_variance_m2_s2;
+            }
+        }
         Ok(Self {
             config,
             state: GaussianState { mean, covariance },
@@ -445,7 +503,7 @@ impl PppFilter {
         Ok(())
     }
 
-    /// Static GPS-only IF PPP. Every selected code/phase requires declared
+    /// GPS-only IF PPP in the configured position model. Every code/phase requires declared
     /// corrections, matching actual selected clock source, frame and reference
     /// point. At least five independent code rows and four phases are required.
     /// Failure preserves numeric mean/covariance and interrupts phase continuity.
@@ -523,7 +581,20 @@ impl PppFilter {
                     })),
                     num_satellites: measurements.len(),
                     receiver_clock_bias: posterior.mean[3] / c::SPEED_OF_LIGHT,
-                    ..Default::default()
+                    velocity_ecef: matches!(
+                        self.config.filter.position_model,
+                        PppPositionModel::ConstantVelocity(_)
+                    )
+                    .then(|| std::array::from_fn(|i| posterior.mean[5 + i])),
+                    velocity_covariance: matches!(
+                        self.config.filter.position_model,
+                        PppPositionModel::ConstantVelocity(_)
+                    )
+                    .then(|| {
+                        std::array::from_fn(|i| {
+                            std::array::from_fn(|j| posterior.covariance[5 + i][5 + j])
+                        })
+                    }),
                 };
                 let ambiguities = layout
                     .iter()
@@ -548,6 +619,7 @@ impl PppFilter {
                     / layout.len() as f64)
                     .sqrt();
                 let solution = PppSolution {
+                    position_model: self.config.filter.position_model,
                     receiver_reference: self.config.receiver_reference,
                     position,
                     zenith_delay_m: posterior.mean[4],
@@ -582,10 +654,11 @@ impl PppFilter {
         time: GnssTime,
         layout: &BTreeMap<SatelliteId, (usize, PhaseArcId)>,
     ) -> Result<GaussianState, PppError> {
-        let n = 5 + layout.len();
+        let head_len = self.config.filter.position_model.head_len();
+        let n = head_len + layout.len();
         let mut mean = vec![0.0; n];
         let mut covariance = zeros(n, n);
-        let mut source: Vec<Option<usize>> = (0..5).map(Some).collect();
+        let mut source: Vec<Option<usize>> = (0..head_len).map(Some).collect();
         for (&sat, &(_, id)) in layout {
             source.push(
                 self.layout
@@ -604,15 +677,27 @@ impl PppFilter {
                     covariance[i][j] = self.state.covariance[a][b];
                 }
             }
-            if i >= 5 && source[i].is_none() {
+            if i >= head_len && source[i].is_none() {
                 covariance[i][i] = self.config.filter.initial_ambiguity_variance_m2;
             }
-            covariance[i][i] += dt
-                * if i < 5 {
-                    self.config.filter.head_process_noise_m2_per_s[i]
-                } else {
-                    self.config.filter.ambiguity_process_noise_m2_per_s
-                };
+            if matches!(self.config.filter.position_model, PppPositionModel::Static) {
+                covariance[i][i] += dt
+                    * if i < 5 {
+                        self.config.filter.head_process_noise_m2_per_s[i]
+                    } else {
+                        self.config.filter.ambiguity_process_noise_m2_per_s
+                    };
+            }
+        }
+        if let PppPositionModel::ConstantVelocity(c) = self.config.filter.position_model {
+            predict_kinematic_state(
+                &mut mean,
+                &mut covariance,
+                dt,
+                c,
+                self.config.filter.head_process_noise_m2_per_s,
+                self.config.filter.ambiguity_process_noise_m2_per_s,
+            );
         }
         if !mean
             .iter()
@@ -629,6 +714,23 @@ impl PppFilter {
         products: &PreciseProducts,
         decisions: &BTreeMap<SatelliteId, PhaseArcDecision>,
     ) -> Result<UpdateResult, PppError> {
+        let mut admission_receiver = receiver(&self.state.mean);
+        if matches!(
+            self.config.filter.position_model,
+            PppPositionModel::ConstantVelocity(_)
+        ) {
+            let dt = self
+                .state_time
+                .map_or(0.0, |t| epoch.time.difference_seconds(t));
+            admission_receiver = EcefCoord::new(
+                admission_receiver.x + dt * self.state.mean[5],
+                admission_receiver.y + dt * self.state.mean[6],
+                admission_receiver.z + dt * self.state.mean[7],
+            );
+            if !admission_receiver.is_finite() {
+                return Err(Error::NonFinite.into());
+            }
+        }
         let mut observations = BTreeMap::new();
         let mut layout = BTreeMap::new();
         for (&sat, decision) in decisions {
@@ -641,7 +743,7 @@ impl PppFilter {
                 products,
                 sat,
                 epoch.time,
-                receiver(&self.state.mean),
+                admission_receiver,
                 self.state.mean[3],
                 self.state.mean[4],
                 &self.config,
@@ -666,7 +768,13 @@ impl PppFilter {
                 continue;
             }
             if let Some(id) = decision.proposed_arc {
-                layout.insert(sat, (5 + layout.len(), id));
+                layout.insert(
+                    sat,
+                    (
+                        self.config.filter.position_model.head_len() + layout.len(),
+                        id,
+                    ),
+                );
             }
             observations.insert(sat, observation.clone());
         }
@@ -908,6 +1016,40 @@ impl PppFilter {
         })
     }
 }
+
+fn predict_kinematic_state(
+    mean: &mut [f64],
+    covariance: &mut Matrix,
+    dt: f64,
+    config: PppKinematicConfig,
+    head_noise: [f64; 5],
+    ambiguity_noise: f64,
+) {
+    let n = mean.len();
+    let mut transition = zeros(n, n);
+    for (i, row) in transition.iter_mut().enumerate() {
+        row[i] = 1.0;
+    }
+    for i in 0..3 {
+        mean[i] += dt * mean[5 + i];
+        transition[i][5 + i] = dt;
+    }
+    *covariance = crate::filter::multiply(
+        &crate::filter::multiply(&transition, covariance),
+        &crate::filter::transpose(&transition),
+    );
+    for (i, row) in covariance.iter_mut().enumerate() {
+        row[i] += dt
+            * if i < 5 {
+                head_noise[i]
+            } else if i < 8 {
+                config.velocity_process_noise_m2_s3
+            } else {
+                ambiguity_noise
+            };
+    }
+}
+
 type Layout = BTreeMap<SatelliteId, (usize, PhaseArcId)>;
 type UpdateResult = (GaussianState, Layout, Vec<PppMeasurement>, usize, f64);
 struct WindupEpochContext {
@@ -947,4 +1089,54 @@ fn ensure_geometry(rows: &[[f64; 5]]) -> Result<(), PppError> {
         basis.push(v.into_iter().map(|x| x / norm).collect());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod kinematic_prediction_tests {
+    use super::*;
+    #[test]
+    fn full_covariance_prediction_matches_all_24_actual_native_ppp_calls() {
+        let mut count = 0;
+        for line in include_str!("../tests/fixtures/upstream_ppp_kinematic_predict.csv")
+            .lines()
+            .skip(1)
+        {
+            let data: Vec<f64> = line.split(',').map(|v| v.parse().unwrap()).collect();
+            let n = data[1] as usize;
+            assert_eq!(data.len(), 7 + 2 * n + 2 * n * n);
+            let (dt, qpos, qtrop, qamb, qvel) = (data[2], data[3], data[4], data[5], data[6]);
+            let mut mean = data[7..7 + n].to_vec();
+            let mut covariance: Matrix = data[7 + n..7 + n + n * n]
+                .chunks(n)
+                .map(|r| r.to_vec())
+                .collect();
+            let expected_mean = &data[7 + n + n * n..7 + 2 * n + n * n];
+            let expected_covariance = &data[7 + 2 * n + n * n..];
+            predict_kinematic_state(
+                &mut mean,
+                &mut covariance,
+                dt,
+                PppKinematicConfig {
+                    velocity_process_noise_m2_s3: qvel,
+                    ..Default::default()
+                },
+                [qpos, qpos, qpos, 100.0, qtrop],
+                qamb,
+            );
+            for (actual, expected) in mean
+                .iter()
+                .zip(expected_mean)
+                .chain(covariance.iter().flatten().zip(expected_covariance))
+            {
+                assert!(
+                    (actual - expected).abs() <= 1e-10 * expected.abs().max(1.0),
+                    "case {}: {actual} versus {expected}",
+                    data[0]
+                );
+            }
+            crate::filter::cholesky(&covariance).unwrap();
+            count += 1;
+        }
+        assert_eq!(count, 24);
+    }
 }

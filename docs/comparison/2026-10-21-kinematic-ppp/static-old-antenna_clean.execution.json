@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/ppp-static-control-101240b/ppp",
+    "antenna"
+  ],
+  "returncode": 0,
+  "csv_sha256": "a5da616f2042e92b36686a876a4d1a3479453b2f9827a08225d8f9d3a5732a20",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "c253ddfdcc11be0b2ac596b06fbb8a66534d197137a46bf538907f42708c6c40"
+}

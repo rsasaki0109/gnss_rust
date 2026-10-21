@@ -1,0 +1,6 @@
+{
+  "tests/fixtures/synthetic_ppp_kinematic_truth.csv": "416a2aa1c055995789705fd26b472d1409564864474c6f420b6d526dd327de42",
+  "tests/fixtures/synthetic_ppp_kinematic.obs": "c7b1a328f933d1045fd3b25bd29ec532dfce9b642bd8619cd26674326daa0643",
+  "tests/fixtures/synthetic_ppp_kinematic_noisy.obs": "3a248da9c7b6db981cce1e89d32dcd0b34f1eecb0badcab14ebd1a781e589757",
+  "tests/fixtures/upstream_ppp_kinematic_predict.csv": "946d0a8260bb57a1ff890c7b0ab5fc99bd8a47c93273ecccd41dd760ed8497b3"
+}

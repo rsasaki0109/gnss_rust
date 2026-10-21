@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp",
+    "legacy-tide"
+  ],
+  "returncode": 0,
+  "csv_sha256": "a02c2e0376ee72c53a319aedce3e8f7ebad7cbb0c6a455c97fd33d0dfb8fb2a1",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "c253ddfdcc11be0b2ac596b06fbb8a66534d197137a46bf538907f42708c6c40"
+}

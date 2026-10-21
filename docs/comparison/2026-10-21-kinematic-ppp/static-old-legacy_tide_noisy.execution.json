@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/ppp-static-control-101240b/ppp",
+    "noisy",
+    "legacy-tide"
+  ],
+  "returncode": 0,
+  "csv_sha256": "f177ddd9bec94462b26db228e8d58112905cb0852c5eb1657f12f9a24c6772ea",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "88ff939a715cdd7510a4351a92ebedfa5089170200ddb877ebdf63f26642be66"
+}

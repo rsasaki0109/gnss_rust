@@ -1618,3 +1618,19 @@ fixed graph paths, receiver exclusion and bounds with unknown correlations.
 The initial base-term sign error was caught by the independent solve and
 corrected without relaxing tolerances. Product provenance and raw PPC admission
 audits are in [`2026-10-21-dsb-clock`](../../docs/comparison/2026-10-21-dsb-clock/README.md).
+
+## Native PPP prediction and moving IF physics (2026-10-21)
+
+`scripts/upstream_ppp_kinematic.cpp` calls the actual pinned unmodified
+`PPPProcessor::predictState` for 24 dense SPD cases. Only the adapter exposes
+private member access. Native clock slots are marginalized into the Rust
+position/clock/trop/velocity/ambiguity layout. Full mean/covariance, dt=0 and
+0.2/1/30/120 seconds and variable process noise match existing 1e-10 component
+tolerance. The generator also writes two 64-epoch low-speed moving observation
+traces, truth and 576 unrounded observations using existing precise products
+and native geometry/Niell physics. All five files reproduce exactly twice.
+The earlier rounded/prediction files remain byte-identical after adding the
+unrounded observables. Code/phase quantization controls preserve the original
+rounded full-trace 2 mm failures; unrounded phase passes that bound. Native
+prediction parity, synthetic tracking and real PPC accuracy remain distinct.
+See [`2026-10-21-kinematic-ppp`](../../docs/comparison/2026-10-21-kinematic-ppp/README.md).

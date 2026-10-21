@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/ppp-static-control-101240b/ppp",
+    "windup"
+  ],
+  "returncode": 0,
+  "csv_sha256": "66ad942c6e1a384135fddc0b2482d0f8349b3440a9bf8e6fac1e05198cfdd9ae",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "c253ddfdcc11be0b2ac596b06fbb8a66534d197137a46bf538907f42708c6c40"
+}

@@ -1,0 +1,25 @@
+{
+  "scope": "Exploratory, not frozen before execution and not positioning acceptance",
+  "files": {
+    "clean": {
+      "stdout_sha256": "1704ec03ba7d8ccf512d3f3d8e3d18b3b4f2d6a59ee1c2ba9e8c88a1f1410639",
+      "archive": "clean.stdout.csv.gz"
+    },
+    "clean-v10": {
+      "stdout_sha256": "565044b4ce90b5336136335b9c8bb98af5c4e5dbff8c3d5a25f4ecfe79b6faa1",
+      "archive": "clean-v10.stdout.csv.gz"
+    },
+    "clean-v1000": {
+      "stdout_sha256": "e4263f8d5f33c7eb1dd399e79e3341ae17de05ac491075a68eb7be4a8e4888cd",
+      "archive": "clean-v1000.stdout.csv.gz"
+    },
+    "clean-qr": {
+      "stdout_sha256": "0b599ebf6ef80da63833a38cf231c5b284932345cabb4a5110636c60e571213c",
+      "archive": "clean-qr.stdout.csv.gz"
+    }
+  },
+  "QR_binary_sha256": "3220af4a2c206482d5e01dcddd445a0b1923ddf029604eece8adea4c88dfe7e1",
+  "QR_function_sha256": "928d73bf93e32dfdf4e5d98a4503319baa232efe16aa5ec50899eb3643cee784",
+  "finding": "Initial velocity variances 10/100/1000 and whitened QR leave the roughly 2.93 mm startup maximum almost unchanged; these hypotheses do not explain the effect",
+  "QR_retained_in_solver": false
+}
