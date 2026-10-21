@@ -1,10 +1,10 @@
 # gnss-rust
 
-2026-10-21: [元C++の初期位置設定を切り分け](docs/comparison/2026-10-21-native-default-seed/README.md)。
-既定のSPP初期化でRTK出力は1,359→7,038エポックへ増えました。
-GPS単周波の制限した設定では大きな外れが残り、移動FIX・QCと併せて開発中です。
+2026-10-21: [RustのSPP初期化を全6走行で評価](docs/comparison/2026-10-21-rust-spp-seed/README.md)。
+[元C++](docs/comparison/2026-10-21-native-default-seed/README.md)と違い、初期値の変更だけでは
+Rustの外れ値は改善しなかったため、選択肢は既定無効のままです。観測品質処理を調査しています。
 Rustにも最大約938 mの外れが残り、同等性能の受け入れには至っていません。
-Rust276テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
+Rust280テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
 PPCでの実用RTK・PPP同等性能は未達です。
 
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。

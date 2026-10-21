@@ -7,6 +7,14 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[RustのSPP初期化](docs/comparison/2026-10-21-rust-spp-seed/README.md)を選択式で接続。
+GPS 1CだけのSPPを位置の初期値に使い、失敗時のfallback理由と出典を記録する。
+SD ambiguityは保持し、SPP共分散は重ねて使わない。既定None・従来全CSVの完全一致を確認。
+全6走行×2設定でFLOATは8,258→8,253、最大誤差は約938→1,573 mに悪化した。
+SPP初期値だけでは外れは解消しなかったため、既定無効を維持し精度改善とは扱わない。
+4テスト追加でRust280・examples・fmt/clippy/release通過。
+次は観測品質処理・未フラグスリップ・新規ambiguity初期化を比較する。全体18/24（75%）。
+
 [元C++の既定SPP初期化](docs/comparison/2026-10-21-native-default-seed/README.md)を切り分けた。
 prefer_rover_position_seedだけを既定falseへ戻し、入力台帳・AR/QC・衛星選択を変えずに
 全6走行を再実行。RTK出力は1,359→7,038、SPP退避は5,765→1,421になった。

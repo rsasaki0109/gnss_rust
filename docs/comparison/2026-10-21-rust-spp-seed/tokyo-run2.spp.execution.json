@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_float",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2",
+    "kinematic-spp",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875"
+  ],
+  "returncode": 0,
+  "csv_sha256": "930b46255e6bde0902e29e97693678ceeb61a29e347dc732380eecec46dc4a06",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "f7ac5dbba9a84ec2b268cfb08e718668e0abb60eba87ccfbac0a5ecdd4d981b1"
+}

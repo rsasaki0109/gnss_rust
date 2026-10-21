@@ -12,6 +12,7 @@ use crate::lambda::{self, LambdaConfig, LambdaError, LambdaResult};
 use crate::models::saastamoinen;
 use crate::navigation::NavigationData;
 use crate::observation::{Observation, ObservationEpoch};
+use crate::spp::{self, SppConfig};
 use crate::{
     EcefCoord, Error, GnssSystem, GnssTime, PositionSolution, SatelliteId, SolutionStatus,
     constants as c,
@@ -31,6 +32,11 @@ pub enum RtkPositionMode {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RtkFloatConfig {
     pub position_mode: RtkPositionMode,
+    /// Optional GPS 1C code-only position seed for each kinematic epoch.
+    /// Its covariance is not fused. On SPP failure retain the previous RTK
+    /// position (or initial position), and report the error in the solution.
+    /// Static mode requires None; None preserves the existing seed policy.
+    pub kinematic_spp_seed: Option<SppConfig>,
     /// Optional unweighted geometry gate, evaluated before committing a
     /// posterior. None preserves the existing admission policy.
     pub max_geometry_gdop: Option<f64>,
@@ -53,6 +59,7 @@ impl Default for RtkFloatConfig {
     fn default() -> Self {
         Self {
             position_mode: RtkPositionMode::Static,
+            kinematic_spp_seed: None,
             max_geometry_gdop: None,
             elevation_mask_rad: 10_f64.to_radians(),
             pseudorange_sigma_m: 0.3,
@@ -88,7 +95,9 @@ impl RtkFloatConfig {
             self.ambiguity_process_noise_cycles2_per_s,
             self.max_ephemeris_age_s,
         ];
-        if self
+        if self.kinematic_spp_seed.is_some_and(|config| {
+            self.position_mode != RtkPositionMode::Kinematic || config.validate().is_err()
+        }) || self
             .max_geometry_gdop
             .is_some_and(|v| !v.is_finite() || v <= 0.0)
             || positive.iter().any(|v| !v.is_finite() || *v <= 0.0)
@@ -254,9 +263,26 @@ pub fn double_difference_covariance(
     Ok(covariance)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RtkSeedSource {
+    InitialPosition,
+    PreviousRtk,
+    SinglePoint,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct RtkSeedDiagnostic {
+    pub source: RtkSeedSource,
+    pub position: EcefCoord,
+    /// Present only when an attempted SPP seed failed. The seed source then
+    /// explains which fallback was used; no SPP output is labeled RTK.
+    pub spp_failure: Option<Error>,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct RtkFloatSolution {
     pub position: PositionSolution,
+    pub position_seed: RtkSeedDiagnostic,
     pub reference_satellite: SatelliteId,
     pub ambiguity_satellites: Vec<SatelliteId>,
     pub ambiguities: AmbiguityTransform,
@@ -395,7 +421,7 @@ struct MeasurementSystem {
 
 /// Static or epoch-wise kinematic baseline and one SD ambiguity per GPS 1C satellite. Satellite
 /// loss, LLI loss of lock, power failure, a long gap or explicit invalidation
-/// starts new ambiguity arcs. Unflagged slips and kinematic motion are pending.
+/// starts new ambiguity arcs. Unflagged slip detection remains pending.
 pub struct RtkFloatFilter {
     base_position: EcefCoord,
     initial_rover_position: EcefCoord,
@@ -489,13 +515,52 @@ impl RtkFloatFilter {
         if self.last_time.is_some() && dt <= 0.0 {
             return Err(RtkError::OutOfOrder);
         }
-        let position = self
+        let previous_position = self
             .posterior
             .as_ref()
             .map(|s| add(self.base_position, &s.mean[..3]))
             .unwrap_or(self.initial_rover_position);
-        let (data, rejected) =
-            prepare(rover, base, nav, position, self.base_position, self.config)?;
+        let mut position_seed = RtkSeedDiagnostic {
+            source: if self.posterior.is_some() {
+                RtkSeedSource::PreviousRtk
+            } else {
+                RtkSeedSource::InitialPosition
+            },
+            position: previous_position,
+            spp_failure: None,
+        };
+        let mut spp_position = None;
+        if let Some(config) = self.config.kinematic_spp_seed {
+            // Match the RTK signal restriction even when the input epoch has
+            // additional GPS tracking codes or QZSS code observations.
+            selected(rover)?;
+            let mut seed_epoch = rover.clone();
+            seed_epoch
+                .observations
+                .retain(|o| o.satellite.system() == GnssSystem::Gps && o.tracking_code == "1C");
+            seed_epoch.approximate_position = Some(previous_position);
+            match spp::solve_epoch(&seed_epoch, nav, config) {
+                Ok(solution) => {
+                    // A successful SPP solve always returns a finite position.
+                    let position = solution
+                        .position
+                        .position_ecef
+                        .ok_or(RtkError::InvalidEpoch)?;
+                    spp_position = Some(position);
+                    position_seed.source = RtkSeedSource::SinglePoint;
+                    position_seed.position = position;
+                }
+                Err(error) => position_seed.spp_failure = Some(error),
+            }
+        }
+        let (data, rejected) = prepare(
+            rover,
+            base,
+            nav,
+            position_seed.position,
+            self.base_position,
+            self.config,
+        )?;
         if data.len() < 4 {
             return Err(RtkError::InsufficientCommonSatellites);
         }
@@ -510,7 +575,7 @@ impl RtkFloatFilter {
             || rover.flag == 1
             || base.flag == 1
             || dt > self.config.max_phase_gap_s;
-        let (prior, resets) = self.prior(&data, dt, reset_all);
+        let (prior, resets) = self.prior(&data, dt, reset_all, spp_position);
         let mut estimate = prior.mean.clone();
         let mut accepted = None;
         for iteration in 1..=self.config.max_iterations {
@@ -593,6 +658,7 @@ impl RtkFloatFilter {
             .collect();
         let ambiguities = ambiguity_transform(&posterior, 3, &differences)?;
         let result = RtkFloatSolution {
+            position_seed,
             position: PositionSolution {
                 time: rover.time,
                 status: SolutionStatus::Float,
@@ -634,6 +700,7 @@ impl RtkFloatFilter {
         data: &[SatelliteData],
         dt: f64,
         reset_all: bool,
+        spp_position: Option<EcefCoord>,
     ) -> (GaussianState, Vec<SatelliteId>) {
         let n = 3 + data.len();
         let mut mean = vec![0.0; n];
@@ -680,6 +747,15 @@ impl RtkFloatFilter {
                     }
                 }
             }
+        }
+        if let Some(position) = spp_position {
+            // Kinematic position covariance/cross-covariance has already been
+            // reset above. Preserve the ambiguity block and its continuity.
+            mean[..3].copy_from_slice(&[
+                position.x - self.base_position.x,
+                position.y - self.base_position.y,
+                position.z - self.base_position.z,
+            ]);
         }
         for (i, row) in covariance.iter_mut().enumerate() {
             row[i] += dt

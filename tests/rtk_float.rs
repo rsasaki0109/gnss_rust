@@ -340,6 +340,175 @@ fn skipped_epoch_lli_power_and_slip_evidence_reset_arcs_without_advancing_state(
 }
 
 #[test]
+fn spp_seed_tracks_native_moving_truth_without_resetting_continuous_ambiguities() {
+    use gnss_rust::rtk::{RtkPositionMode, RtkSeedSource};
+    use gnss_rust::spp::SppConfig;
+    let f = fixture(false);
+    let rover = RinexObservationReader::new(Cursor::new(include_str!(
+        "fixtures/synthetic_rtk_moving_rover.obs"
+    )))
+    .unwrap()
+    .collect::<Result<Vec<_>, _>>()
+    .unwrap();
+    let base = RinexObservationReader::new(Cursor::new(include_str!(
+        "fixtures/synthetic_rtk_moving_base.obs"
+    )))
+    .unwrap()
+    .collect::<Result<Vec<_>, _>>()
+    .unwrap();
+    // Start well away from the truth: SPP must converge before it is used as
+    // the kinematic seed. The truth never enters the filter.
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        EcefCoord::new(f.seed.x + 500.0, f.seed.y - 300.0, f.seed.z + 200.0),
+        RtkFloatConfig {
+            position_mode: RtkPositionMode::Kinematic,
+            kinematic_spp_seed: Some(SppConfig {
+                // The native generator includes Saastamoinen, with no ionosphere.
+                use_ionosphere: false,
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    for (i, (r, b)) in rover.iter().zip(&base).enumerate() {
+        let truth: Vec<f64> = include_str!("fixtures/synthetic_rtk_moving_truth.csv")
+            .lines()
+            .nth(i + 1)
+            .unwrap()
+            .split(',')
+            .map(|v| v.parse().unwrap())
+            .collect();
+        let result = filter.process_pair(r, b, &f.nav).unwrap();
+        assert_eq!(result.position_seed.source, RtkSeedSource::SinglePoint);
+        assert_eq!(result.position_seed.spp_failure, None);
+        assert_eq!(result.position.status, SolutionStatus::Float);
+        assert_eq!(result.reset_ambiguities.len(), if i == 0 { 9 } else { 0 });
+        let expected = EcefCoord::new(truth[2], truth[3], truth[4]);
+        let rtk_error = distance(result.position.position_ecef.unwrap(), expected);
+        let spp_error = distance(result.position_seed.position, expected);
+        assert!(
+            rtk_error < 0.003,
+            "epoch {i}: RTK {rtk_error} m, SPP seed {spp_error} m"
+        );
+        assert!(spp_error < 0.003, "epoch {i}: SPP seed {spp_error} m");
+    }
+}
+
+#[test]
+fn failed_spp_seed_preserves_the_previous_rtk_path_and_reports_fallback() {
+    use gnss_rust::rtk::{RtkPositionMode, RtkSeedSource};
+    use gnss_rust::spp::SppConfig;
+    let f = fixture(false);
+    let config = RtkFloatConfig {
+        position_mode: RtkPositionMode::Kinematic,
+        ..Default::default()
+    };
+    let mut original = RtkFloatFilter::new(f.base_position, f.seed, config).unwrap();
+    let mut seeded = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            kinematic_spp_seed: Some(SppConfig {
+                max_iterations: 1,
+                ..Default::default()
+            }),
+            ..config
+        },
+    )
+    .unwrap();
+    for i in 0..3 {
+        let before = original
+            .process_pair(&f.rover[i], &f.base[i], &f.nav)
+            .unwrap();
+        let after = seeded
+            .process_pair(&f.rover[i], &f.base[i], &f.nav)
+            .unwrap();
+        assert_eq!(
+            after.position_seed.source,
+            if i == 0 {
+                RtkSeedSource::InitialPosition
+            } else {
+                RtkSeedSource::PreviousRtk
+            }
+        );
+        assert_eq!(after.position_seed.spp_failure, Some(Error::NonConvergent));
+        assert_eq!(after.position, before.position);
+        assert_eq!(after.ambiguities, before.ambiguities);
+        assert_eq!(seeded.state(), original.state());
+    }
+}
+
+#[test]
+fn spp_seed_uses_exact_gps_1c_and_failed_rtk_updates_do_not_commit_it() {
+    use gnss_rust::rtk::{RtkPositionMode, RtkSeedSource};
+    use gnss_rust::spp::SppConfig;
+    let f = fixture(false);
+    let config = RtkFloatConfig {
+        position_mode: RtkPositionMode::Kinematic,
+        kinematic_spp_seed: Some(SppConfig::default()),
+        ..Default::default()
+    };
+    let mut filter = RtkFloatFilter::new(f.base_position, f.seed, config).unwrap();
+    let mut control = RtkFloatFilter::new(f.base_position, f.seed, config).unwrap();
+    let expected = control
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let mut rover = f.rover[0].clone();
+    let mut other_tracking = rover.observations[0].clone();
+    other_tracking.tracking_code = "1W".into();
+    other_tracking.pseudorange_m = Some(1.0);
+    let mut qzss = other_tracking.clone();
+    qzss.satellite = "J01".parse().unwrap();
+    qzss.tracking_code = "1C".into();
+    rover.observations.extend([other_tracking, qzss]);
+    let first = filter.process_pair(&rover, &f.base[0], &f.nav).unwrap();
+    assert_eq!(first.position_seed, expected.position_seed);
+    assert_eq!(first.position_seed.source, RtkSeedSource::SinglePoint);
+    assert_eq!(filter.state(), control.state());
+    let before = filter.state().unwrap().clone();
+    let mut bad = f.rover[1].clone();
+    *bad.observations[0].carrier_phase_cycles.as_mut().unwrap() += 50.0;
+    assert_eq!(
+        filter.process_pair(&bad, &f.base[1], &f.nav),
+        Err(RtkError::Filter(FilterError::InnovationRejected))
+    );
+    assert_eq!(filter.state(), Some(&before));
+    let recovered = filter
+        .process_pair(&f.rover[2], &f.base[2], &f.nav)
+        .unwrap();
+    assert_eq!(recovered.position_seed.source, RtkSeedSource::SinglePoint);
+    assert_eq!(recovered.reset_ambiguities.len(), 9);
+}
+
+#[test]
+fn spp_seed_rejects_static_mode_and_invalid_spp_configuration() {
+    use gnss_rust::rtk::RtkPositionMode;
+    use gnss_rust::spp::SppConfig;
+    let f = fixture(false);
+    for config in [
+        RtkFloatConfig {
+            kinematic_spp_seed: Some(SppConfig::default()),
+            ..Default::default()
+        },
+        RtkFloatConfig {
+            position_mode: RtkPositionMode::Kinematic,
+            kinematic_spp_seed: Some(SppConfig {
+                max_iterations: 0,
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    ] {
+        assert!(matches!(
+            RtkFloatFilter::new(f.base_position, f.seed, config),
+            Err(RtkError::InvalidConfiguration)
+        ));
+    }
+}
+
+#[test]
 fn static_fix_policy_explicitly_rejects_kinematic_float_without_advancing_history() {
     use gnss_rust::rtk::RtkPositionMode;
     use gnss_rust::rtk_fix::{FixError, RtkFixPolicy};

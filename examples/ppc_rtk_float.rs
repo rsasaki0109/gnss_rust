@@ -2,6 +2,7 @@
 use gnss_rust::epoch_match::{EpochMatch, EpochMatcher, EpochSide};
 use gnss_rust::rinex::{RinexObservationReader, read_navigation_for_systems};
 use gnss_rust::rtk::{RtkFloatConfig, RtkFloatFilter, RtkPositionMode};
+use gnss_rust::spp::SppConfig;
 use gnss_rust::{EcefCoord, GnssSystem};
 use std::{
     error::Error,
@@ -14,14 +15,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     if args.len() != 3 {
         return Err(
-            "usage: ppc_rtk_float CASE_DIRECTORY static|kinematic|kinematic-gdop50 BASE_X,BASE_Y,BASE_Z".into(),
+            "usage: ppc_rtk_float CASE_DIRECTORY static|kinematic|kinematic-gdop50|kinematic-spp BASE_X,BASE_Y,BASE_Z".into(),
         );
     }
     let position_mode = match args[1].to_str() {
         Some("static") => RtkPositionMode::Static,
-        Some("kinematic" | "kinematic-gdop50") => RtkPositionMode::Kinematic,
-        _ => return Err("expected static, kinematic or kinematic-gdop50".into()),
+        Some("kinematic" | "kinematic-gdop50" | "kinematic-spp") => RtkPositionMode::Kinematic,
+        _ => return Err("expected static, kinematic, kinematic-gdop50 or kinematic-spp".into()),
     };
+    let use_spp_seed = args[1] == "kinematic-spp";
     let xyz: Vec<f64> = args[2]
         .to_str()
         .ok_or("non-UTF8 base position")?
@@ -47,6 +49,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         seed,
         RtkFloatConfig {
             position_mode,
+            kinematic_spp_seed: use_spp_seed.then(SppConfig::default),
             max_geometry_gdop: if args[1] == "kinematic-gdop50" {
                 Some(50.0)
             } else {
@@ -56,10 +59,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         },
     )?;
     let mut out = BufWriter::new(std::io::stdout().lock());
-    writeln!(
-        out,
-        "kind,week,tow,side,rover_flag,base_flag,base_dt_s,status,x_m,y_m,z_m,satellites,reference,nis,code_rms_m,phase_rms_m,ambiguity_resets,reason,geometry_gdop,geometry_pdop,position_covariance_trace_m2,position_qxx_m2,position_qyy_m2,position_qzz_m2,used_satellites,geometry_error"
-    )?;
+    let header = "kind,week,tow,side,rover_flag,base_flag,base_dt_s,status,x_m,y_m,z_m,satellites,reference,nis,code_rms_m,phase_rms_m,ambiguity_resets,reason,geometry_gdop,geometry_pdop,position_covariance_trace_m2,position_qxx_m2,position_qyy_m2,position_qzz_m2,used_satellites,geometry_error";
+    let suffix = if use_spp_seed {
+        ",seed_source,seed_x_m,seed_y_m,seed_z_m,spp_failure"
+    } else {
+        ""
+    };
+    writeln!(out, "{header}{suffix}")?;
     let (
         mut pairs,
         mut floated,
@@ -70,7 +76,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         mut continuity,
     ) = (0, 0, 0, 0, 0, 0, 0);
     for event in EpochMatcher::new(rover, base) {
-        let mut row = vec![String::new(); 26];
+        let mut row = vec![String::new(); if use_spp_seed { 31 } else { 26 }];
         match event? {
             EpochMatch::Unmatched { side, epoch } => {
                 row[0] = "unmatched".into();
@@ -112,6 +118,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     match filter.process_pair(&rover, &base, &navigation.navigation) {
                         Ok(result) => {
+                            if use_spp_seed {
+                                let seed = result.position_seed;
+                                row[26] = format!("{:?}", seed.source);
+                                for (i, v) in [seed.position.x, seed.position.y, seed.position.z]
+                                    .into_iter()
+                                    .enumerate()
+                                {
+                                    row[27 + i] = format!("{v:.17e}");
+                                }
+                                if let Some(error) = seed.spp_failure {
+                                    row[30] = format!("{error:?}");
+                                }
+                            }
                             floated += 1;
                             row[7] = "FLOAT".into();
                             let p = result
@@ -167,5 +186,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     eprintln!(
         "position_mode={position_mode:?} pairs={pairs} FLOAT={floated} INVALID={failed} event_pairs={events} rover_only={rover_only} base_only={base_only} unmatched_continuity_notices={continuity} excluded_navigation_records={excluded} FIX_policy_evaluated=false whole_native_comparison=false performance_accepted=false"
     );
+    if use_spp_seed {
+        eprintln!("kinematic_spp_seed=GPS_1C_only default_SppConfig no_SPP_covariance_fusion=true");
+    }
     Ok(())
 }
