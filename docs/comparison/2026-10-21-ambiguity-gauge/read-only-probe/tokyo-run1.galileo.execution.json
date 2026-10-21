@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_gauge",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1",
+    "galileo",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875"
+  ],
+  "returncode": 0,
+  "csv_sha256": "e4d6debfe9401299c128db722614dff1e6ed8e7ffb43431cdd40e9f7baf87144",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

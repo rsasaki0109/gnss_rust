@@ -505,3 +505,159 @@ fn mixed_prefit_rows_map_to_references_in_the_same_constellation() {
             .all(|i| diagnostic.row_satellites[*i].system() == GnssSystem::Galileo)
     );
 }
+
+#[test]
+fn datum_alignment_survives_reacquisition_with_independent_system_phase_offsets() {
+    let (r, b, nav, base, seed) = data();
+    let cfg = RtkFloatConfig {
+        align_ambiguity_datums: true,
+        ..config()
+    };
+    let mut control = RtkFloatFilter::new(base, seed, cfg).unwrap();
+    let mut shifted = RtkFloatFilter::new(base, seed, cfg).unwrap();
+    let gps = r[0]
+        .observations
+        .iter()
+        .find(|o| o.satellite.system() == GnssSystem::Gps)
+        .unwrap()
+        .satellite;
+    let gal = gal_target(&r[0]);
+    for i in 0..r.len() {
+        let mut plain = r[i].clone();
+        if i == 1 {
+            plain
+                .observations
+                .retain(|o| o.satellite != gps && o.satellite != gal);
+        }
+        let mut moved = plain.clone();
+        for o in &mut moved.observations {
+            let cycles = if o.satellite.system() == GnssSystem::Gps {
+                1.25
+            } else {
+                -2.5
+            };
+            *o.carrier_phase_cycles.as_mut().unwrap() += cycles * i as f64;
+        }
+        let expected = control.process_pair(&plain, &b[i], &nav).unwrap();
+        let actual = shifted.process_pair(&moved, &b[i], &nav).unwrap();
+        assert!(
+            distance(
+                actual.position.position_ecef.unwrap(),
+                expected.position.position_ecef.unwrap()
+            ) < 1e-6,
+            "epoch {i}"
+        );
+        assert_eq!(actual.reset_ambiguities, expected.reset_ambiguities);
+        let a = actual.position.position_covariance.unwrap();
+        let e = expected.position.position_covariance.unwrap();
+        for j in 0..3 {
+            for k in 0..3 {
+                assert!((a[j][k] - e[j][k]).abs() < 1e-10 * e[j][k].abs().max(1.0));
+            }
+        }
+        if i == 2 {
+            for d in &actual.ambiguity_datum_alignment {
+                assert_eq!(d.retained_satellites.len(), 3);
+                assert_eq!(d.initialized_satellites.len(), 1);
+            }
+        }
+    }
+}
+
+#[test]
+fn datum_alignment_never_commits_a_failed_update_and_global_recovery_has_no_old_arcs() {
+    let (mut r, b, nav, base, seed) = data();
+    let mut filter = RtkFloatFilter::new(
+        base,
+        seed,
+        RtkFloatConfig {
+            align_ambiguity_datums: true,
+            max_prefit_residual_m: Some(3.0),
+            ..config()
+        },
+    )
+    .unwrap();
+    filter.process_pair(&r[0], &b[0], &nav).unwrap();
+    let before = filter.state().unwrap().clone();
+    let target = gal_target(&r[0]);
+    let recovery = r[1].clone();
+    for o in &mut r[1].observations {
+        if o.satellite.system() == GnssSystem::Galileo {
+            *o.carrier_phase_cycles.as_mut().unwrap() += 12.5;
+        }
+        if o.satellite == target {
+            *o.pseudorange_m.as_mut().unwrap() += 200.0;
+        }
+    }
+    assert_eq!(
+        filter.process_pair(&r[1], &b[1], &nav),
+        Err(RtkError::PrefitResidualRejected)
+    );
+    assert_eq!(filter.state(), Some(&before));
+    // A failed attempt has not advanced time. Retry its clean measurements;
+    // two moving epochs later can legitimately exceed this same 3 m gate.
+    let result = filter.process_pair(&recovery, &b[1], &nav).unwrap();
+    assert_eq!(result.reset_ambiguities.len(), 8);
+    for d in result.ambiguity_datum_alignment {
+        assert!(d.retained_satellites.is_empty());
+        assert_eq!(d.initialized_satellites.len(), 4);
+        assert_eq!(d.offset_cycles, 0.0);
+    }
+}
+
+#[test]
+fn a_tracking_change_is_excluded_from_the_datum_mean() {
+    let (mut r, b, nav, base, seed) = data();
+    let target = gal_target(&r[0]);
+    let mut filter = RtkFloatFilter::new(
+        base,
+        seed,
+        RtkFloatConfig {
+            align_ambiguity_datums: true,
+            ..config()
+        },
+    )
+    .unwrap();
+    filter.process_pair(&r[0], &b[0], &nav).unwrap();
+    let observation = r[1]
+        .observations
+        .iter_mut()
+        .find(|o| o.satellite == target)
+        .unwrap();
+    observation.tracking_code = "1X".into();
+    *observation.carrier_phase_cycles.as_mut().unwrap() += 0.25;
+    let result = filter.process_pair(&r[1], &b[1], &nav).unwrap();
+    assert_eq!(result.reset_ambiguities, vec![target]);
+    let d = result
+        .ambiguity_datum_alignment
+        .iter()
+        .find(|d| d.system == GnssSystem::Galileo)
+        .unwrap();
+    assert!(!d.retained_satellites.contains(&target));
+    assert_eq!(d.initialized_satellites, vec![target]);
+    assert_eq!(d.retained_satellites.len(), 3);
+}
+
+#[test]
+fn aligned_zero_baseline_retains_zero_ambiguities_as_active_states() {
+    let (_, b, nav, base, _) = data();
+    let mut filter = RtkFloatFilter::new(
+        base,
+        base,
+        RtkFloatConfig {
+            align_ambiguity_datums: true,
+            ..config()
+        },
+    )
+    .unwrap();
+    for (i, epoch) in b.iter().enumerate() {
+        let result = filter.process_pair(epoch, epoch, &nav).unwrap();
+        assert_eq!(result.position.position_ecef, Some(base));
+        assert!(filter.state().unwrap().mean.iter().all(|v| *v == 0.0));
+        assert_eq!(result.reset_ambiguities.len(), if i == 0 { 8 } else { 0 });
+        for d in &result.ambiguity_datum_alignment {
+            assert_eq!(d.retained_satellites.len(), if i == 0 { 0 } else { 4 });
+            assert_eq!(d.offset_cycles, 0.0);
+        }
+    }
+}

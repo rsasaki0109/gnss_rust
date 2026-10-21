@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_gauge",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3",
+    "gps",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875"
+  ],
+  "returncode": 0,
+  "csv_sha256": "512ee558a87e9dd4e8f0e689742eeb9e7a64a874e91bf4b33f12acd6689439a0",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

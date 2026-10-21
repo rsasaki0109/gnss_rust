@@ -125,10 +125,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     if args.len() != 3 {
         return Err(
-            "usage: ppc_rtk_float CASE_DIRECTORY MODE BASE_X,BASE_Y,BASE_Z (MODE: static, kinematic, kinematic-gdop50, kinematic-spp, kinematic-cmc, kinematic-doppler, kinematic-slips; append -prefit3 to kinematic, kinematic-spp, kinematic-slips, kinematic-spp-slips)".into(),
+            "usage: ppc_rtk_float CASE_DIRECTORY MODE BASE_X,BASE_Y,BASE_Z (MODE: static, kinematic, kinematic-gdop50, kinematic-spp, kinematic-cmc, kinematic-doppler, kinematic-slips; Galileo: kinematic-galileo with optional -spp / -slips; append -prefit3 to supported gate modes; append -align to enable per-system SD ambiguity datum alignment)".into(),
         );
     }
-    let position_mode = match args[1].to_str() {
+    let requested_mode = args[1].to_str().ok_or("non-UTF8 positioning mode")?;
+    let align_datums = requested_mode.ends_with("-align");
+    let mode = requested_mode
+        .strip_suffix("-align")
+        .unwrap_or(requested_mode);
+    let position_mode = match Some(mode) {
         Some("static") => RtkPositionMode::Static,
         Some(
             "kinematic"
@@ -151,14 +156,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         ) => RtkPositionMode::Kinematic,
         _ => return Err("unsupported positioning mode; see ppc_rtk_float usage".into()),
     };
-    let mixed = args[1].to_str().is_some_and(|s| s.contains("galileo"));
+    let mixed = Some(mode).is_some_and(|s| s.contains("galileo"));
     let constellations = if mixed {
         RtkConstellations::GpsGalileo
     } else {
         RtkConstellations::Gps
     };
     let use_spp_seed = matches!(
-        args[1].to_str(),
+        Some(mode),
         Some(
             "kinematic-spp"
                 | "kinematic-spp-prefit3"
@@ -168,8 +173,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 | "kinematic-galileo-spp-slips-prefit3"
         )
     );
-    let use_prefit = args[1].to_str().is_some_and(|s| s.ends_with("-prefit3"));
-    let slip_detection = match args[1].to_str() {
+    let use_prefit = Some(mode).is_some_and(|s| s.ends_with("-prefit3"));
+    let slip_detection = match Some(mode) {
         Some("kinematic-cmc") => Some(RtkSlipConfig {
             doppler_threshold_m: None,
             ..Default::default()
@@ -219,10 +224,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         RtkFloatConfig {
             constellations,
             position_mode,
+            align_ambiguity_datums: align_datums,
             kinematic_spp_seed: use_spp_seed.then(SppConfig::default),
             slip_detection,
             max_prefit_residual_m: use_prefit.then_some(3.0),
-            max_geometry_gdop: if args[1] == "kinematic-gdop50" {
+            max_geometry_gdop: if mode == "kinematic-gdop50" {
                 Some(50.0)
             } else {
                 None
@@ -245,7 +251,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         ""
     };
-    writeln!(out, "{header}{suffix}")?;
+    let datum_suffix = if align_datums {
+        ",datum_offsets_cycles,datum_retained_satellites,datum_initialized_satellites"
+    } else {
+        ""
+    };
+    writeln!(out, "{header}{suffix}{datum_suffix}")?;
     let (
         mut pairs,
         mut floated,
@@ -269,6 +280,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         } else {
             26
         };
+        let columns = columns + if align_datums { 3 } else { 0 };
         let mut row = vec![String::new(); columns];
         match event? {
             EpochMatch::Unmatched { side, epoch } => {
@@ -311,6 +323,35 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     match filter.process_pair(&rover, &base, &navigation.navigation) {
                         Ok(result) => {
+                            if align_datums {
+                                let last = columns - 3;
+                                row[last] = result
+                                    .ambiguity_datum_alignment
+                                    .iter()
+                                    .map(|d| {
+                                        format!(
+                                            "{}:{:.17e}",
+                                            d.system.rinex_prefix(),
+                                            d.offset_cycles
+                                        )
+                                    })
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[last + 1] = result
+                                    .ambiguity_datum_alignment
+                                    .iter()
+                                    .flat_map(|d| d.retained_satellites.iter())
+                                    .map(ToString::to_string)
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[last + 2] = result
+                                    .ambiguity_datum_alignment
+                                    .iter()
+                                    .flat_map(|d| d.initialized_satellites.iter())
+                                    .map(ToString::to_string)
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                            }
                             if mixed {
                                 if !use_prefit {
                                     write_seed(&mut row, 26, result.position_seed);
@@ -458,6 +499,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     eprintln!(
         "position_mode={position_mode:?} pairs={pairs} FLOAT={floated} INVALID={failed} event_pairs={events} rover_only={rover_only} base_only={base_only} unmatched_continuity_notices={continuity} excluded_navigation_records={excluded} FIX_policy_evaluated=false whole_native_comparison=false performance_accepted=false"
     );
+    if align_datums {
+        eprintln!(
+            "ambiguity_datum_alignment=per_system_retained_mean default=false covariance_changed=false"
+        );
+    }
     if use_spp_seed {
         eprintln!("kinematic_spp_seed=GPS_1C_only default_SppConfig no_SPP_covariance_fusion=true");
     }

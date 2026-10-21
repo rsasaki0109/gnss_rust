@@ -1,8 +1,12 @@
 # gnss-rust
 
-2026-10-21: [GPS/Galileo FLOATを実装し元C++全RTKと比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)。
+2026-10-21: [再捕捉時のSD ambiguity基準整合](docs/comparison/2026-10-21-ambiguity-gauge/README.md)を選択式で追加。
+元の実処理と部品を照合し、PPC84実行で有効・無効を比較しました。
+大きな外れの解消には至らず既定無効を維持。Rust324テストと標準チェックが通過。
+
+[GPS/Galileo FLOATを実装し元C++全RTKと比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)。
 全6走行で345,469入力行の一致を確認。FLOATは8,258→9,727、検出併用で9,855へ増えました。
-精度が悪化する走行もあり、追加系は選択式のままです。Rust316テストと標準チェックが通過。
+精度が悪化する走行もあり、追加系は選択式のままです。
 PPCでの実用RTK・PPP同等性能は未達で、移動/複数系FIXとPPPの比較を続けています。
 
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。

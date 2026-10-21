@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_gauge",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3",
+    "galileo",
+    "-3817680.730073338,3562839.5233945786,3650159.241788432"
+  ],
+  "returncode": 0,
+  "csv_sha256": "56f1179ecdbbaf1317877b1ca56f847ec088b80400797a26acb716832da28df8",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

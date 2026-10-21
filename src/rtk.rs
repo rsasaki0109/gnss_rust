@@ -14,6 +14,9 @@ use crate::lambda::{self, LambdaConfig, LambdaError, LambdaResult};
 use crate::models::saastamoinen;
 use crate::navigation::NavigationData;
 use crate::observation::{Observation, ObservationEpoch};
+use crate::rtk_ambiguity::{
+    DatumAlignmentDiagnostic, DatumAlignmentInput, align_single_difference_datums,
+};
 use crate::rtk_quality::{PrefitResidualScreen, screen_prefit_residuals};
 use crate::rtk_slip::{self, RtkSlipConfig, SlipTest};
 use crate::spp::{self, SppConfig};
@@ -52,6 +55,10 @@ impl RtkConstellations {
 pub struct RtkFloatConfig {
     pub constellations: RtkConstellations,
     pub position_mode: RtkPositionMode,
+    /// Translate retained SD ambiguity means by their system's mean raw
+    /// code/phase offset before initializing new/reset arcs. No covariance is
+    /// changed. False preserves the legacy ambiguity datum policy.
+    pub align_ambiguity_datums: bool,
     /// Optional GPS 1C code-only position seed for each kinematic epoch.
     /// Its covariance is not fused. On SPP failure retain the previous RTK
     /// position (or initial position), and report the error in the solution.
@@ -88,6 +95,7 @@ impl Default for RtkFloatConfig {
         Self {
             constellations: RtkConstellations::Gps,
             position_mode: RtkPositionMode::Static,
+            align_ambiguity_datums: false,
             kinematic_spp_seed: None,
             slip_detection: None,
             max_prefit_residual_m: None,
@@ -173,7 +181,7 @@ impl fmt::Display for RtkError {
             Self::UnsynchronizedEpochs => f.write_str("base and rover epoch times differ by more than 1e-7 seconds"),
             Self::OutOfOrder => f.write_str("RTK FLOAT epochs must increase strictly in GPS time"),
             Self::DuplicateObservation => f.write_str("duplicate satellite/tracking observation"),
-            Self::InsufficientCommonSatellites => f.write_str("at least four common GPS L1 C/A code/phase satellites are required"),
+            Self::InsufficientCommonSatellites => f.write_str("at least three independent within-system code/phase double differences are required"),
             Self::BaselineTooLong => f.write_str("baseline exceeds the configured short-baseline limit"),
             Self::NonConvergent => f.write_str("RTK FLOAT iteration did not converge"),
             Self::GeometryTooWeak => f.write_str("RTK geometry exceeds the configured GDOP limit"),
@@ -353,6 +361,7 @@ struct SlipHistory {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RtkFloatSolution {
+    pub ambiguity_datum_alignment: Vec<DatumAlignmentDiagnostic>,
     pub position: PositionSolution,
     pub position_seed: RtkSeedDiagnostic,
     pub slip_diagnostics: Vec<RtkSlipDiagnostic>,
@@ -711,7 +720,8 @@ impl RtkFloatFilter {
             || dt > self.config.max_phase_gap_s;
         let (slip_diagnostics, next_slip_history) =
             self.detect_slips(&mut data, rover, base, dt, reset_all)?;
-        let (prior, resets) = self.prior(&data, dt, reset_all, spp_position);
+        let (prior, resets, ambiguity_datum_alignment) =
+            self.prior(&data, dt, reset_all, spp_position)?;
         let mut estimate = prior.mean.clone();
         let mut accepted = None;
         for iteration in 1..=self.config.max_iterations {
@@ -823,6 +833,7 @@ impl RtkFloatFilter {
         let differences: Vec<_> = pairs.iter().map(|(r, sat)| (3 + r, 3 + sat)).collect();
         let ambiguities = ambiguity_transform(&posterior, 3, &differences)?;
         let result = RtkFloatSolution {
+            ambiguity_datum_alignment,
             position_seed,
             slip_diagnostics,
             position: PositionSolution {
@@ -953,7 +964,14 @@ impl RtkFloatFilter {
         dt: f64,
         reset_all: bool,
         spp_position: Option<EcefCoord>,
-    ) -> (GaussianState, Vec<SatelliteId>) {
+    ) -> Result<
+        (
+            GaussianState,
+            Vec<SatelliteId>,
+            Vec<DatumAlignmentDiagnostic>,
+        ),
+        RtkError,
+    > {
         let n = 3 + data.len();
         let mut mean = vec![0.0; n];
         let mut covariance = filter::zeros(n, n);
@@ -1000,6 +1018,22 @@ impl RtkFloatFilter {
                 }
             }
         }
+        let mut alignment = Vec::new();
+        if self.config.align_ambiguity_datums {
+            let inputs: Vec<_> = data
+                .iter()
+                .enumerate()
+                .map(|(i, d)| DatumAlignmentInput {
+                    satellite: d.satellite,
+                    raw_bias_cycles: d.phase_sd_cycles - d.code_sd_m / c::GPS_L1_WAVELENGTH,
+                    retained_cycles: old_indices[3 + i]
+                        .and_then(|oi| self.posterior.as_ref().map(|old| old.mean[oi])),
+                })
+                .collect();
+            let aligned = align_single_difference_datums(&inputs)?;
+            mean[3..].copy_from_slice(&aligned.single_difference_cycles);
+            alignment = aligned.systems;
+        }
         if let Some(position) = spp_position {
             // Kinematic position covariance/cross-covariance has already been
             // reset above. Preserve the ambiguity block and its continuity.
@@ -1017,7 +1051,7 @@ impl RtkFloatFilter {
                     self.config.ambiguity_process_noise_cycles2_per_s
                 };
         }
-        (GaussianState { mean, covariance }, resets)
+        Ok((GaussianState { mean, covariance }, resets, alignment))
     }
 }
 

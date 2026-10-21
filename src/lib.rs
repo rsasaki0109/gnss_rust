@@ -4,8 +4,9 @@
 //! time is represented as a full week number and seconds of week. GPS time
 //! does not include UTC leap seconds. This crate currently provides the core
 //! foundation, streaming RINEX 3 input, broadcast navigation and initial
-//! GPS/QZSS L1 SPP, LAMBDA integer ambiguity search, and an initial static
-//! GPS L1 C/A static/kinematic FLOAT filter. Initial full-set integer FIX
+//! GPS/QZSS L1 SPP, LAMBDA integer ambiguity search, and an initial
+//! GPS L1 C/A static/kinematic FLOAT filter with optional Galileo E1.
+//! Initial full-set integer FIX
 //! validation supports the static model; kinematic FIX policy is pending.
 //! SP3-c/d and RINEX satellite CLK products provide interpolated precise
 //! positions, velocities and published clocks with explicit coverage/quality.
@@ -56,6 +57,7 @@ pub mod precise_spp;
 pub mod precise_transmit;
 pub mod rinex;
 pub mod rtk;
+pub mod rtk_ambiguity;
 pub mod rtk_fix;
 pub mod rtk_quality;
 pub mod rtk_reference;

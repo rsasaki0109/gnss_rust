@@ -1,0 +1,40 @@
+{
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "generator_sha256": "815dc59053df5b61416ccef966942b77fbf7dfe35f937bd83dacdb90cbf9b056",
+  "upstream_bias_source_sha256": "dec42adc0f4a3b07df046b720d2275379d6b8301987ec6b52f12b74dcd72e86f",
+  "upstream_header_sha256": "194be09712ce06d1a69f9318cbcefb629dd1c6d0de39ae50b4910e14905042e1",
+  "libraries_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "command": [
+    "g++",
+    "-std=gnu++20",
+    "-O2",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "scripts/upstream_rtk_datum.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "-Wl,--end-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-o",
+    "/tmp/upstream-rtk-datum-20261021"
+  ],
+  "compile_returncode": 0,
+  "compile_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "run_command": [
+    "/tmp/upstream-rtk-datum-20261021",
+    "/tmp/upstream-rtk-datum-regenerated.csv"
+  ],
+  "run_returncode": 0,
+  "fixture_sha256": "d624c7ed7eb3b9b4f7678fa95c024ea7b96270dabca1283dbe496670a502a171",
+  "regenerated_bytes_identical": true,
+  "total_cases": 10,
+  "matched_cases": 9,
+  "deliberate_zero_sentinel_difference": true
+}

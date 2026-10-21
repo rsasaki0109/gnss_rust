@@ -7,6 +7,13 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[SD ambiguity基準整合](docs/comparison/2026-10-21-ambiguity-gauge/README.md)を選択式で移植。
+元updateBias実呼出しの9ケースに一致し、有効なゼロ状態は明示的に保持する。
+変更前12診断と全6走行×7条件×有効/無効の84実行を保存。無効42実行は旧全CSVに一致。
+通常FLOAT数は変わらず、GPSの最大約938 mは残り、ゲート併用は3,458→3,453点。
+主因の解消とは扱わず既定false。8追加を含むRust324・examples・fmt/clippy/release通過。
+次は移動/複数系FIXと初回観測の品質処理を進める。全体18/24（75%）を維持。
+
 [GPS/Galileo FLOATと元C++比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)を追加。
 系ごとのDD参照・R・受信機時計を分け、追尾コード変更でアークを初期化する。
 全6走行でRust42/元C++12実行、345,469入力行の追尾コード・値・欠測・通知が一致。
