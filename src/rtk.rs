@@ -436,6 +436,7 @@ pub(crate) struct FixContext {
     pub reset_satellites: Vec<SatelliteId>,
     data: Vec<SatelliteData>,
     reference: usize,
+    references: Vec<usize>,
 }
 pub(crate) struct FixedResiduals {
     pub phase_m: Vec<f64>,
@@ -448,17 +449,52 @@ impl FixContext {
         if self.config.constellations != RtkConstellations::Gps {
             return Err(Error::UnsupportedConstellation.into());
         }
-        let index = self
-            .data
-            .iter()
-            .position(|sample| sample.satellite == reference)
-            .ok_or(RtkError::InvalidConfiguration)?;
+        self.with_references(&[reference])
+    }
+    pub(crate) fn with_references(&self, references: &[SatelliteId]) -> Result<Self, RtkError> {
+        let systems: std::collections::BTreeSet<_> =
+            self.data.iter().map(|d| d.satellite.system()).collect();
+        let mut chosen = BTreeMap::new();
+        for &satellite in references {
+            let index = self
+                .data
+                .iter()
+                .position(|d| d.satellite == satellite)
+                .ok_or(RtkError::InvalidConfiguration)?;
+            if chosen.insert(satellite.system(), index).is_some() {
+                return Err(RtkError::InvalidConfiguration);
+            }
+        }
+        if chosen
+            .keys()
+            .copied()
+            .collect::<std::collections::BTreeSet<_>>()
+            != systems
+        {
+            return Err(RtkError::InvalidConfiguration);
+        }
         let mut view = self.clone();
-        view.reference = index;
+        view.references = chosen.into_values().collect();
+        view.reference = *view
+            .references
+            .first()
+            .ok_or(RtkError::InvalidConfiguration)?;
         Ok(view)
     }
     pub fn reference_satellite(&self) -> SatelliteId {
         self.data[self.reference].satellite
+    }
+    pub fn reference_satellites(&self) -> Vec<SatelliteId> {
+        self.references
+            .iter()
+            .map(|&i| self.data[i].satellite)
+            .collect()
+    }
+    pub fn ambiguity_satellites(&self) -> Vec<SatelliteId> {
+        dd_pairs(&self.data, &self.references)
+            .iter()
+            .map(|(_, s)| self.data[*s].satellite)
+            .collect()
     }
     pub fn satellites(&self) -> Vec<SatelliteId> {
         self.data.iter().map(|d| d.satellite).collect()
@@ -473,12 +509,9 @@ impl FixContext {
         }
     }
     pub fn ambiguities(&self) -> Result<AmbiguityTransform, FilterError> {
-        if self.config.constellations != RtkConstellations::Gps {
-            return Err(FilterError::InvalidDimensions);
-        }
-        let pairs: Vec<_> = (0..self.data.len())
-            .filter(|&i| i != self.reference)
-            .map(|i| (3 + self.reference, 3 + i))
+        let pairs: Vec<_> = dd_pairs(&self.data, &self.references)
+            .iter()
+            .map(|(r, s)| (3 + r, 3 + s))
             .collect();
         ambiguity_transform(&self.state, 3, &pairs)
     }
@@ -487,36 +520,30 @@ impl FixContext {
         baseline: &[f64],
         integers: &[i64],
     ) -> Result<FixedResiduals, RtkError> {
-        if self.config.constellations != RtkConstellations::Gps {
-            return Err(Error::UnsupportedConstellation.into());
-        }
-        if baseline.len() != 3 || integers.len() + 1 != self.data.len() {
+        let dd = dd_pairs(&self.data, &self.references);
+        if baseline.len() != 3 || integers.len() != dd.len() {
             return Err(FilterError::InvalidDimensions.into());
         }
         let mut fixed_state = self.state.mean.clone();
         fixed_state[..3].copy_from_slice(baseline);
         let mut pairs = Vec::new();
-        for (sat, &integer) in (0..self.data.len())
-            .filter(|&i| i != self.reference)
-            .zip(integers)
-        {
-            fixed_state[3 + sat] = fixed_state[3 + self.reference] - integer as f64;
+        for ((reference, sat), &integer) in dd.iter().copied().zip(integers) {
+            fixed_state[3 + sat] = fixed_state[3 + reference] - integer as f64;
             pairs.push(
-                (self.data[self.reference].code_sd_m - self.data[sat].code_sd_m)
-                    - ((self.data[self.reference].phase_sd_cycles
-                        - self.data[sat].phase_sd_cycles)
+                (self.data[reference].code_sd_m - self.data[sat].code_sd_m)
+                    - ((self.data[reference].phase_sd_cycles - self.data[sat].phase_sd_cycles)
                         * c::GPS_L1_WAVELENGTH
                         - integer as f64 * c::GPS_L1_WAVELENGTH),
             );
         }
-        let system = build_system(
+        let system = build_system_with_references(
             &self.data,
-            self.reference,
+            &self.references,
             &fixed_state,
             self.base_position,
             self.config,
         )?;
-        let rows = self.data.len() - 1;
+        let rows = dd.len();
         Ok(FixedResiduals {
             phase_m: system.residuals[..rows].to_vec(),
             code_m: system.residuals[rows..].to_vec(),
@@ -865,6 +892,7 @@ impl RtkFloatFilter {
                 reset_satellites: resets.clone(),
                 data,
                 reference,
+                references,
             },
         };
         self.tracking_pairs = result
@@ -1208,16 +1236,6 @@ fn dd_pairs(data: &[SatelliteData], references: &[usize]) -> Vec<(usize, usize)>
                 .map(move |(i, _)| (reference, i))
         })
         .collect()
-}
-
-fn build_system(
-    data: &[SatelliteData],
-    reference: usize,
-    state: &[f64],
-    base: EcefCoord,
-    config: RtkFloatConfig,
-) -> Result<MeasurementSystem, RtkError> {
-    build_system_with_references(data, &[reference], state, base, config)
 }
 
 fn build_system_with_references(

@@ -7,6 +7,13 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[GPS/Galileoの整数候補検証](docs/comparison/2026-10-21-mixed-candidate-validation/README.md)へ拡張。
+系ごとの全基準組合せを監査し、同一候補の位置/共分散を保つ。既知32移動点・16基準組・
+両系の誤整数と境界を検証。6追加を含むRust330・examples・fmt/clippy/release通過。
+PPC18対照は旧全CSVに一致、12読込専用診断で全基準通過61/81点だが、既存4 DD以上は21/25点。
+局所通過の候補に数十m外れも残り、FIXを宣言せず、移動/混合FIX政策は引き続き未対応。
+次はロック・連続確認・移動履歴を接続する。全体18/24（75%）を維持。
+
 [SD ambiguity基準整合](docs/comparison/2026-10-21-ambiguity-gauge/README.md)を選択式で移植。
 元updateBias実呼出しの9ケースに一致し、有効なゼロ状態は明示的に保持する。
 変更前12診断と全6走行×7条件×有効/無効の84実行を保存。無効42実行は旧全CSVに一致。

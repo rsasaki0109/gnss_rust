@@ -303,7 +303,7 @@ fn satellite_count_alone_does_not_replace_the_number_of_clock_differences() {
 }
 
 #[test]
-fn initial_fix_validation_explicitly_rejects_mixed_constellations_without_history() {
+fn initial_fix_policy_rejects_mixed_constellations_even_with_local_candidate_validation() {
     use gnss_rust::rtk_fix::{
         FixError, RtkFixConfig, RtkFixPolicy, audit_candidate_references, validate_candidate,
     };
@@ -324,10 +324,7 @@ fn initial_fix_validation_explicitly_rejects_mixed_constellations_without_histor
         Err(FixError::UnsupportedConstellations)
     );
     let integers = vec![0; result.ambiguity_satellites.len()];
-    assert_eq!(
-        validate_candidate(&result, &integers, RtkFixConfig::default()),
-        Err(FixError::UnsupportedConstellations)
-    );
+    assert!(validate_candidate(&result, &integers, RtkFixConfig::default()).is_ok());
     assert_eq!(
         audit_candidate_references(&result, &integers, RtkFixConfig::default()),
         Err(FixError::UnsupportedConstellations)
@@ -660,4 +657,209 @@ fn aligned_zero_baseline_retains_zero_ambiguities_as_active_states() {
             assert_eq!(d.offset_cycles, 0.0);
         }
     }
+}
+
+fn known_integers(float: &gnss_rust::rtk::RtkFloatSolution) -> Vec<i64> {
+    float
+        .ambiguity_satellites
+        .iter()
+        .map(|s| {
+            let reference = float
+                .reference_satellites
+                .iter()
+                .find(|r| r.system() == s.system())
+                .unwrap();
+            i64::from(reference.prn()) - i64::from(s.prn())
+        })
+        .collect()
+}
+
+#[test]
+fn mixed_known_integers_validate_all_32_moving_snapshots_without_declaring_fix() {
+    use gnss_rust::rtk_fix::{RtkFixConfig, validate_candidate};
+    let (r, b, nav, base, seed) = data();
+    let mut filter = RtkFloatFilter::new(base, seed, config()).unwrap();
+    for i in 0..r.len() {
+        let float = filter.process_pair(&r[i], &b[i], &nav).unwrap();
+        let before = filter.state().unwrap().clone();
+        let result =
+            validate_candidate(&float, &known_integers(&float), RtkFixConfig::default()).unwrap();
+        assert_eq!(result.rejection, None, "epoch {i}");
+        let fixed = EcefCoord::new(
+            base.x + result.conditioned.state.mean[0],
+            base.y + result.conditioned.state.mean[1],
+            base.z + result.conditioned.state.mean[2],
+        );
+        assert!(distance(fixed, truth(i)) < 0.003, "epoch {i}");
+        assert_eq!(float.position.status, gnss_rust::SolutionStatus::Float);
+        assert_eq!(filter.state(), Some(&before));
+    }
+}
+
+#[test]
+fn mixed_audit_checks_all_16_reference_sets_with_the_same_physical_integers() {
+    use gnss_rust::rtk_fix::{RtkFixConfig, audit_candidate_system_references};
+    let (r, b, nav, base, seed) = data();
+    let mut filter = RtkFloatFilter::new(base, seed, config()).unwrap();
+    let float = filter.process_pair(&r[0], &b[0], &nav).unwrap();
+    let before = filter.state().unwrap().clone();
+    let audit = audit_candidate_system_references(
+        &float,
+        &known_integers(&float),
+        RtkFixConfig::default(),
+        16,
+    )
+    .unwrap();
+    assert_eq!(audit.reference_sets.len(), 16);
+    assert_eq!(audit.conservative_rejection(), None);
+    assert!(!audit.local_rejection_depends_on_reference());
+    let first = &audit.reference_sets[0].validation.conditioned;
+    for entry in &audit.reference_sets {
+        assert_eq!(entry.reference_satellites.len(), 2);
+        for (&target, &integer) in entry.ambiguity_satellites.iter().zip(&entry.integers) {
+            let reference = entry
+                .reference_satellites
+                .iter()
+                .find(|r| r.system() == target.system())
+                .unwrap();
+            assert_eq!(
+                integer,
+                i64::from(reference.prn()) - i64::from(target.prn())
+            );
+        }
+        for i in 0..3 {
+            assert!(
+                (entry.validation.conditioned.state.mean[i] - first.state.mean[i]).abs() < 1e-6
+            );
+            for j in 0..3 {
+                assert!(
+                    (entry.validation.conditioned.state.covariance[i][j]
+                        - first.state.covariance[i][j])
+                        .abs()
+                        < 1e-10
+                );
+            }
+        }
+    }
+    assert_eq!(filter.state(), Some(&before));
+}
+
+#[test]
+fn wrong_gps_or_galileo_integers_are_rejected_under_all_reference_combinations() {
+    use gnss_rust::rtk_fix::{RtkFixConfig, audit_candidate_system_references, validate_candidate};
+    let (r, b, nav, base, seed) = data();
+    let mut filter = RtkFloatFilter::new(base, seed, config()).unwrap();
+    let float = filter.process_pair(&r[0], &b[0], &nav).unwrap();
+    let before = filter.state().unwrap().clone();
+    for system in [GnssSystem::Gps, GnssSystem::Galileo] {
+        let mut integers = known_integers(&float);
+        let i = float
+            .ambiguity_satellites
+            .iter()
+            .position(|s| s.system() == system)
+            .unwrap();
+        integers[i] += 1;
+        assert!(
+            validate_candidate(&float, &integers, RtkFixConfig::default())
+                .unwrap()
+                .rejection
+                .is_some()
+        );
+        let audit =
+            audit_candidate_system_references(&float, &integers, RtkFixConfig::default(), 16)
+                .unwrap();
+        assert!(
+            audit
+                .reference_sets
+                .iter()
+                .all(|v| v.validation.rejection.is_some())
+        );
+    }
+    assert_eq!(filter.state(), Some(&before));
+}
+
+#[test]
+fn mixed_audit_checks_work_limits_and_integer_ranges_before_returning_any_basis() {
+    use gnss_rust::filter::FilterError;
+    use gnss_rust::rtk_fix::{FixError, RtkFixConfig, audit_candidate_system_references as audit};
+    let (r, b, nav, base, seed) = data();
+    let mut filter = RtkFloatFilter::new(base, seed, config()).unwrap();
+    let float = filter.process_pair(&r[0], &b[0], &nav).unwrap();
+    let integers = known_integers(&float);
+    let cfg = RtkFixConfig::default();
+    assert_eq!(
+        audit(&float, &integers, cfg, 15),
+        Err(FixError::ReferenceSetLimit)
+    );
+    assert_eq!(
+        audit(&float, &integers, cfg, 0),
+        Err(FixError::InvalidConfiguration)
+    );
+    assert_eq!(
+        audit(&float, &integers, cfg, 4097),
+        Err(FixError::InvalidConfiguration)
+    );
+    assert_eq!(
+        audit(&float, &integers[..5], cfg, 16),
+        Err(FixError::Filter(FilterError::InvalidDimensions))
+    );
+    let mut invalid = integers.clone();
+    invalid[0] = 1_i64 << 52;
+    assert_eq!(
+        audit(&float, &invalid, cfg, 16),
+        Err(FixError::InvalidInteger)
+    );
+    invalid[0] = -(1_i64 << 51);
+    invalid[1] = 1_i64 << 51;
+    assert_eq!(
+        audit(&float, &invalid, cfg, 16),
+        Err(FixError::InvalidInteger)
+    );
+}
+
+#[test]
+fn single_system_audit_is_identical_to_the_existing_gps_audit() {
+    use gnss_rust::rtk_fix::{
+        RtkFixConfig, audit_candidate_references, audit_candidate_system_references,
+    };
+    let (r, b, nav, base, seed) = data();
+    let mut filter = RtkFloatFilter::new(base, seed, RtkFloatConfig::default()).unwrap();
+    let float = filter.process_pair(&r[0], &b[0], &nav).unwrap();
+    let integers = known_integers(&float);
+    let cfg = RtkFixConfig::default();
+    let old = audit_candidate_references(&float, &integers, cfg).unwrap();
+    let new = audit_candidate_system_references(&float, &integers, cfg, 4).unwrap();
+    assert_eq!(old.conservative_rejection(), new.conservative_rejection());
+    assert_eq!(old.references.len(), new.reference_sets.len());
+    for (a, b) in old.references.iter().zip(new.reference_sets) {
+        assert_eq!(vec![a.reference_satellite], b.reference_satellites);
+        assert_eq!(a.ambiguity_satellites, b.ambiguity_satellites);
+        assert_eq!(a.integers, b.integers);
+        assert_eq!(a.validation, b.validation);
+    }
+}
+
+#[test]
+fn mixed_validation_and_reference_audit_use_immutable_snapshot_identity() {
+    use gnss_rust::rtk_fix::{
+        RtkFixConfig, audit_candidate_system_references as audit, validate_candidate,
+    };
+    let (r, b, nav, base, seed) = data();
+    let mut filter = RtkFloatFilter::new(base, seed, config()).unwrap();
+    let float = filter.process_pair(&r[0], &b[0], &nav).unwrap();
+    let integers = known_integers(&float);
+    let cfg = RtkFixConfig::default();
+    let expected = validate_candidate(&float, &integers, cfg).unwrap();
+    let expected_audit = audit(&float, &integers, cfg, 16).unwrap();
+    let mut edited = float.clone();
+    edited.reference_satellites.reverse();
+    edited.reference_satellite = "E36".parse().unwrap();
+    edited.ambiguity_satellites.reverse();
+    edited.ambiguities.dd_float_cycles.fill(42.0);
+    edited.position.position_ecef = Some(EcefCoord::new(1.0, 2.0, 3.0));
+    assert_eq!(
+        validate_candidate(&edited, &integers, cfg).unwrap(),
+        expected
+    );
+    assert_eq!(audit(&edited, &integers, cfg, 16).unwrap(), expected_audit);
 }

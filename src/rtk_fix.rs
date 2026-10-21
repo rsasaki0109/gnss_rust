@@ -1,4 +1,5 @@
-//! Initial full-set GPS L1 integer validation on immutable FLOAT snapshots.
+//! GPS L1 / Galileo E1 integer validation on immutable FLOAT snapshots.
+//! The initial policy still declares FIX only for GPS static snapshots.
 //!
 //! Head-state conditioning and position-independent code/phase validation are
 //! derived from libgnss++ rtk_ar_evaluation / rtk_cp_pr_gate components.
@@ -16,6 +17,7 @@ pub enum FixError {
     InvalidConfiguration,
     UnsupportedPositionMode,
     UnsupportedConstellations,
+    ReferenceSetLimit,
     InvalidInteger,
     OutOfOrder,
     Filter(FilterError),
@@ -30,6 +32,9 @@ impl fmt::Display for FixError {
             }
             Self::UnsupportedConstellations => {
                 f.write_str("initial FIX validation requires GPS-only observations")
+            }
+            Self::ReferenceSetLimit => {
+                f.write_str("candidate audit exceeds the reference-set limit")
             }
             Self::InvalidInteger => {
                 f.write_str("integer candidate exceeds the exact arithmetic range")
@@ -345,9 +350,6 @@ pub fn validate_candidate(
     integers: &[i64],
     config: RtkFixConfig,
 ) -> Result<CandidateValidation, FixError> {
-    if float.fix_context.config.constellations != crate::rtk::RtkConstellations::Gps {
-        return Err(FixError::UnsupportedConstellations);
-    }
     validate_context(&float.fix_context, integers, config)
 }
 
@@ -554,6 +556,153 @@ pub fn audit_candidate_references(
         time: source.time,
         source_reference: original_reference,
         references,
+    })
+}
+
+/// The same candidate under one combination of within-system references.
+#[derive(Debug, Clone, PartialEq)]
+pub struct SystemReferenceCandidateValidation {
+    pub reference_satellites: Vec<SatelliteId>,
+    pub ambiguity_satellites: Vec<SatelliteId>,
+    pub integers: Vec<i64>,
+    pub validation: CandidateValidation,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SystemCandidateReferenceAudit {
+    pub time: GnssTime,
+    pub source_references: Vec<SatelliteId>,
+    pub reference_sets: Vec<SystemReferenceCandidateValidation>,
+}
+impl SystemCandidateReferenceAudit {
+    pub fn local_rejection_depends_on_reference(&self) -> bool {
+        self.reference_sets.first().is_some_and(|first| {
+            self.reference_sets
+                .iter()
+                .any(|v| v.validation.rejection != first.validation.rejection)
+        })
+    }
+    /// Intersection of the unchanged local gates across every reference set.
+    /// Does not perform lock, ratio, motion-history or FIX confirmation checks.
+    pub fn conservative_rejection(&self) -> Option<FixDecision> {
+        self.reference_sets
+            .iter()
+            .filter_map(|v| v.validation.rejection)
+            .min_by_key(|reason| match reason {
+                FixDecision::BaselineTooLong => 0,
+                FixDecision::PositionCorrection => 1,
+                FixDecision::CovarianceTooLarge => 2,
+                FixDecision::PhaseResiduals => 3,
+                FixDecision::CodeResiduals => 4,
+                FixDecision::CodePhaseInconsistency => 5,
+                FixDecision::PostfitInnovation => 6,
+                _ => 7,
+            })
+    }
+}
+
+/// Re-express one supplied GPS/Galileo candidate under the Cartesian product
+/// of within-system reference choices, preserving the full joint covariance.
+/// Never forms a difference between constellations or runs a new LAMBDA search.
+///
+/// The caller bounds work with max_reference_sets (1..=4096). If the complete
+/// product exceeds this limit, fail before evaluating any basis; no partial
+/// audit or favourable reference subset is returned. Numerical conditioning
+/// and all local thresholds are identical to validate_candidate. No filter or
+/// policy history changes, and a passing audit does not declare FIX.
+pub fn audit_candidate_system_references(
+    float: &RtkFloatSolution,
+    integers: &[i64],
+    config: RtkFixConfig,
+    max_reference_sets: usize,
+) -> Result<SystemCandidateReferenceAudit, FixError> {
+    config.validate()?;
+    if !(1..=4096).contains(&max_reference_sets) {
+        return Err(FixError::InvalidConfiguration);
+    }
+    let source = &float.fix_context;
+    let references = source.reference_satellites();
+    let targets = source.ambiguity_satellites();
+    if integers.len() != targets.len() {
+        return Err(FilterError::InvalidDimensions.into());
+    }
+    if integers.iter().any(|n| n.unsigned_abs() >= (1_u64 << 52)) {
+        return Err(FixError::InvalidInteger);
+    }
+    let mut dd = BTreeMap::new();
+    for reference in &references {
+        dd.insert(*reference, 0_i64);
+    }
+    for (&satellite, &integer) in targets.iter().zip(integers) {
+        dd.insert(satellite, integer);
+    }
+    let mut groups = BTreeMap::<_, Vec<_>>::new();
+    for satellite in source.satellites() {
+        groups
+            .entry(satellite.system())
+            .or_default()
+            .push(satellite);
+    }
+    let mut product = 1_usize;
+    for members in groups.values() {
+        product = product
+            .checked_mul(members.len())
+            .ok_or(FixError::ReferenceSetLimit)?;
+        if product > max_reference_sets {
+            return Err(FixError::ReferenceSetLimit);
+        }
+        let min = members
+            .iter()
+            .map(|s| dd[s])
+            .min()
+            .ok_or(FilterError::InvalidDimensions)?;
+        let max = members
+            .iter()
+            .map(|s| dd[s])
+            .max()
+            .ok_or(FilterError::InvalidDimensions)?;
+        let span = max.checked_sub(min).ok_or(FixError::InvalidInteger)?;
+        if span.unsigned_abs() >= (1_u64 << 52) {
+            return Err(FixError::InvalidInteger);
+        }
+    }
+    let mut combinations = vec![Vec::new()];
+    for members in groups.values() {
+        let mut next = Vec::with_capacity(combinations.len() * members.len());
+        for partial in &combinations {
+            for &satellite in members {
+                let mut set = partial.clone();
+                set.push(satellite);
+                next.push(set);
+            }
+        }
+        combinations = next;
+    }
+    let mut reference_sets = Vec::with_capacity(product);
+    for set in combinations {
+        let context = source.with_references(&set)?;
+        let targets = context.ambiguity_satellites();
+        let roots: BTreeMap<_, _> = set.iter().map(|s| (s.system(), dd[s])).collect();
+        let equivalent: Vec<_> = targets
+            .iter()
+            .map(|s| {
+                dd[s]
+                    .checked_sub(roots[&s.system()])
+                    .ok_or(FixError::InvalidInteger)
+            })
+            .collect::<Result<_, _>>()?;
+        let validation = validate_context(&context, &equivalent, config)?;
+        reference_sets.push(SystemReferenceCandidateValidation {
+            reference_satellites: set,
+            ambiguity_satellites: targets,
+            integers: equivalent,
+            validation,
+        });
+    }
+    Ok(SystemCandidateReferenceAudit {
+        time: source.time,
+        source_references: references,
+        reference_sets,
     })
 }
 

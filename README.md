@@ -1,6 +1,10 @@
 # gnss-rust
 
-2026-10-21: [再捕捉時のSD ambiguity基準整合](docs/comparison/2026-10-21-ambiguity-gauge/README.md)を選択式で追加。
+2026-10-21: [GPS/Galileoの整数候補検証](docs/comparison/2026-10-21-mixed-candidate-validation/README.md)に対応。
+系ごとの全基準組合せを監査し、PPC18対照・12候補診断を保存しました。
+Rust330テストと標準チェックが通過。移動体FIX政策・実用性能の受け入れは未完了です。
+
+[再捕捉時のSD ambiguity基準整合](docs/comparison/2026-10-21-ambiguity-gauge/README.md)を選択式で追加。
 元の実処理と部品を照合し、PPC84実行で有効・無効を比較しました。
 大きな外れの解消には至らず既定無効を維持。Rust324テストと標準チェックが通過。
 
