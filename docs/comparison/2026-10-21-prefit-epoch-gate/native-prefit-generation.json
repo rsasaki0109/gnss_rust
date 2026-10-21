@@ -1,0 +1,37 @@
+{
+  "command": [
+    "/tmp/upstream-rtk-prefit-20261021"
+  ],
+  "returncode": 0,
+  "cases": 10,
+  "fixture_sha256": "9962227aa17c73bd6aff75c18779593dc6d8b9fc5d93a1e1e94f4c3402cc0028",
+  "source_sha256": "60329b660c515b22253abafdaa3971715775a5c30b419a10ab72ee751a3a8a6d",
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "native_archive_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "upstream_header_sha256": "982dfed87b115576780b778e8da543ac020ca7886d0f38f492b73f309e63b294",
+  "upstream_implementation_sha256": "3d665976e6b59bae9dcc72fb806a063e7bbb2709a6ebaeadeb966a94133035dd",
+  "generated_fixture_exactly_matches": true,
+  "compile_command": [
+    "g++",
+    "-std=gnu++20",
+    "-O2",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "scripts/upstream_rtk_prefit.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "-Wl,--end-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-o",
+    "/tmp/upstream-rtk-prefit-20261021"
+  ],
+  "compile_returncode": 0,
+  "compile_recorded_from_tool_result": true
+}

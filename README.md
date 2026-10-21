@@ -1,10 +1,10 @@
 # gnss-rust
 
-2026-10-21: [CMC・Doppler検出を移植し全6走行で評価](docs/comparison/2026-10-21-ppc-slip-detection/README.md)。
-Doppler検出でFLOAT出力は8,258→8,269へ増えましたが、大きな外れは残っています。
-検出は既定無効の選択式とし、初回採用の品質と残差処理を調査しています。
+2026-10-21: [初期残差ゲートを全6走行で評価](docs/comparison/2026-10-21-prefit-epoch-gate/README.md)。
+SPP初期値自体が大きく誤る例があり、残差だけの検査では解消できませんでした。
+ゲートは既定無効の選択式とし、SPPの品質と衛星系を増やす経路を調査しています。
 Rustにも最大約938 mの外れが残り、同等性能の受け入れには至っていません。
-Rust291テストが通過。前回の作業記録の一部は復旧確認中で、
+Rust302テストが通過。前回の作業記録の一部は復旧確認中で、
 PPCでの実用RTK・PPP同等性能は未達です。
 
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。

@@ -1,7 +1,7 @@
 //! GPS L1 FLOAT on common epochs; every unmatched/invalid epoch is reported.
 use gnss_rust::epoch_match::{EpochMatch, EpochMatcher, EpochSide};
 use gnss_rust::rinex::{RinexObservationReader, read_navigation_for_systems};
-use gnss_rust::rtk::{RtkFloatConfig, RtkFloatFilter, RtkPositionMode};
+use gnss_rust::rtk::{RtkFloatConfig, RtkFloatFilter, RtkPositionMode, RtkPrefitDiagnostic};
 use gnss_rust::rtk_slip::RtkSlipConfig;
 use gnss_rust::spp::SppConfig;
 use gnss_rust::{EcefCoord, GnssSystem};
@@ -12,22 +12,96 @@ use std::{
     path::Path,
 };
 
+fn write_prefit(row: &mut [String], diagnostic: &RtkPrefitDiagnostic) {
+    let screen = &diagnostic.screen;
+    row[26] = format!("{:.17e}", screen.maximum_phase_abs_m);
+    row[27] = format!("{:.17e}", screen.maximum_code_abs_m);
+    row[28] = format!("{:.17e}", screen.threshold_m);
+    row[29] = screen.rejected_phase_rows.len().to_string();
+    row[30] = screen.rejected_code_rows.len().to_string();
+    let mut rejected = Vec::new();
+    for (kind, indices) in [
+        ("phase", &screen.rejected_phase_rows),
+        ("code", &screen.rejected_code_rows),
+    ] {
+        rejected.extend(indices.iter().map(|i| {
+            format!(
+                "{kind}:{}-{}",
+                diagnostic.reference_satellite, diagnostic.row_satellites[*i]
+            )
+        }));
+    }
+    row[31] = rejected.join(";");
+    let seed = diagnostic.position_seed;
+    row[32] = format!("{:?}", seed.source);
+    for (i, v) in [seed.position.x, seed.position.y, seed.position.z]
+        .into_iter()
+        .enumerate()
+    {
+        row[33 + i] = format!("{v:.17e}");
+    }
+    if let Some(error) = seed.spp_failure {
+        row[36] = format!("{error:?}");
+    }
+    let evidence = &diagnostic.slip_diagnostics;
+    for (i, value) in [
+        evidence
+            .iter()
+            .filter(|d| d.code.is_some_and(|t| t.detected))
+            .count(),
+        evidence
+            .iter()
+            .filter(|d| d.doppler.is_some_and(|t| t.detected))
+            .count(),
+        evidence.iter().filter(|d| d.code.is_some()).count(),
+        evidence.iter().filter(|d| d.doppler.is_some()).count(),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        row[37 + i] = value.to_string();
+    }
+    row[41] = evidence
+        .iter()
+        .filter(|d| d.code.is_some_and(|t| t.detected) || d.doppler.is_some_and(|t| t.detected))
+        .map(|d| d.satellite.to_string())
+        .collect::<Vec<_>>()
+        .join(";");
+    row[42] = evidence
+        .iter()
+        .filter_map(|d| d.doppler_error.map(|e| format!("{}:{e:?}", d.satellite)))
+        .collect::<Vec<_>>()
+        .join(";");
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     if args.len() != 3 {
         return Err(
-            "usage: ppc_rtk_float CASE_DIRECTORY static|kinematic|kinematic-gdop50|kinematic-spp|kinematic-cmc|kinematic-doppler|kinematic-slips BASE_X,BASE_Y,BASE_Z".into(),
+            "usage: ppc_rtk_float CASE_DIRECTORY MODE BASE_X,BASE_Y,BASE_Z (MODE: static, kinematic, kinematic-gdop50, kinematic-spp, kinematic-cmc, kinematic-doppler, kinematic-slips; append -prefit3 to kinematic, kinematic-spp, kinematic-slips, kinematic-spp-slips)".into(),
         );
     }
     let position_mode = match args[1].to_str() {
         Some("static") => RtkPositionMode::Static,
         Some(
-            "kinematic" | "kinematic-gdop50" | "kinematic-spp" | "kinematic-cmc"
-            | "kinematic-doppler" | "kinematic-slips",
+            "kinematic"
+            | "kinematic-gdop50"
+            | "kinematic-spp"
+            | "kinematic-cmc"
+            | "kinematic-doppler"
+            | "kinematic-slips"
+            | "kinematic-prefit3"
+            | "kinematic-spp-prefit3"
+            | "kinematic-slips-prefit3"
+            | "kinematic-spp-slips-prefit3",
         ) => RtkPositionMode::Kinematic,
         _ => return Err("unsupported positioning mode; see ppc_rtk_float usage".into()),
     };
-    let use_spp_seed = args[1] == "kinematic-spp";
+    let use_spp_seed = matches!(
+        args[1].to_str(),
+        Some("kinematic-spp" | "kinematic-spp-prefit3" | "kinematic-spp-slips-prefit3")
+    );
+    let use_prefit = args[1].to_str().is_some_and(|s| s.ends_with("-prefit3"));
     let slip_detection = match args[1].to_str() {
         Some("kinematic-cmc") => Some(RtkSlipConfig {
             doppler_threshold_m: None,
@@ -37,7 +111,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             code_threshold_m: None,
             ..Default::default()
         }),
-        Some("kinematic-slips") => Some(RtkSlipConfig::default()),
+        Some("kinematic-slips" | "kinematic-slips-prefit3" | "kinematic-spp-slips-prefit3") => {
+            Some(RtkSlipConfig::default())
+        }
         _ => None,
     };
     let xyz: Vec<f64> = args[2]
@@ -67,6 +143,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             position_mode,
             kinematic_spp_seed: use_spp_seed.then(SppConfig::default),
             slip_detection,
+            max_prefit_residual_m: use_prefit.then_some(3.0),
             max_geometry_gdop: if args[1] == "kinematic-gdop50" {
                 Some(50.0)
             } else {
@@ -77,7 +154,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?;
     let mut out = BufWriter::new(std::io::stdout().lock());
     let header = "kind,week,tow,side,rover_flag,base_flag,base_dt_s,status,x_m,y_m,z_m,satellites,reference,nis,code_rms_m,phase_rms_m,ambiguity_resets,reason,geometry_gdop,geometry_pdop,position_covariance_trace_m2,position_qxx_m2,position_qyy_m2,position_qzz_m2,used_satellites,geometry_error";
-    let suffix = if use_spp_seed {
+    let suffix = if use_prefit {
+        ",prefit_phase_max_m,prefit_code_max_m,prefit_threshold_m,prefit_rejected_phase_rows,prefit_rejected_code_rows,prefit_rejected_pairs,seed_source,seed_x_m,seed_y_m,seed_z_m,spp_failure,code_slips,doppler_slips,code_tests,doppler_tests,slip_satellites,doppler_errors"
+    } else if use_spp_seed {
         ",seed_source,seed_x_m,seed_y_m,seed_z_m,spp_failure"
     } else if slip_detection.is_some() {
         ",code_slips,doppler_slips,code_tests,doppler_tests,slip_satellites,doppler_errors"
@@ -95,7 +174,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         mut continuity,
     ) = (0, 0, 0, 0, 0, 0, 0);
     for event in EpochMatcher::new(rover, base) {
-        let columns = if use_spp_seed {
+        let columns = if use_prefit {
+            43
+        } else if use_spp_seed {
             31
         } else if slip_detection.is_some() {
             32
@@ -144,7 +225,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     match filter.process_pair(&rover, &base, &navigation.navigation) {
                         Ok(result) => {
-                            if slip_detection.is_some() {
+                            if slip_detection.is_some() && !use_prefit {
                                 let evidence = &result.slip_diagnostics;
                                 row[26] = evidence
                                     .iter()
@@ -183,7 +264,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                     .collect::<Vec<_>>()
                                     .join(";");
                             }
-                            if use_spp_seed {
+                            if use_spp_seed && !use_prefit {
                                 let seed = result.position_seed;
                                 row[26] = format!("{:?}", seed.source);
                                 for (i, v) in [seed.position.x, seed.position.y, seed.position.z]
@@ -241,6 +322,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                         }
                     }
                 }
+                if use_prefit
+                    && let Some(diagnostic) = filter
+                        .last_prefit_diagnostic()
+                        .filter(|d| d.time == rover.time)
+                {
+                    write_prefit(&mut row, diagnostic);
+                }
             }
         }
         // Quote the diagnostic field in case a future error contains commas.
@@ -258,6 +346,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         eprintln!(
             "slip_detection={config:?} accepted_epoch_history=true thresholds_from_pinned_native_defaults=true"
         );
+    }
+    if use_prefit {
+        eprintln!("max_prefit_residual_m=3 whole_epoch_gate=true no_matrix_mutation=true");
     }
     Ok(())
 }

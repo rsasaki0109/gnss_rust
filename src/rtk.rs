@@ -12,6 +12,7 @@ use crate::lambda::{self, LambdaConfig, LambdaError, LambdaResult};
 use crate::models::saastamoinen;
 use crate::navigation::NavigationData;
 use crate::observation::{Observation, ObservationEpoch};
+use crate::rtk_quality::{PrefitResidualScreen, screen_prefit_residuals};
 use crate::rtk_slip::{self, RtkSlipConfig, SlipTest};
 use crate::spp::{self, SppConfig};
 use crate::{
@@ -42,6 +43,10 @@ pub struct RtkFloatConfig {
     /// epochs enter their history; detected slips reset that satellite's SD
     /// ambiguity without discarding its current measurements.
     pub slip_detection: Option<RtkSlipConfig>,
+    /// Optional absolute DD prefit residual gate, checked once at the initial
+    /// position/ambiguity seed. Rejects the entire update; no rows or entries
+    /// of the correlated measurement covariance are modified.
+    pub max_prefit_residual_m: Option<f64>,
     /// Optional unweighted geometry gate, evaluated before committing a
     /// posterior. None preserves the existing admission policy.
     pub max_geometry_gdop: Option<f64>,
@@ -66,6 +71,7 @@ impl Default for RtkFloatConfig {
             position_mode: RtkPositionMode::Static,
             kinematic_spp_seed: None,
             slip_detection: None,
+            max_prefit_residual_m: None,
             max_geometry_gdop: None,
             elevation_mask_rad: 10_f64.to_radians(),
             pseudorange_sigma_m: 0.3,
@@ -102,8 +108,11 @@ impl RtkFloatConfig {
             self.max_ephemeris_age_s,
         ];
         if self
-            .slip_detection
-            .is_some_and(|config| config.validate().is_err())
+            .max_prefit_residual_m
+            .is_some_and(|v| !v.is_finite() || v <= 0.0)
+            || self
+                .slip_detection
+                .is_some_and(|config| config.validate().is_err())
             || self.kinematic_spp_seed.is_some_and(|config| {
                 self.position_mode != RtkPositionMode::Kinematic || config.validate().is_err()
             })
@@ -133,6 +142,7 @@ pub enum RtkError {
     BaselineTooLong,
     NonConvergent,
     GeometryTooWeak,
+    PrefitResidualRejected,
     Gnss(Error),
     Filter(FilterError),
 }
@@ -148,6 +158,7 @@ impl fmt::Display for RtkError {
             Self::BaselineTooLong => f.write_str("baseline exceeds the configured short-baseline limit"),
             Self::NonConvergent => f.write_str("RTK FLOAT iteration did not converge"),
             Self::GeometryTooWeak => f.write_str("RTK geometry exceeds the configured GDOP limit"),
+            Self::PrefitResidualRejected => f.write_str("RTK initial DD residual exceeds the configured prefit limit"),
             Self::Gnss(e) => e.fmt(f), Self::Filter(e) => e.fmt(f),
         }
     }
@@ -287,6 +298,19 @@ pub struct RtkSeedDiagnostic {
     /// Present only when an attempted SPP seed failed. The seed source then
     /// explains which fallback was used; no SPP output is labeled RTK.
     pub spp_failure: Option<Error>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct RtkPrefitDiagnostic {
+    pub time: GnssTime,
+    pub position_seed: RtkSeedDiagnostic,
+    pub reference_satellite: SatelliteId,
+    /// Maps each phase/code screen row to its non-reference DD satellite.
+    pub row_satellites: Vec<SatelliteId>,
+    pub screen: PrefitResidualScreen,
+    /// Evidence from this attempt, including a rejected update. These raw
+    /// observations enter the continuity history only if the update succeeds.
+    pub slip_diagnostics: Vec<RtkSlipDiagnostic>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -460,6 +484,7 @@ pub struct RtkFloatFilter {
     last_time: Option<GnssTime>,
     continuity_lost: bool,
     slip_history: BTreeMap<SatelliteId, SlipHistory>,
+    last_prefit_diagnostic: Option<RtkPrefitDiagnostic>,
 }
 impl RtkFloatFilter {
     pub fn new(
@@ -482,6 +507,7 @@ impl RtkFloatFilter {
             last_time: None,
             continuity_lost: false,
             slip_history: BTreeMap::new(),
+            last_prefit_diagnostic: None,
         })
     }
     pub fn state(&self) -> Option<&GaussianState> {
@@ -489,6 +515,12 @@ impl RtkFloatFilter {
     }
     pub fn tracked_satellites(&self) -> &[SatelliteId] {
         &self.satellites
+    }
+    /// Diagnostic from the most recent process_pair attempt, including a
+    /// prefit rejection. None if the gate is disabled or was not reached.
+    /// This diagnostic never commits a numerical state or continuity history.
+    pub fn last_prefit_diagnostic(&self) -> Option<&RtkPrefitDiagnostic> {
+        self.last_prefit_diagnostic.as_ref()
     }
     /// Call for skipped event records or externally detected slips. Numerical
     /// state is retained, but all ambiguity arcs restart at the next valid pair.
@@ -517,6 +549,7 @@ impl RtkFloatFilter {
         base: &ObservationEpoch,
         nav: &NavigationData,
     ) -> Result<RtkFloatSolution, RtkError> {
+        self.last_prefit_diagnostic = None;
         let result = self.process_pair_inner(rover, base, nav);
         if result.is_err() {
             self.continuity_lost = true;
@@ -615,6 +648,33 @@ impl RtkFloatFilter {
             let system =
                 build_system(&data, reference, &estimate, self.base_position, self.config)?;
             validate_geometry(&system.design[..data.len() - 1])?;
+            if iteration == 1
+                && let Some(threshold) = self.config.max_prefit_residual_m
+            {
+                let count = data.len() - 1;
+                let screen = screen_prefit_residuals(
+                    &system.residuals[..count],
+                    &system.residuals[count..],
+                    threshold,
+                )?;
+                let accepted = screen.accepted();
+                self.last_prefit_diagnostic = Some(RtkPrefitDiagnostic {
+                    time: rover.time,
+                    position_seed,
+                    reference_satellite: data[reference].satellite,
+                    row_satellites: data
+                        .iter()
+                        .enumerate()
+                        .filter(|(i, _)| *i != reference)
+                        .map(|(_, d)| d.satellite)
+                        .collect(),
+                    screen,
+                    slip_diagnostics: slip_diagnostics.clone(),
+                });
+                if !accepted {
+                    return Err(RtkError::PrefitResidualRejected);
+                }
+            }
             // Iterated EKF: relinearize with the SAME prior. Do not count one
             // epoch's observations again as independent measurements.
             let innovation: Vec<_> = system

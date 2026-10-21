@@ -1,0 +1,2196 @@
+{
+  "practical_PPC_parity_accepted": false,
+  "cases": {
+    "nagoya-run1": {
+      "none": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 840,
+          "UNMATCHED": 6091,
+          "INVALID": 681
+        },
+        "rover_only": 6081,
+        "base_only": 10,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 268,
+          "Filter(InnovationRejected)": 199,
+          "BaselineTooLong": 214
+        },
+        "unmatched_continuity_notices": 106,
+        "rover_epochs": 7602,
+        "base_epochs": 1531,
+        "float_coverage_among_pairs": 0.5522682445759369,
+        "float_coverage_of_original_rover_epochs": 0.11049723756906077,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 840,
+              "horizontal_rms_m": 2.1020926068412287,
+              "vertical_rms_m": 7.279532421223675,
+              "three_dimensional_rms_m": 7.576964141355241,
+              "horizontal_p50_m": 0.40318634765234884,
+              "horizontal_p95_m": 3.3879470657640223,
+              "maximum_3d_m": 99.15516047186534
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 840,
+              "horizontal_rms_m": 2.323141285998731,
+              "vertical_rms_m": 7.181954690325799,
+              "three_dimensional_rms_m": 7.5483414475369734,
+              "horizontal_p50_m": 0.8695489209227054,
+              "horizontal_p95_m": 3.0588816269579584,
+              "maximum_3d_m": 98.1477729125
+            }
+          }
+        }
+      },
+      "spp": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 840,
+          "UNMATCHED": 6091,
+          "INVALID": 681
+        },
+        "rover_only": 6081,
+        "base_only": 10,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 268,
+          "Filter(InnovationRejected)": 199,
+          "BaselineTooLong": 214
+        },
+        "unmatched_continuity_notices": 106,
+        "rover_epochs": 7602,
+        "base_epochs": 1531,
+        "float_coverage_among_pairs": 0.5522682445759369,
+        "float_coverage_of_original_rover_epochs": 0.11049723756906077,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 840,
+              "horizontal_rms_m": 2.309448614552017,
+              "vertical_rms_m": 8.047924206180095,
+              "three_dimensional_rms_m": 8.372731748460339,
+              "horizontal_p50_m": 0.40599727273838876,
+              "horizontal_p95_m": 3.385459832692008,
+              "maximum_3d_m": 141.25233317786947
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 840,
+              "horizontal_rms_m": 2.522538676260064,
+              "vertical_rms_m": 7.941355848365311,
+              "three_dimensional_rms_m": 8.332366655614345,
+              "horizontal_p50_m": 0.8747672757317171,
+              "horizontal_p95_m": 3.218148278215794,
+              "maximum_3d_m": 140.28064668696027
+            }
+          }
+        }
+      },
+      "gate": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 69,
+          "UNMATCHED": 6091,
+          "INVALID": 1452
+        },
+        "rover_only": 6081,
+        "base_only": 10,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 1184,
+          "InsufficientCommonSatellites": 268
+        },
+        "unmatched_continuity_notices": 106,
+        "rover_epochs": 7602,
+        "base_epochs": 1531,
+        "float_coverage_among_pairs": 0.045364891518737675,
+        "float_coverage_of_original_rover_epochs": 0.009076558800315706,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1253,
+            "prefit_rejected_epochs": 1184,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 69,
+            "rejected_phase_rows": 5636,
+            "rejected_code_rows": 5636,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 1252
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 69,
+              "horizontal_rms_m": 0.38221004206923687,
+              "vertical_rms_m": 0.4616352600452016,
+              "three_dimensional_rms_m": 0.5993259793931586,
+              "horizontal_p50_m": 0.397997470259796,
+              "horizontal_p95_m": 0.4692915262665735,
+              "maximum_3d_m": 1.100388196887179
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 69,
+              "horizontal_rms_m": 0.6512279181752192,
+              "vertical_rms_m": 1.2672963115194786,
+              "three_dimensional_rms_m": 1.4248290222344944,
+              "horizontal_p50_m": 0.5693965314070648,
+              "horizontal_p95_m": 0.8383391617449623,
+              "maximum_3d_m": 2.5829033895869706
+            }
+          }
+        }
+      },
+      "spp_gate": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 558,
+          "UNMATCHED": 6091,
+          "INVALID": 963
+        },
+        "rover_only": 6081,
+        "base_only": 10,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 620,
+          "InsufficientCommonSatellites": 268,
+          "BaselineTooLong": 75
+        },
+        "unmatched_continuity_notices": 106,
+        "rover_epochs": 7602,
+        "base_epochs": 1531,
+        "float_coverage_among_pairs": 0.3668639053254438,
+        "float_coverage_of_original_rover_epochs": 0.0734017363851618,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1253,
+            "prefit_rejected_epochs": 620,
+            "passed_screen_then_failed_update": 75,
+            "screened_accepted_FLOAT": 558,
+            "rejected_phase_rows": 2077,
+            "rejected_code_rows": 2084,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "SinglePoint": 1253
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 558,
+              "horizontal_rms_m": 0.9281710534157,
+              "vertical_rms_m": 2.8021496632515794,
+              "three_dimensional_rms_m": 2.9518713115005117,
+              "horizontal_p50_m": 0.3593387325448223,
+              "horizontal_p95_m": 1.603028606654663,
+              "maximum_3d_m": 28.86977053032571
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 558,
+              "horizontal_rms_m": 1.25927229222983,
+              "vertical_rms_m": 3.0304181593173514,
+              "three_dimensional_rms_m": 3.281646069626969,
+              "horizontal_p50_m": 0.9761574375338047,
+              "horizontal_p95_m": 2.024454552200072,
+              "maximum_3d_m": 29.81918155813108
+            }
+          }
+        }
+      },
+      "slips_gate": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 69,
+          "UNMATCHED": 6091,
+          "INVALID": 1452
+        },
+        "rover_only": 6081,
+        "base_only": 10,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 1184,
+          "InsufficientCommonSatellites": 268
+        },
+        "unmatched_continuity_notices": 106,
+        "rover_epochs": 7602,
+        "base_epochs": 1531,
+        "float_coverage_among_pairs": 0.045364891518737675,
+        "float_coverage_of_original_rover_epochs": 0.009076558800315706,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1253,
+            "prefit_rejected_epochs": 1184,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 69,
+            "rejected_phase_rows": 5636,
+            "rejected_code_rows": 5636,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 22,
+            "code_tests_among_screened_attempts": 410,
+            "doppler_tests_among_screened_attempts": 410
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 1252
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 69,
+              "horizontal_rms_m": 0.3358612520096755,
+              "vertical_rms_m": 0.6990531153194814,
+              "three_dimensional_rms_m": 0.7755501522399303,
+              "horizontal_p50_m": 0.3077300750905463,
+              "horizontal_p95_m": 0.4458660992543302,
+              "maximum_3d_m": 2.208968043278026
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 69,
+              "horizontal_rms_m": 0.7890214276237246,
+              "vertical_rms_m": 1.1198508736407184,
+              "three_dimensional_rms_m": 1.369898095641884,
+              "horizontal_p50_m": 0.6912504908409691,
+              "horizontal_p95_m": 1.153265773856572,
+              "maximum_3d_m": 2.583259646179942
+            }
+          }
+        }
+      },
+      "spp_slips_gate": {
+        "output_rows": 7612,
+        "paired_epochs": 1521,
+        "status_counts": {
+          "FLOAT": 557,
+          "UNMATCHED": 6091,
+          "INVALID": 964
+        },
+        "rover_only": 6081,
+        "base_only": 10,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 621,
+          "InsufficientCommonSatellites": 268,
+          "BaselineTooLong": 75
+        },
+        "unmatched_continuity_notices": 106,
+        "rover_epochs": 7602,
+        "base_epochs": 1531,
+        "float_coverage_among_pairs": 0.36620644312952005,
+        "float_coverage_of_original_rover_epochs": 0.07327019205472245,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1253,
+            "prefit_rejected_epochs": 621,
+            "passed_screen_then_failed_update": 75,
+            "screened_accepted_FLOAT": 557,
+            "rejected_phase_rows": 2076,
+            "rejected_code_rows": 2084,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 401,
+            "code_tests_among_screened_attempts": 3253,
+            "doppler_tests_among_screened_attempts": 3253
+          },
+          "seed_sources": {
+            "SinglePoint": 1253
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 557,
+              "horizontal_rms_m": 0.9324732640291606,
+              "vertical_rms_m": 2.8348873154822716,
+              "three_dimensional_rms_m": 2.98430770524949,
+              "horizontal_p50_m": 0.3916571079070968,
+              "horizontal_p95_m": 1.5496957963037694,
+              "maximum_3d_m": 28.869770517543344
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 557,
+              "horizontal_rms_m": 1.2682509011106042,
+              "vertical_rms_m": 3.0429370411592496,
+              "three_dimensional_rms_m": 3.296653785981608,
+              "horizontal_p50_m": 0.9471377353787431,
+              "horizontal_p95_m": 2.0618226472540324,
+              "maximum_3d_m": 29.81918154513157
+            }
+          }
+        }
+      }
+    },
+    "nagoya-run2": {
+      "none": {
+        "output_rows": 9451,
+        "paired_epochs": 1891,
+        "status_counts": {
+          "FLOAT": 1241,
+          "UNMATCHED": 7560,
+          "INVALID": 650
+        },
+        "rover_only": 7560,
+        "base_only": 0,
+        "invalid_reasons": {
+          "Filter(InnovationRejected)": 170,
+          "InsufficientCommonSatellites": 480
+        },
+        "unmatched_continuity_notices": 163,
+        "rover_epochs": 9451,
+        "base_epochs": 1891,
+        "float_coverage_among_pairs": 0.6562665256478054,
+        "float_coverage_of_original_rover_epochs": 0.13130885620569252,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1241,
+              "horizontal_rms_m": 25.082802274381805,
+              "vertical_rms_m": 122.56699407622294,
+              "three_dimensional_rms_m": 125.10721404785818,
+              "horizontal_p50_m": 0.7719285450600765,
+              "horizontal_p95_m": 64.44810213174638,
+              "maximum_3d_m": 937.9116667834272
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 1241,
+              "horizontal_rms_m": 25.329904230416364,
+              "vertical_rms_m": 122.17919818616818,
+              "three_dimensional_rms_m": 124.77724358927402,
+              "horizontal_p50_m": 1.3618340898092067,
+              "horizontal_p95_m": 64.32313521672683,
+              "maximum_3d_m": 936.8770573819455
+            }
+          }
+        }
+      },
+      "spp": {
+        "output_rows": 9451,
+        "paired_epochs": 1891,
+        "status_counts": {
+          "FLOAT": 1241,
+          "UNMATCHED": 7560,
+          "INVALID": 650
+        },
+        "rover_only": 7560,
+        "base_only": 0,
+        "invalid_reasons": {
+          "Filter(InnovationRejected)": 170,
+          "InsufficientCommonSatellites": 480
+        },
+        "unmatched_continuity_notices": 163,
+        "rover_epochs": 9451,
+        "base_epochs": 1891,
+        "float_coverage_among_pairs": 0.6562665256478054,
+        "float_coverage_of_original_rover_epochs": 0.13130885620569252,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1241,
+              "horizontal_rms_m": 27.916022762491995,
+              "vertical_rms_m": 137.73831762249242,
+              "three_dimensional_rms_m": 140.53877923317313,
+              "horizontal_p50_m": 0.7847160527773199,
+              "horizontal_p95_m": 71.35803384365896,
+              "maximum_3d_m": 1572.5166799444557
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 1241,
+              "horizontal_rms_m": 28.127312593199438,
+              "vertical_rms_m": 137.38464793968205,
+              "three_dimensional_rms_m": 140.23440092654133,
+              "horizontal_p50_m": 1.356287006773039,
+              "horizontal_p95_m": 71.82384598407597,
+              "maximum_3d_m": 1573.5480647976158
+            }
+          }
+        }
+      },
+      "gate": {
+        "output_rows": 9451,
+        "paired_epochs": 1891,
+        "status_counts": {
+          "FLOAT": 55,
+          "UNMATCHED": 7560,
+          "INVALID": 1836
+        },
+        "rover_only": 7560,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 1356,
+          "InsufficientCommonSatellites": 480
+        },
+        "unmatched_continuity_notices": 163,
+        "rover_epochs": 9451,
+        "base_epochs": 1891,
+        "float_coverage_among_pairs": 0.02908514013749339,
+        "float_coverage_of_original_rover_epochs": 0.0058194900010580895,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1411,
+            "prefit_rejected_epochs": 1356,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 55,
+            "rejected_phase_rows": 6184,
+            "rejected_code_rows": 6184,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 1410
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 55,
+              "horizontal_rms_m": 0.6382768449710556,
+              "vertical_rms_m": 0.35673424603384407,
+              "three_dimensional_rms_m": 0.7312021971517456,
+              "horizontal_p50_m": 0.6583386045411623,
+              "horizontal_p95_m": 0.7756210391680293,
+              "maximum_3d_m": 0.8402662561413415
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 55,
+              "horizontal_rms_m": 0.5100228760899607,
+              "vertical_rms_m": 1.5511309974986427,
+              "three_dimensional_rms_m": 1.632829049697552,
+              "horizontal_p50_m": 0.25184217805742093,
+              "horizontal_p95_m": 1.0628699564039477,
+              "maximum_3d_m": 2.1629623322535063
+            }
+          }
+        }
+      },
+      "spp_gate": {
+        "output_rows": 9451,
+        "paired_epochs": 1891,
+        "status_counts": {
+          "FLOAT": 795,
+          "UNMATCHED": 7560,
+          "INVALID": 1096
+        },
+        "rover_only": 7560,
+        "base_only": 0,
+        "invalid_reasons": {
+          "Filter(InnovationRejected)": 1,
+          "PrefitResidualRejected": 615,
+          "InsufficientCommonSatellites": 480
+        },
+        "unmatched_continuity_notices": 163,
+        "rover_epochs": 9451,
+        "base_epochs": 1891,
+        "float_coverage_among_pairs": 0.4204124801692226,
+        "float_coverage_of_original_rover_epochs": 0.08411808274256692,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1411,
+            "prefit_rejected_epochs": 615,
+            "passed_screen_then_failed_update": 1,
+            "screened_accepted_FLOAT": 795,
+            "rejected_phase_rows": 1915,
+            "rejected_code_rows": 1914,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "SinglePoint": 1411
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 795,
+              "horizontal_rms_m": 21.173682319857456,
+              "vertical_rms_m": 109.69582018981558,
+              "three_dimensional_rms_m": 111.7206238350762,
+              "horizontal_p50_m": 0.5354316095429102,
+              "horizontal_p95_m": 5.257305344646374,
+              "maximum_3d_m": 1572.5166798339374
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 795,
+              "horizontal_rms_m": 21.245715936327397,
+              "vertical_rms_m": 109.54811840370225,
+              "three_dimensional_rms_m": 111.5892946990825,
+              "horizontal_p50_m": 1.1641884272464698,
+              "horizontal_p95_m": 5.613807246365998,
+              "maximum_3d_m": 1573.5480646870997
+            }
+          }
+        }
+      },
+      "slips_gate": {
+        "output_rows": 9451,
+        "paired_epochs": 1891,
+        "status_counts": {
+          "FLOAT": 55,
+          "UNMATCHED": 7560,
+          "INVALID": 1836
+        },
+        "rover_only": 7560,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 1356,
+          "InsufficientCommonSatellites": 480
+        },
+        "unmatched_continuity_notices": 163,
+        "rover_epochs": 9451,
+        "base_epochs": 1891,
+        "float_coverage_among_pairs": 0.02908514013749339,
+        "float_coverage_of_original_rover_epochs": 0.0058194900010580895,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1411,
+            "prefit_rejected_epochs": 1356,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 55,
+            "rejected_phase_rows": 6184,
+            "rejected_code_rows": 6184,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 24,
+            "code_tests_among_screened_attempts": 372,
+            "doppler_tests_among_screened_attempts": 372
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 1410
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 55,
+              "horizontal_rms_m": 0.6043150580623549,
+              "vertical_rms_m": 0.324769165055805,
+              "three_dimensional_rms_m": 0.6860551726879931,
+              "horizontal_p50_m": 0.6496796025640497,
+              "horizontal_p95_m": 0.7756210391680293,
+              "maximum_3d_m": 0.8468194723441584
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 55,
+              "horizontal_rms_m": 0.4750879203891057,
+              "vertical_rms_m": 1.5081822507653448,
+              "three_dimensional_rms_m": 1.581240726019687,
+              "horizontal_p50_m": 0.2657922722052165,
+              "horizontal_p95_m": 1.039960628909706,
+              "maximum_3d_m": 2.314831190906434
+            }
+          }
+        }
+      },
+      "spp_slips_gate": {
+        "output_rows": 9451,
+        "paired_epochs": 1891,
+        "status_counts": {
+          "FLOAT": 797,
+          "UNMATCHED": 7560,
+          "INVALID": 1094
+        },
+        "rover_only": 7560,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 614,
+          "InsufficientCommonSatellites": 480
+        },
+        "unmatched_continuity_notices": 163,
+        "rover_epochs": 9451,
+        "base_epochs": 1891,
+        "float_coverage_among_pairs": 0.42147012162876785,
+        "float_coverage_of_original_rover_epochs": 0.08432970056078722,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1411,
+            "prefit_rejected_epochs": 614,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 797,
+            "rejected_phase_rows": 1915,
+            "rejected_code_rows": 1914,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 488,
+            "code_tests_among_screened_attempts": 4702,
+            "doppler_tests_among_screened_attempts": 4702
+          },
+          "seed_sources": {
+            "SinglePoint": 1411
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 797,
+              "horizontal_rms_m": 21.25708512701256,
+              "vertical_rms_m": 110.04137143039488,
+              "three_dimensional_rms_m": 112.07572036074177,
+              "horizontal_p50_m": 0.5906175983661914,
+              "horizontal_p95_m": 5.200219126533426,
+              "maximum_3d_m": 1572.5166798890648
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 797,
+              "horizontal_rms_m": 21.32699838065831,
+              "vertical_rms_m": 109.89647256393823,
+              "three_dimensional_rms_m": 111.94675315490409,
+              "horizontal_p50_m": 1.1531641124483085,
+              "horizontal_p95_m": 5.607263742731714,
+              "maximum_3d_m": 1573.548064742228
+            }
+          }
+        }
+      }
+    },
+    "nagoya-run3": {
+      "none": {
+        "output_rows": 5201,
+        "paired_epochs": 1041,
+        "status_counts": {
+          "FLOAT": 697,
+          "UNMATCHED": 4160,
+          "INVALID": 344
+        },
+        "rover_only": 4160,
+        "base_only": 0,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 339,
+          "Filter(InnovationRejected)": 5
+        },
+        "unmatched_continuity_notices": 126,
+        "rover_epochs": 5201,
+        "base_epochs": 1041,
+        "float_coverage_among_pairs": 0.6695485110470701,
+        "float_coverage_of_original_rover_epochs": 0.1340126898673332,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 697,
+              "horizontal_rms_m": 13.092402916854388,
+              "vertical_rms_m": 17.5858176908712,
+              "three_dimensional_rms_m": 21.92423312213715,
+              "horizontal_p50_m": 5.163397902363323,
+              "horizontal_p95_m": 30.261581324558257,
+              "maximum_3d_m": 109.13670132473355
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 697,
+              "horizontal_rms_m": 13.17606569632693,
+              "vertical_rms_m": 16.97698169304164,
+              "three_dimensional_rms_m": 21.49015157321591,
+              "horizontal_p50_m": 5.683671961670512,
+              "horizontal_p95_m": 31.153061645692862,
+              "maximum_3d_m": 107.9100784845036
+            }
+          }
+        }
+      },
+      "spp": {
+        "output_rows": 5201,
+        "paired_epochs": 1041,
+        "status_counts": {
+          "FLOAT": 697,
+          "UNMATCHED": 4160,
+          "INVALID": 344
+        },
+        "rover_only": 4160,
+        "base_only": 0,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 339,
+          "Filter(InnovationRejected)": 5
+        },
+        "unmatched_continuity_notices": 126,
+        "rover_epochs": 5201,
+        "base_epochs": 1041,
+        "float_coverage_among_pairs": 0.6695485110470701,
+        "float_coverage_of_original_rover_epochs": 0.1340126898673332,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 697,
+              "horizontal_rms_m": 13.293390812994769,
+              "vertical_rms_m": 23.909646420580472,
+              "three_dimensional_rms_m": 27.3566341362418,
+              "horizontal_p50_m": 6.486566844347091,
+              "horizontal_p95_m": 30.243546422717994,
+              "maximum_3d_m": 149.37417372171532
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 697,
+              "horizontal_rms_m": 13.377201053716686,
+              "vertical_rms_m": 23.266480682645188,
+              "three_dimensional_rms_m": 26.838007217143762,
+              "horizontal_p50_m": 5.984543482004277,
+              "horizontal_p95_m": 31.089417740658675,
+              "maximum_3d_m": 148.13914182020966
+            }
+          }
+        }
+      },
+      "gate": {
+        "output_rows": 5201,
+        "paired_epochs": 1041,
+        "status_counts": {
+          "FLOAT": 38,
+          "UNMATCHED": 4160,
+          "INVALID": 1003
+        },
+        "rover_only": 4160,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 664,
+          "InsufficientCommonSatellites": 339
+        },
+        "unmatched_continuity_notices": 126,
+        "rover_epochs": 5201,
+        "base_epochs": 1041,
+        "float_coverage_among_pairs": 0.03650336215177714,
+        "float_coverage_of_original_rover_epochs": 0.007306287252451452,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 702,
+            "prefit_rejected_epochs": 664,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 38,
+            "rejected_phase_rows": 2832,
+            "rejected_code_rows": 2830,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 701
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 38,
+              "horizontal_rms_m": 0.12457243335058765,
+              "vertical_rms_m": 2.49493799195798,
+              "three_dimensional_rms_m": 2.4980460113589187,
+              "horizontal_p50_m": 0.09960271425971234,
+              "horizontal_p95_m": 0.20423352540296302,
+              "maximum_3d_m": 3.0578188598899296
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 38,
+              "horizontal_rms_m": 0.965835166842341,
+              "vertical_rms_m": 1.2769167603383953,
+              "three_dimensional_rms_m": 1.6010477764084605,
+              "horizontal_p50_m": 0.9485063994254086,
+              "horizontal_p95_m": 1.0619570054489194,
+              "maximum_3d_m": 2.1173551633842944
+            }
+          }
+        }
+      },
+      "spp_gate": {
+        "output_rows": 5201,
+        "paired_epochs": 1041,
+        "status_counts": {
+          "FLOAT": 281,
+          "UNMATCHED": 4160,
+          "INVALID": 760
+        },
+        "rover_only": 4160,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 421,
+          "InsufficientCommonSatellites": 339
+        },
+        "unmatched_continuity_notices": 126,
+        "rover_epochs": 5201,
+        "base_epochs": 1041,
+        "float_coverage_among_pairs": 0.26993275696445723,
+        "float_coverage_of_original_rover_epochs": 0.05402807152470679,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 702,
+            "prefit_rejected_epochs": 421,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 281,
+            "rejected_phase_rows": 1155,
+            "rejected_code_rows": 1164,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "SinglePoint": 702
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 281,
+              "horizontal_rms_m": 7.864686234692766,
+              "vertical_rms_m": 24.959142050712543,
+              "three_dimensional_rms_m": 26.168914029393978,
+              "horizontal_p50_m": 0.5385033800187135,
+              "horizontal_p95_m": 20.212704196422916,
+              "maximum_3d_m": 149.37417372194824
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 281,
+              "horizontal_rms_m": 8.03028622359111,
+              "vertical_rms_m": 24.569270199166304,
+              "three_dimensional_rms_m": 25.848298492404457,
+              "horizontal_p50_m": 0.9416177104064092,
+              "horizontal_p95_m": 20.494007257613998,
+              "maximum_3d_m": 148.1391418204311
+            }
+          }
+        }
+      },
+      "slips_gate": {
+        "output_rows": 5201,
+        "paired_epochs": 1041,
+        "status_counts": {
+          "FLOAT": 38,
+          "UNMATCHED": 4160,
+          "INVALID": 1003
+        },
+        "rover_only": 4160,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 664,
+          "InsufficientCommonSatellites": 339
+        },
+        "unmatched_continuity_notices": 126,
+        "rover_epochs": 5201,
+        "base_epochs": 1041,
+        "float_coverage_among_pairs": 0.03650336215177714,
+        "float_coverage_of_original_rover_epochs": 0.007306287252451452,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 702,
+            "prefit_rejected_epochs": 664,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 38,
+            "rejected_phase_rows": 2831,
+            "rejected_code_rows": 2830,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 34,
+            "code_tests_among_screened_attempts": 303,
+            "doppler_tests_among_screened_attempts": 303
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 701
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 38,
+              "horizontal_rms_m": 0.13138358856782625,
+              "vertical_rms_m": 2.6660401424193485,
+              "three_dimensional_rms_m": 2.6692754987704697,
+              "horizontal_p50_m": 0.12285697478855995,
+              "horizontal_p95_m": 0.2000676090380761,
+              "maximum_3d_m": 3.083546867464859
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 38,
+              "horizontal_rms_m": 0.9316690255581979,
+              "vertical_rms_m": 1.4594205931543949,
+              "three_dimensional_rms_m": 1.731449000377339,
+              "horizontal_p50_m": 0.9183376779797209,
+              "horizontal_p95_m": 1.013579532957345,
+              "maximum_3d_m": 2.1173551633842944
+            }
+          }
+        }
+      },
+      "spp_slips_gate": {
+        "output_rows": 5201,
+        "paired_epochs": 1041,
+        "status_counts": {
+          "FLOAT": 282,
+          "UNMATCHED": 4160,
+          "INVALID": 759
+        },
+        "rover_only": 4160,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 420,
+          "InsufficientCommonSatellites": 339
+        },
+        "unmatched_continuity_notices": 126,
+        "rover_epochs": 5201,
+        "base_epochs": 1041,
+        "float_coverage_among_pairs": 0.27089337175792505,
+        "float_coverage_of_original_rover_epochs": 0.054220342241876565,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 702,
+            "prefit_rejected_epochs": 420,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 282,
+            "rejected_phase_rows": 1158,
+            "rejected_code_rows": 1164,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 270,
+            "code_tests_among_screened_attempts": 1499,
+            "doppler_tests_among_screened_attempts": 1499
+          },
+          "seed_sources": {
+            "SinglePoint": 702
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 282,
+              "horizontal_rms_m": 8.039765103985161,
+              "vertical_rms_m": 24.46861934212547,
+              "three_dimensional_rms_m": 25.755604350065138,
+              "horizontal_p50_m": 0.5846337471838541,
+              "horizontal_p95_m": 21.85868610783085,
+              "maximum_3d_m": 149.37417372027565
+            },
+            "reference_is_IMU_nagoya": {
+              "epochs": 282,
+              "horizontal_rms_m": 8.204214503311084,
+              "vertical_rms_m": 24.025551097008545,
+              "three_dimensional_rms_m": 25.387718312824187,
+              "horizontal_p50_m": 0.9934447066267571,
+              "horizontal_p95_m": 22.36151681407559,
+              "maximum_3d_m": 148.13914181875208
+            }
+          }
+        }
+      }
+    },
+    "tokyo-run1": {
+      "none": {
+        "output_rows": 11931,
+        "paired_epochs": 2388,
+        "status_counts": {
+          "FLOAT": 1604,
+          "UNMATCHED": 9543,
+          "INVALID": 784
+        },
+        "rover_only": 9540,
+        "base_only": 3,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 748,
+          "Filter(InnovationRejected)": 36
+        },
+        "unmatched_continuity_notices": 257,
+        "rover_epochs": 11928,
+        "base_epochs": 2391,
+        "float_coverage_among_pairs": 0.6716917922948074,
+        "float_coverage_of_original_rover_epochs": 0.13447350771294433,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1604,
+              "horizontal_rms_m": 11.108626264871045,
+              "vertical_rms_m": 20.907393841823378,
+              "three_dimensional_rms_m": 23.67531826079001,
+              "horizontal_p50_m": 1.0164160774574658,
+              "horizontal_p95_m": 24.945885605051622,
+              "maximum_3d_m": 208.31740505027253
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 1604,
+              "horizontal_rms_m": 11.104676120125015,
+              "vertical_rms_m": 20.74885391935692,
+              "three_dimensional_rms_m": 23.53356689283815,
+              "horizontal_p50_m": 1.0169342596369666,
+              "horizontal_p95_m": 24.940102219734744,
+              "maximum_3d_m": 207.81805578955633
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 1604,
+              "horizontal_rms_m": 11.018550390212937,
+              "vertical_rms_m": 20.581290583179676,
+              "three_dimensional_rms_m": 23.34519168417647,
+              "horizontal_p50_m": 1.2494624497700868,
+              "horizontal_p95_m": 25.466772968144966,
+              "maximum_3d_m": 207.02304384636886
+            }
+          }
+        }
+      },
+      "spp": {
+        "output_rows": 11931,
+        "paired_epochs": 2388,
+        "status_counts": {
+          "FLOAT": 1599,
+          "UNMATCHED": 9543,
+          "INVALID": 789
+        },
+        "rover_only": 9540,
+        "base_only": 3,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 748,
+          "Filter(InnovationRejected)": 41
+        },
+        "unmatched_continuity_notices": 257,
+        "rover_epochs": 11928,
+        "base_epochs": 2391,
+        "float_coverage_among_pairs": 0.6695979899497487,
+        "float_coverage_of_original_rover_epochs": 0.1340543259557344,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1599,
+              "horizontal_rms_m": 28.75218318389153,
+              "vertical_rms_m": 59.99895297489688,
+              "three_dimensional_rms_m": 66.53241612871084,
+              "horizontal_p50_m": 1.00810379966923,
+              "horizontal_p95_m": 30.118833451832224,
+              "maximum_3d_m": 899.6027104593152
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 1599,
+              "horizontal_rms_m": 28.72121359897491,
+              "vertical_rms_m": 59.87136009935433,
+              "three_dimensional_rms_m": 66.40397481133564,
+              "horizontal_p50_m": 0.9918519947740987,
+              "horizontal_p95_m": 30.209235954921912,
+              "maximum_3d_m": 898.9826478667258
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 1599,
+              "horizontal_rms_m": 28.643172136157993,
+              "vertical_rms_m": 59.72863430121847,
+              "three_dimensional_rms_m": 66.2415358027746,
+              "horizontal_p50_m": 1.258584572145264,
+              "horizontal_p95_m": 29.698047054593584,
+              "maximum_3d_m": 898.1521220017652
+            }
+          }
+        }
+      },
+      "gate": {
+        "output_rows": 11931,
+        "paired_epochs": 2388,
+        "status_counts": {
+          "FLOAT": 20,
+          "UNMATCHED": 9543,
+          "INVALID": 2368
+        },
+        "rover_only": 9540,
+        "base_only": 3,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 1620,
+          "InsufficientCommonSatellites": 748
+        },
+        "unmatched_continuity_notices": 257,
+        "rover_epochs": 11928,
+        "base_epochs": 2391,
+        "float_coverage_among_pairs": 0.008375209380234505,
+        "float_coverage_of_original_rover_epochs": 0.001676727028839705,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1640,
+            "prefit_rejected_epochs": 1620,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 20,
+            "rejected_phase_rows": 7255,
+            "rejected_code_rows": 7256,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 1639
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 20,
+              "horizontal_rms_m": 0.44574208432207385,
+              "vertical_rms_m": 1.6622078041042958,
+              "three_dimensional_rms_m": 1.7209360214026004,
+              "horizontal_p50_m": 0.36733172686437265,
+              "horizontal_p95_m": 0.46496035389166096,
+              "maximum_3d_m": 1.9731878971137262
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 20,
+              "horizontal_rms_m": 0.6097968930336529,
+              "vertical_rms_m": 1.1307029728922335,
+              "three_dimensional_rms_m": 1.2846561655403483,
+              "horizontal_p50_m": 0.5711785314926152,
+              "horizontal_p95_m": 0.6538500497760209,
+              "maximum_3d_m": 1.5044233943689598
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 20,
+              "horizontal_rms_m": 0.8318423253402828,
+              "vertical_rms_m": 0.5965018189270435,
+              "three_dimensional_rms_m": 1.0236093367153312,
+              "horizontal_p50_m": 0.8405544499139945,
+              "horizontal_p95_m": 0.9136015962626357,
+              "maximum_3d_m": 1.5765440470560743
+            }
+          }
+        }
+      },
+      "spp_gate": {
+        "output_rows": 11931,
+        "paired_epochs": 2388,
+        "status_counts": {
+          "FLOAT": 806,
+          "UNMATCHED": 9543,
+          "INVALID": 1582
+        },
+        "rover_only": 9540,
+        "base_only": 3,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 834,
+          "InsufficientCommonSatellites": 748
+        },
+        "unmatched_continuity_notices": 257,
+        "rover_epochs": 11928,
+        "base_epochs": 2391,
+        "float_coverage_among_pairs": 0.33752093802345057,
+        "float_coverage_of_original_rover_epochs": 0.0675720992622401,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1640,
+            "prefit_rejected_epochs": 834,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 806,
+            "rejected_phase_rows": 2373,
+            "rejected_code_rows": 2364,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "SinglePoint": 1639,
+            "PreviousRtk": 1
+          },
+          "spp_failures": {
+            "NonConvergent": 1
+          }
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 806,
+              "horizontal_rms_m": 8.40256492052912,
+              "vertical_rms_m": 21.297441593545265,
+              "three_dimensional_rms_m": 22.89506749660674,
+              "horizontal_p50_m": 0.8642613495415863,
+              "horizontal_p95_m": 15.314772083846197,
+              "maximum_3d_m": 236.44983475771312
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 806,
+              "horizontal_rms_m": 8.36015572331487,
+              "vertical_rms_m": 21.156663575037864,
+              "three_dimensional_rms_m": 22.748551983486955,
+              "horizontal_p50_m": 0.8801481449995183,
+              "horizontal_p95_m": 15.136505788703069,
+              "maximum_3d_m": 235.94710151018867
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 806,
+              "horizontal_rms_m": 8.307197811867177,
+              "vertical_rms_m": 21.0104360285517,
+              "three_dimensional_rms_m": 22.59309535223879,
+              "horizontal_p50_m": 1.1443570838728654,
+              "horizontal_p95_m": 15.353002749018062,
+              "maximum_3d_m": 235.49360937119576
+            }
+          }
+        }
+      },
+      "slips_gate": {
+        "output_rows": 11931,
+        "paired_epochs": 2388,
+        "status_counts": {
+          "FLOAT": 39,
+          "UNMATCHED": 9543,
+          "INVALID": 2349
+        },
+        "rover_only": 9540,
+        "base_only": 3,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 1601,
+          "InsufficientCommonSatellites": 748
+        },
+        "unmatched_continuity_notices": 257,
+        "rover_epochs": 11928,
+        "base_epochs": 2391,
+        "float_coverage_among_pairs": 0.016331658291457288,
+        "float_coverage_of_original_rover_epochs": 0.0032696177062374247,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1640,
+            "prefit_rejected_epochs": 1601,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 39,
+            "rejected_phase_rows": 7165,
+            "rejected_code_rows": 7165,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 23,
+            "code_tests_among_screened_attempts": 292,
+            "doppler_tests_among_screened_attempts": 292
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 1639
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 39,
+              "horizontal_rms_m": 0.34895624462634234,
+              "vertical_rms_m": 1.3201469989206303,
+              "three_dimensional_rms_m": 1.365488395931238,
+              "horizontal_p50_m": 0.34994436934905265,
+              "horizontal_p95_m": 0.48469430510700184,
+              "maximum_3d_m": 1.9731878971137262
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 39,
+              "horizontal_rms_m": 0.40514094644790366,
+              "vertical_rms_m": 0.8345154453026928,
+              "three_dimensional_rms_m": 0.9276611530820156,
+              "horizontal_p50_m": 0.27938754268330157,
+              "horizontal_p95_m": 0.6281728394108321,
+              "maximum_3d_m": 1.5044233943689598
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 39,
+              "horizontal_rms_m": 0.787194171412371,
+              "vertical_rms_m": 0.5432838011993236,
+              "three_dimensional_rms_m": 0.9564684794342131,
+              "horizontal_p50_m": 0.7784416041821357,
+              "horizontal_p95_m": 1.1150498126510886,
+              "maximum_3d_m": 1.865282953142095
+            }
+          }
+        }
+      },
+      "spp_slips_gate": {
+        "output_rows": 11931,
+        "paired_epochs": 2388,
+        "status_counts": {
+          "FLOAT": 806,
+          "UNMATCHED": 9543,
+          "INVALID": 1582
+        },
+        "rover_only": 9540,
+        "base_only": 3,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 834,
+          "InsufficientCommonSatellites": 748
+        },
+        "unmatched_continuity_notices": 257,
+        "rover_epochs": 11928,
+        "base_epochs": 2391,
+        "float_coverage_among_pairs": 0.33752093802345057,
+        "float_coverage_of_original_rover_epochs": 0.0675720992622401,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1640,
+            "prefit_rejected_epochs": 834,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 806,
+            "rejected_phase_rows": 2377,
+            "rejected_code_rows": 2364,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 624,
+            "code_tests_among_screened_attempts": 3924,
+            "doppler_tests_among_screened_attempts": 3924
+          },
+          "seed_sources": {
+            "SinglePoint": 1639,
+            "PreviousRtk": 1
+          },
+          "spp_failures": {
+            "NonConvergent": 1
+          }
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 806,
+              "horizontal_rms_m": 8.509132441234419,
+              "vertical_rms_m": 21.63778138934591,
+              "three_dimensional_rms_m": 23.250783177252163,
+              "horizontal_p50_m": 0.9151671890350319,
+              "horizontal_p95_m": 16.43854797449894,
+              "maximum_3d_m": 236.44983477515586
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 806,
+              "horizontal_rms_m": 8.469731110562385,
+              "vertical_rms_m": 21.50094976033806,
+              "three_dimensional_rms_m": 23.109028228850505,
+              "horizontal_p50_m": 0.9228155019298541,
+              "horizontal_p95_m": 16.18661179884254,
+              "maximum_3d_m": 235.9471015276291
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 806,
+              "horizontal_rms_m": 8.421989684132813,
+              "vertical_rms_m": 21.359078693682363,
+              "three_dimensional_rms_m": 22.95953294129816,
+              "horizontal_p50_m": 1.1719767844977729,
+              "horizontal_p95_m": 15.653347634208703,
+              "maximum_3d_m": 235.4936093886287
+            }
+          }
+        }
+      }
+    },
+    "tokyo-run2": {
+      "none": {
+        "output_rows": 9151,
+        "paired_epochs": 1831,
+        "status_counts": {
+          "FLOAT": 1471,
+          "UNMATCHED": 7320,
+          "INVALID": 360
+        },
+        "rover_only": 7320,
+        "base_only": 0,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 343,
+          "Filter(InnovationRejected)": 17
+        },
+        "unmatched_continuity_notices": 177,
+        "rover_epochs": 9151,
+        "base_epochs": 1831,
+        "float_coverage_among_pairs": 0.803386127799017,
+        "float_coverage_of_original_rover_epochs": 0.16074745929406623,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1471,
+              "horizontal_rms_m": 4.735106723430986,
+              "vertical_rms_m": 6.643955338574782,
+              "three_dimensional_rms_m": 8.158638257899272,
+              "horizontal_p50_m": 0.7201235530326672,
+              "horizontal_p95_m": 13.46839884394361,
+              "maximum_3d_m": 48.47549300345608
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 1471,
+              "horizontal_rms_m": 4.749994310607424,
+              "vertical_rms_m": 6.634495400100873,
+              "three_dimensional_rms_m": 8.159594056370853,
+              "horizontal_p50_m": 0.7680246935389217,
+              "horizontal_p95_m": 13.585573494516424,
+              "maximum_3d_m": 47.93404351045735
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 1471,
+              "horizontal_rms_m": 4.785521772031658,
+              "vertical_rms_m": 6.68338463369493,
+              "three_dimensional_rms_m": 8.220027298768448,
+              "horizontal_p50_m": 1.035586147561974,
+              "horizontal_p95_m": 13.160253068862929,
+              "maximum_3d_m": 47.280341882406745
+            }
+          }
+        }
+      },
+      "spp": {
+        "output_rows": 9151,
+        "paired_epochs": 1831,
+        "status_counts": {
+          "FLOAT": 1471,
+          "UNMATCHED": 7320,
+          "INVALID": 360
+        },
+        "rover_only": 7320,
+        "base_only": 0,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 343,
+          "Filter(InnovationRejected)": 17
+        },
+        "unmatched_continuity_notices": 177,
+        "rover_epochs": 9151,
+        "base_epochs": 1831,
+        "float_coverage_among_pairs": 0.803386127799017,
+        "float_coverage_of_original_rover_epochs": 0.16074745929406623,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1471,
+              "horizontal_rms_m": 4.64013889258498,
+              "vertical_rms_m": 6.57635821595199,
+              "three_dimensional_rms_m": 8.048563618870078,
+              "horizontal_p50_m": 0.7246111897174997,
+              "horizontal_p95_m": 13.04306672097578,
+              "maximum_3d_m": 48.599172693706414
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 1471,
+              "horizontal_rms_m": 4.657187956143964,
+              "vertical_rms_m": 6.542750441111645,
+              "three_dimensional_rms_m": 8.031001369288827,
+              "horizontal_p50_m": 0.7608635697248209,
+              "horizontal_p95_m": 13.101700958430147,
+              "maximum_3d_m": 48.061792139260646
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 1471,
+              "horizontal_rms_m": 4.692483018033696,
+              "vertical_rms_m": 6.563844643444943,
+              "three_dimensional_rms_m": 8.06867110358425,
+              "horizontal_p50_m": 1.0276507296678974,
+              "horizontal_p95_m": 13.120020465752882,
+              "maximum_3d_m": 47.40871429951875
+            }
+          }
+        }
+      },
+      "gate": {
+        "output_rows": 9151,
+        "paired_epochs": 1831,
+        "status_counts": {
+          "FLOAT": 45,
+          "UNMATCHED": 7320,
+          "INVALID": 1786
+        },
+        "rover_only": 7320,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 1443,
+          "InsufficientCommonSatellites": 343
+        },
+        "unmatched_continuity_notices": 177,
+        "rover_epochs": 9151,
+        "base_epochs": 1831,
+        "float_coverage_among_pairs": 0.024576734025122882,
+        "float_coverage_of_original_rover_epochs": 0.004917495355698831,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1488,
+            "prefit_rejected_epochs": 1443,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 45,
+            "rejected_phase_rows": 6907,
+            "rejected_code_rows": 6907,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 1487
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 45,
+              "horizontal_rms_m": 0.4336384478825308,
+              "vertical_rms_m": 0.6065536254225337,
+              "three_dimensional_rms_m": 0.7456202813732937,
+              "horizontal_p50_m": 0.4122107857657651,
+              "horizontal_p95_m": 0.5863889586396844,
+              "maximum_3d_m": 1.0885615991760023
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 45,
+              "horizontal_rms_m": 0.42375229709758877,
+              "vertical_rms_m": 1.158251292440406,
+              "three_dimensional_rms_m": 1.2333337203431007,
+              "horizontal_p50_m": 0.3797619507184572,
+              "horizontal_p95_m": 0.5698354845928888,
+              "maximum_3d_m": 1.6002010577219496
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 45,
+              "horizontal_rms_m": 1.0857210747843193,
+              "vertical_rms_m": 1.8204033526256886,
+              "three_dimensional_rms_m": 2.1195892570216674,
+              "horizontal_p50_m": 1.092949152042487,
+              "horizontal_p95_m": 1.2837233138518838,
+              "maximum_3d_m": 2.5183397628549518
+            }
+          }
+        }
+      },
+      "spp_gate": {
+        "output_rows": 9151,
+        "paired_epochs": 1831,
+        "status_counts": {
+          "FLOAT": 804,
+          "UNMATCHED": 7320,
+          "INVALID": 1027
+        },
+        "rover_only": 7320,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 683,
+          "InsufficientCommonSatellites": 343,
+          "Filter(InnovationRejected)": 1
+        },
+        "unmatched_continuity_notices": 177,
+        "rover_epochs": 9151,
+        "base_epochs": 1831,
+        "float_coverage_among_pairs": 0.4391043145821955,
+        "float_coverage_of_original_rover_epochs": 0.08785925035515245,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1488,
+            "prefit_rejected_epochs": 683,
+            "passed_screen_then_failed_update": 1,
+            "screened_accepted_FLOAT": 804,
+            "rejected_phase_rows": 1556,
+            "rejected_code_rows": 1570,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "SinglePoint": 1488
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 804,
+              "horizontal_rms_m": 2.490729726237481,
+              "vertical_rms_m": 3.6864161895717356,
+              "three_dimensional_rms_m": 4.448977286062453,
+              "horizontal_p50_m": 0.7158034776406696,
+              "horizontal_p95_m": 4.898432090072339,
+              "maximum_3d_m": 27.057600439396555
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 804,
+              "horizontal_rms_m": 2.503770081798814,
+              "vertical_rms_m": 3.8244315079550515,
+              "three_dimensional_rms_m": 4.571120320178653,
+              "horizontal_p50_m": 0.7712966739793237,
+              "horizontal_p95_m": 4.985916336506043,
+              "maximum_3d_m": 27.41172843575899
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 804,
+              "horizontal_rms_m": 2.577727368891625,
+              "vertical_rms_m": 4.0830021605416595,
+              "three_dimensional_rms_m": 4.8286214421220475,
+              "horizontal_p50_m": 1.1131058925595985,
+              "horizontal_p95_m": 5.3694474253645135,
+              "maximum_3d_m": 28.375742818448213
+            }
+          }
+        }
+      },
+      "slips_gate": {
+        "output_rows": 9151,
+        "paired_epochs": 1831,
+        "status_counts": {
+          "FLOAT": 45,
+          "UNMATCHED": 7320,
+          "INVALID": 1786
+        },
+        "rover_only": 7320,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 1443,
+          "InsufficientCommonSatellites": 343
+        },
+        "unmatched_continuity_notices": 177,
+        "rover_epochs": 9151,
+        "base_epochs": 1831,
+        "float_coverage_among_pairs": 0.024576734025122882,
+        "float_coverage_of_original_rover_epochs": 0.004917495355698831,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1488,
+            "prefit_rejected_epochs": 1443,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 45,
+            "rejected_phase_rows": 6905,
+            "rejected_code_rows": 6905,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 60,
+            "code_tests_among_screened_attempts": 394,
+            "doppler_tests_among_screened_attempts": 394
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 1487
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 45,
+              "horizontal_rms_m": 0.47965061898593214,
+              "vertical_rms_m": 0.719496283408552,
+              "three_dimensional_rms_m": 0.8647193869298335,
+              "horizontal_p50_m": 0.46721884216281917,
+              "horizontal_p95_m": 0.6285468689247106,
+              "maximum_3d_m": 1.326231728841083
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 45,
+              "horizontal_rms_m": 0.47082607768507795,
+              "vertical_rms_m": 1.2646182952865967,
+              "three_dimensional_rms_m": 1.3494208491800819,
+              "horizontal_p50_m": 0.44119088094698977,
+              "horizontal_p95_m": 0.6649646405463673,
+              "maximum_3d_m": 1.8600346463646025
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 45,
+              "horizontal_rms_m": 1.1372870688334384,
+              "vertical_rms_m": 1.9235741232818762,
+              "three_dimensional_rms_m": 2.2346273256843956,
+              "horizontal_p50_m": 1.1489021068620964,
+              "horizontal_p95_m": 1.3656236049029753,
+              "maximum_3d_m": 2.7843337003268274
+            }
+          }
+        }
+      },
+      "spp_slips_gate": {
+        "output_rows": 9151,
+        "paired_epochs": 1831,
+        "status_counts": {
+          "FLOAT": 809,
+          "UNMATCHED": 7320,
+          "INVALID": 1022
+        },
+        "rover_only": 7320,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 679,
+          "InsufficientCommonSatellites": 343
+        },
+        "unmatched_continuity_notices": 177,
+        "rover_epochs": 9151,
+        "base_epochs": 1831,
+        "float_coverage_among_pairs": 0.4418350628072092,
+        "float_coverage_of_original_rover_epochs": 0.08840563872800787,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 1488,
+            "prefit_rejected_epochs": 679,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 809,
+            "rejected_phase_rows": 1558,
+            "rejected_code_rows": 1570,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 795,
+            "code_tests_among_screened_attempts": 4212,
+            "doppler_tests_among_screened_attempts": 4212
+          },
+          "seed_sources": {
+            "SinglePoint": 1488
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 809,
+              "horizontal_rms_m": 2.612335709137843,
+              "vertical_rms_m": 4.008970569017558,
+              "three_dimensional_rms_m": 4.78499141906082,
+              "horizontal_p50_m": 0.7647953157719506,
+              "horizontal_p95_m": 5.184829557843656,
+              "maximum_3d_m": 34.52307500836222
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 809,
+              "horizontal_rms_m": 2.6204971792835274,
+              "vertical_rms_m": 4.14233889737729,
+              "three_dimensional_rms_m": 4.90163003574911,
+              "horizontal_p50_m": 0.8264953916427519,
+              "horizontal_p95_m": 5.28679040532995,
+              "maximum_3d_m": 34.208575083599634
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 809,
+              "horizontal_rms_m": 2.697799598126997,
+              "vertical_rms_m": 4.389188689136874,
+              "three_dimensional_rms_m": 5.151999613790868,
+              "horizontal_p50_m": 1.1169403021703717,
+              "horizontal_p95_m": 5.507440435244246,
+              "maximum_3d_m": 33.793940537135725
+            }
+          }
+        }
+      }
+    },
+    "tokyo-run3": {
+      "none": {
+        "output_rows": 15301,
+        "paired_epochs": 3061,
+        "status_counts": {
+          "FLOAT": 2405,
+          "UNMATCHED": 12240,
+          "INVALID": 656
+        },
+        "rover_only": 12240,
+        "base_only": 0,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 631,
+          "Filter(InnovationRejected)": 25
+        },
+        "unmatched_continuity_notices": 394,
+        "rover_epochs": 15301,
+        "base_epochs": 3061,
+        "float_coverage_among_pairs": 0.7856909506697157,
+        "float_coverage_of_original_rover_epochs": 0.15717926932880205,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 2405,
+              "horizontal_rms_m": 9.867660587560746,
+              "vertical_rms_m": 17.440706125829575,
+              "three_dimensional_rms_m": 20.038686474887744,
+              "horizontal_p50_m": 0.5445383804761204,
+              "horizontal_p95_m": 14.816235704155421,
+              "maximum_3d_m": 189.91040604510553
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 2405,
+              "horizontal_rms_m": 9.900533858313445,
+              "vertical_rms_m": 17.385287535009105,
+              "three_dimensional_rms_m": 20.00671870533881,
+              "horizontal_p50_m": 0.6563697409404519,
+              "horizontal_p95_m": 14.833202103050366,
+              "maximum_3d_m": 189.5498287582565
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 2405,
+              "horizontal_rms_m": 9.88915414900124,
+              "vertical_rms_m": 17.343281004356758,
+              "three_dimensional_rms_m": 19.96458779386117,
+              "horizontal_p50_m": 1.1040469941795104,
+              "horizontal_p95_m": 14.271001558846114,
+              "maximum_3d_m": 189.11346983138625
+            }
+          }
+        }
+      },
+      "spp": {
+        "output_rows": 15301,
+        "paired_epochs": 3061,
+        "status_counts": {
+          "FLOAT": 2405,
+          "UNMATCHED": 12240,
+          "INVALID": 656
+        },
+        "rover_only": 12240,
+        "base_only": 0,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 631,
+          "Filter(InnovationRejected)": 25
+        },
+        "unmatched_continuity_notices": 394,
+        "rover_epochs": 15301,
+        "base_epochs": 3061,
+        "float_coverage_among_pairs": 0.7856909506697157,
+        "float_coverage_of_original_rover_epochs": 0.15717926932880205,
+        "all_columns_identical_to_prior_control": true,
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 2405,
+              "horizontal_rms_m": 9.650231907031488,
+              "vertical_rms_m": 17.074113407365363,
+              "three_dimensional_rms_m": 19.6125552773488,
+              "horizontal_p50_m": 0.5454345009621595,
+              "horizontal_p95_m": 14.820728981648418,
+              "maximum_3d_m": 192.53867057120786
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 2405,
+              "horizontal_rms_m": 9.680483731671355,
+              "vertical_rms_m": 17.00847864421553,
+              "three_dimensional_rms_m": 19.570388628483837,
+              "horizontal_p50_m": 0.6558467945907331,
+              "horizontal_p95_m": 14.914394653332801,
+              "maximum_3d_m": 192.1765799367769
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 2405,
+              "horizontal_rms_m": 9.669955245878445,
+              "vertical_rms_m": 16.954897771199317,
+              "three_dimensional_rms_m": 19.5186216954249,
+              "horizontal_p50_m": 1.0922516113964844,
+              "horizontal_p95_m": 14.276577104513972,
+              "maximum_3d_m": 191.73864854355315
+            }
+          }
+        }
+      },
+      "gate": {
+        "output_rows": 15301,
+        "paired_epochs": 3061,
+        "status_counts": {
+          "FLOAT": 41,
+          "UNMATCHED": 12240,
+          "INVALID": 3020
+        },
+        "rover_only": 12240,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 2389,
+          "InsufficientCommonSatellites": 631
+        },
+        "unmatched_continuity_notices": 394,
+        "rover_epochs": 15301,
+        "base_epochs": 3061,
+        "float_coverage_among_pairs": 0.013394315583142764,
+        "float_coverage_of_original_rover_epochs": 0.0026795634272269784,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 2430,
+            "prefit_rejected_epochs": 2389,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 41,
+            "rejected_phase_rows": 12116,
+            "rejected_code_rows": 12116,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 2429
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 41,
+              "horizontal_rms_m": 0.538340061903812,
+              "vertical_rms_m": 0.31713500087319224,
+              "three_dimensional_rms_m": 0.6248076752324989,
+              "horizontal_p50_m": 0.5375264925927615,
+              "horizontal_p95_m": 0.5828294642252468,
+              "maximum_3d_m": 0.7617648131110721
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 41,
+              "horizontal_rms_m": 0.49186597272429977,
+              "vertical_rms_m": 0.84023945886257,
+              "three_dimensional_rms_m": 0.9736192702251153,
+              "horizontal_p50_m": 0.4884847771720217,
+              "horizontal_p95_m": 0.542639181145027,
+              "maximum_3d_m": 1.1809892010347156
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 41,
+              "horizontal_rms_m": 1.209882064034166,
+              "vertical_rms_m": 1.4909225784103377,
+              "three_dimensional_rms_m": 1.9200689424302722,
+              "horizontal_p50_m": 1.2059992750775144,
+              "horizontal_p95_m": 1.2612964455610962,
+              "maximum_3d_m": 2.099848053522932
+            }
+          }
+        }
+      },
+      "spp_gate": {
+        "output_rows": 15301,
+        "paired_epochs": 3061,
+        "status_counts": {
+          "FLOAT": 1461,
+          "UNMATCHED": 12240,
+          "INVALID": 1600
+        },
+        "rover_only": 12240,
+        "base_only": 0,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 631,
+          "PrefitResidualRejected": 967,
+          "Filter(InnovationRejected)": 2
+        },
+        "unmatched_continuity_notices": 394,
+        "rover_epochs": 15301,
+        "base_epochs": 3061,
+        "float_coverage_among_pairs": 0.4772950016334531,
+        "float_coverage_of_original_rover_epochs": 0.0954839552970394,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 2430,
+            "prefit_rejected_epochs": 967,
+            "passed_screen_then_failed_update": 2,
+            "screened_accepted_FLOAT": 1461,
+            "rejected_phase_rows": 2450,
+            "rejected_code_rows": 2435,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 0,
+            "code_tests_among_screened_attempts": 0,
+            "doppler_tests_among_screened_attempts": 0
+          },
+          "seed_sources": {
+            "SinglePoint": 2430
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1461,
+              "horizontal_rms_m": 4.763469457002766,
+              "vertical_rms_m": 9.292480316934661,
+              "three_dimensional_rms_m": 10.44226180999195,
+              "horizontal_p50_m": 0.5690202980829177,
+              "horizontal_p95_m": 1.9667403406608244,
+              "maximum_3d_m": 192.5386705827072
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 1461,
+              "horizontal_rms_m": 4.780022501112779,
+              "vertical_rms_m": 9.262456339440307,
+              "three_dimensional_rms_m": 10.423133528415645,
+              "horizontal_p50_m": 0.6553549265012377,
+              "horizontal_p95_m": 1.9480369484916988,
+              "maximum_3d_m": 192.17657994826985
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 1461,
+              "horizontal_rms_m": 4.802074896928806,
+              "vertical_rms_m": 9.271454538801976,
+              "three_dimensional_rms_m": 10.441254358590522,
+              "horizontal_p50_m": 0.9969030286875179,
+              "horizontal_p95_m": 2.312090530202208,
+              "maximum_3d_m": 191.73864855502688
+            }
+          }
+        }
+      },
+      "slips_gate": {
+        "output_rows": 15301,
+        "paired_epochs": 3061,
+        "status_counts": {
+          "FLOAT": 41,
+          "UNMATCHED": 12240,
+          "INVALID": 3020
+        },
+        "rover_only": 12240,
+        "base_only": 0,
+        "invalid_reasons": {
+          "PrefitResidualRejected": 2389,
+          "InsufficientCommonSatellites": 631
+        },
+        "unmatched_continuity_notices": 394,
+        "rover_epochs": 15301,
+        "base_epochs": 3061,
+        "float_coverage_among_pairs": 0.013394315583142764,
+        "float_coverage_of_original_rover_epochs": 0.0026795634272269784,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 2430,
+            "prefit_rejected_epochs": 2389,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 41,
+            "rejected_phase_rows": 12119,
+            "rejected_code_rows": 12119,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 19,
+            "code_tests_among_screened_attempts": 286,
+            "doppler_tests_among_screened_attempts": 286
+          },
+          "seed_sources": {
+            "InitialPosition": 1,
+            "PreviousRtk": 2429
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 41,
+              "horizontal_rms_m": 0.5679181710631531,
+              "vertical_rms_m": 0.3713997071880792,
+              "three_dimensional_rms_m": 0.6785785080026538,
+              "horizontal_p50_m": 0.5441847982824888,
+              "horizontal_p95_m": 0.7627593462070736,
+              "maximum_3d_m": 1.3479265002418168
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 41,
+              "horizontal_rms_m": 0.5158397452127274,
+              "vertical_rms_m": 0.8790511406827948,
+              "three_dimensional_rms_m": 1.0192259566341775,
+              "horizontal_p50_m": 0.4904394985428754,
+              "horizontal_p95_m": 0.6575708428740906,
+              "maximum_3d_m": 1.8578226615684774
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 41,
+              "horizontal_rms_m": 1.2260616018044639,
+              "vertical_rms_m": 1.5244654987546593,
+              "three_dimensional_rms_m": 1.956328732169678,
+              "horizontal_p50_m": 1.2158381545786319,
+              "horizontal_p95_m": 1.3151173428473586,
+              "maximum_3d_m": 2.7789929450741915
+            }
+          }
+        }
+      },
+      "spp_slips_gate": {
+        "output_rows": 15301,
+        "paired_epochs": 3061,
+        "status_counts": {
+          "FLOAT": 1464,
+          "UNMATCHED": 12240,
+          "INVALID": 1597
+        },
+        "rover_only": 12240,
+        "base_only": 0,
+        "invalid_reasons": {
+          "InsufficientCommonSatellites": 631,
+          "PrefitResidualRejected": 966
+        },
+        "unmatched_continuity_notices": 394,
+        "rover_epochs": 15301,
+        "base_epochs": 3061,
+        "float_coverage_among_pairs": 0.4782750735053904,
+        "float_coverage_of_original_rover_epochs": 0.09568002091366577,
+        "prefit": {
+          "counts": {
+            "screened_epochs": 2430,
+            "prefit_rejected_epochs": 966,
+            "passed_screen_then_failed_update": 0,
+            "screened_accepted_FLOAT": 1464,
+            "rejected_phase_rows": 2446,
+            "rejected_code_rows": 2435,
+            "code_slips_among_screened_attempts": 0,
+            "doppler_slips_among_screened_attempts": 1239,
+            "code_tests_among_screened_attempts": 8301,
+            "doppler_tests_among_screened_attempts": 8301
+          },
+          "seed_sources": {
+            "SinglePoint": 2430
+          },
+          "spp_failures": {}
+        },
+        "reference_scores": {
+          "valid_positions_without_reference": 0,
+          "hypotheses": {
+            "reference_is_antenna": {
+              "epochs": 1464,
+              "horizontal_rms_m": 4.757571453417553,
+              "vertical_rms_m": 9.305732411195285,
+              "three_dimensional_rms_m": 10.451370333269415,
+              "horizontal_p50_m": 0.5977527607519768,
+              "horizontal_p95_m": 1.9395314802333998,
+              "maximum_3d_m": 192.53867056661943
+            },
+            "reference_is_IMU_tokyo_top_README": {
+              "epochs": 1464,
+              "horizontal_rms_m": 4.77448438459216,
+              "vertical_rms_m": 9.274954748303633,
+              "three_dimensional_rms_m": 10.431705839496937,
+              "horizontal_p50_m": 0.6852057710711841,
+              "horizontal_p95_m": 1.888555255119616,
+              "maximum_3d_m": 192.17657993218958
+            },
+            "reference_is_IMU_tokyo_city_README": {
+              "epochs": 1464,
+              "horizontal_rms_m": 4.794566197510279,
+              "vertical_rms_m": 9.282963728359118,
+              "three_dimensional_rms_m": 10.448027593969075,
+              "horizontal_p50_m": 1.0020271537471612,
+              "horizontal_p95_m": 2.3035455944013874,
+              "maximum_3d_m": 191.73864853896652
+            }
+          }
+        }
+      }
+    }
+  }
+}

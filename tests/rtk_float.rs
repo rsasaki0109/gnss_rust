@@ -872,6 +872,226 @@ fn slip_configuration_rejects_invalid_thresholds_and_intervals() {
 }
 
 #[test]
+fn prefit_gate_rejects_a_new_satellite_code_blunder_without_committing_it() {
+    let f = fixture(false);
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            max_prefit_residual_m: Some(3.0),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let mut initial = f.rover[0].clone();
+    initial.observations.remove(0);
+    filter.process_pair(&initial, &f.base[0], &f.nav).unwrap();
+    let before = filter.state().unwrap().clone();
+    let tracked = filter.tracked_satellites().to_vec();
+    let mut bad = f.rover[1].clone();
+    *bad.observations[0].pseudorange_m.as_mut().unwrap() += 200.0;
+    assert_eq!(
+        filter.process_pair(&bad, &f.base[1], &f.nav),
+        Err(RtkError::PrefitResidualRejected)
+    );
+    assert_eq!(filter.state(), Some(&before));
+    assert_eq!(filter.tracked_satellites(), tracked);
+    let diagnostic = filter.last_prefit_diagnostic().unwrap();
+    assert_eq!(diagnostic.time, bad.time);
+    assert!(!diagnostic.screen.rejected_code_rows.is_empty());
+    assert!(diagnostic.screen.maximum_code_abs_m > 100.0);
+    let recovered = filter
+        .process_pair(&f.rover[2], &f.base[2], &f.nav)
+        .unwrap();
+    assert_eq!(recovered.reset_ambiguities.len(), 9);
+    assert!(filter.last_prefit_diagnostic().unwrap().screen.accepted());
+}
+
+#[test]
+fn prefit_gate_distinguishes_phase_and_code_rows() {
+    let f = fixture(false);
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            max_prefit_residual_m: Some(3.0),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    filter
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let mut slipped = f.rover[1].clone();
+    *slipped.observations[0]
+        .carrier_phase_cycles
+        .as_mut()
+        .unwrap() += 50.0;
+    assert_eq!(
+        filter.process_pair(&slipped, &f.base[1], &f.nav),
+        Err(RtkError::PrefitResidualRejected)
+    );
+    let diagnostic = filter.last_prefit_diagnostic().unwrap();
+    assert!(!diagnostic.screen.rejected_phase_rows.is_empty());
+    assert!(diagnostic.screen.rejected_code_rows.is_empty());
+    assert_eq!(diagnostic.row_satellites.len(), 8);
+    assert!(
+        !diagnostic
+            .row_satellites
+            .contains(&diagnostic.reference_satellite)
+    );
+}
+
+#[test]
+fn prefit_gate_threshold_equality_passes_and_one_ulp_lower_rejects() {
+    let f = fixture(false);
+    let engine = |limit| {
+        RtkFloatFilter::new(
+            f.base_position,
+            f.seed,
+            RtkFloatConfig {
+                max_prefit_residual_m: Some(limit),
+                ..Default::default()
+            },
+        )
+        .unwrap()
+    };
+    let mut probe = engine(1e6);
+    probe.process_pair(&f.rover[0], &f.base[0], &f.nav).unwrap();
+    let screen = &probe.last_prefit_diagnostic().unwrap().screen;
+    let limit = screen.maximum_phase_abs_m.max(screen.maximum_code_abs_m);
+    assert!(limit > 0.0);
+    let mut exact = engine(limit);
+    exact.process_pair(&f.rover[0], &f.base[0], &f.nav).unwrap();
+    assert_eq!(exact.state(), probe.state());
+    let mut below = engine(f64::from_bits(limit.to_bits() - 1));
+    assert_eq!(
+        below.process_pair(&f.rover[0], &f.base[0], &f.nav),
+        Err(RtkError::PrefitResidualRejected)
+    );
+    assert_eq!(below.state(), None);
+}
+
+#[test]
+fn disabled_or_nonbinding_prefit_gate_preserves_all_numeric_updates() {
+    let f = fixture(false);
+    let mut original = processor(&f);
+    let mut gated = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            max_prefit_residual_m: Some(1e6),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    for (rover, base) in f.rover.iter().zip(&f.base) {
+        let a = original.process_pair(rover, base, &f.nav).unwrap();
+        let b = gated.process_pair(rover, base, &f.nav).unwrap();
+        assert!(original.last_prefit_diagnostic().is_none());
+        assert!(gated.last_prefit_diagnostic().unwrap().screen.accepted());
+        assert_eq!(a.position, b.position);
+        assert_eq!(a.ambiguities, b.ambiguities);
+        assert_eq!(
+            a.normalized_innovation_squared,
+            b.normalized_innovation_squared
+        );
+        assert_eq!(original.state(), gated.state());
+    }
+    let before = gated.state().unwrap().clone();
+    let mut unsynchronized = f.base[31].clone();
+    unsynchronized.time = unsynchronized.time.checked_add_seconds(0.01).unwrap();
+    assert_eq!(
+        gated.process_pair(&f.rover[31], &unsynchronized, &f.nav),
+        Err(RtkError::UnsynchronizedEpochs)
+    );
+    assert!(gated.last_prefit_diagnostic().is_none());
+    assert_eq!(gated.state(), Some(&before));
+}
+
+#[test]
+fn prefit_gate_checks_the_spp_seed_after_initialization() {
+    use gnss_rust::rtk::RtkPositionMode;
+    use gnss_rust::spp::SppConfig;
+    let f = moving_fixture();
+    let seed = EcefCoord::new(f.seed.x + 500.0, f.seed.y - 300.0, f.seed.z + 200.0);
+    let config = RtkFloatConfig {
+        position_mode: RtkPositionMode::Kinematic,
+        max_prefit_residual_m: Some(3.0),
+        ..Default::default()
+    };
+    let mut original_seed = RtkFloatFilter::new(f.base_position, seed, config).unwrap();
+    assert_eq!(
+        original_seed.process_pair(&f.rover[0], &f.base[0], &f.nav),
+        Err(RtkError::PrefitResidualRejected)
+    );
+    let mut spp_seed = RtkFloatFilter::new(
+        f.base_position,
+        seed,
+        RtkFloatConfig {
+            kinematic_spp_seed: Some(SppConfig {
+                use_ionosphere: false,
+                ..Default::default()
+            }),
+            ..config
+        },
+    )
+    .unwrap();
+    for (rover, base) in f.rover.iter().zip(&f.base) {
+        spp_seed.process_pair(rover, base, &f.nav).unwrap();
+        assert!(spp_seed.last_prefit_diagnostic().unwrap().screen.accepted());
+    }
+}
+
+#[test]
+fn detected_slip_resets_the_ambiguity_before_prefit_screening() {
+    use gnss_rust::rtk_slip::RtkSlipConfig;
+    let f = fixture(false);
+    let mut filter = RtkFloatFilter::new(
+        f.base_position,
+        f.seed,
+        RtkFloatConfig {
+            slip_detection: Some(RtkSlipConfig::default()),
+            max_prefit_residual_m: Some(3.0),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    filter
+        .process_pair(&f.rover[0], &f.base[0], &f.nav)
+        .unwrap();
+    let mut slipped = f.rover[1].clone();
+    *slipped.observations[0]
+        .carrier_phase_cycles
+        .as_mut()
+        .unwrap() += 50.0;
+    let result = filter.process_pair(&slipped, &f.base[1], &f.nav).unwrap();
+    assert_eq!(
+        result.reset_ambiguities,
+        vec![slipped.observations[0].satellite]
+    );
+    assert!(filter.last_prefit_diagnostic().unwrap().screen.accepted());
+}
+
+#[test]
+fn prefit_gate_rejects_invalid_configuration() {
+    let f = fixture(false);
+    for value in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+        assert!(matches!(
+            RtkFloatFilter::new(
+                f.base_position,
+                f.seed,
+                RtkFloatConfig {
+                    max_prefit_residual_m: Some(value),
+                    ..Default::default()
+                }
+            ),
+            Err(RtkError::InvalidConfiguration)
+        ));
+    }
+}
+
+#[test]
 fn static_fix_policy_explicitly_rejects_kinematic_float_without_advancing_history() {
     use gnss_rust::rtk::RtkPositionMode;
     use gnss_rust::rtk_fix::{FixError, RtkFixPolicy};
