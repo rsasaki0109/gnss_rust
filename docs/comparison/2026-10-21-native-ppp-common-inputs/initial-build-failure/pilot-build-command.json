@@ -1,0 +1,19 @@
+[
+  "g++",
+  "-std=c++17",
+  "-O2",
+  "-Wall",
+  "-Wextra",
+  "-Werror",
+  "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+  "-I/workspace/.cloud-setup/eigen-3.4.0",
+  "scripts/native_ppc_ppp.cpp",
+  "-Wl,--start-group",
+  "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+  "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+  "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+  "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+  "-Wl,--end-group",
+  "-o",
+  "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_ppp"
+]

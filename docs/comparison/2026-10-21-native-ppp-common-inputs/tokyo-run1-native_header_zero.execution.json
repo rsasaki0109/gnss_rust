@@ -1,0 +1,21 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/native-ppp-benchmark-20261021/native_ppc_ppp",
+    "/workspace/.cloud-setup/native-ppp-common-inputs-20261021/tokyo-run1.input.csv",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_05M_ORB.SP3",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242050000_01D_30S_CLK.CLK",
+    "/workspace/.cloud-setup/native-ppp-common-inputs-20261021/tokyo-run1.native-code.bsx",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1/base.nav",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/gps-subset/gps-satellite-igs20.atx",
+    "/workspace/.cloud-setup/native-ppp-common-inputs-20261021/tokyo-run1-native_header_zero.solution.csv",
+    "/workspace/.cloud-setup/native-ppp-common-inputs-20261021/tokyo-run1-native_header_zero.readback.csv",
+    "/workspace/.cloud-setup/native-ppp-common-inputs-20261021/tokyo-run1-native_header_zero.bias-readback.csv",
+    "header-zero"
+  ],
+  "returncode": 0,
+  "csv_sha256": "a689b924b23ee51505d4fe288aec5c3fdd42216c89ec83908717867117d82149",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "53e86a3eabbbdb07933703bd75949f88eb5cdf4b90ea1120cd3abf8dbda77477",
+  "csv_from_explicit_output_file": "/workspace/.cloud-setup/native-ppp-common-inputs-20261021/tokyo-run1-native_header_zero.solution.csv",
+  "console_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

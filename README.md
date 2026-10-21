@@ -22,10 +22,17 @@ PPP向けには[相対DSBの時計基準変換](docs/comparison/2026-10-21-dsb-c
 PPC用のCODE精密製品27ファイルとIGS20衛星校正を取得・読み込み確認済みです。
 [PPC全6走行で初回PPPを実行](docs/comparison/2026-10-21-ppc-ppp-first/README.md)しましたが、
 各58,634エポック中のFLOATは1C/2Wで141点、1C/2Lで152点にとどまっています。
-初期化・継続・棄却後の復帰と、元C++全体との性能比較が次の課題です。
+初期化・継続・棄却後の復帰が課題です。
 [元C++の初期事前分布](docs/comparison/2026-10-21-ppp-initial-prior/README.md)も選択できます。
 [エポック別の独立時計](docs/comparison/2026-10-21-ppp-epoch-clock/README.md)は合成時計ジャンプに追従しますが、
 実PPCでは約149 mの外れも増えるため、既定設定は維持しています。
+
+[全native PPPとの共通入力比較](docs/comparison/2026-10-21-native-ppp-common-inputs/README.md)を実行しました。
+GPS 1C/2W・全6走行のPPPはRust141点／元C++1,959点、元C++のSPP退避は54,104点。
+選択観測894,040組とコードOSBの一致を確認し、元C++全処理を117,268回呼び出しました。
+元C++にも負のZTDや大外れがあり、解数だけでは同等と判断できません。
+両原点・共通時刻・状態別誤差と計測範囲の異なる参考時間を保存しています。
+次はSPP初期化/退避と位相継続・復帰、複数衛星系での比較を進めます。
 
 [移動FIX](docs/comparison/2026-10-21-kinematic-fix/README.md)、
 [ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)、

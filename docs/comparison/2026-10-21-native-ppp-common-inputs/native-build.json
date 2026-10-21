@@ -1,0 +1,43 @@
+{
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "/workspace/gnss_rust/scripts/native_ppc_ppp.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-Wl,--end-group",
+    "-o",
+    "/workspace/.cloud-setup/native-ppp-benchmark-20261021/native_ppc_ppp"
+  ],
+  "returncode": 0,
+  "log": "build.log.gz",
+  "log_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+  "source": "scripts/native_ppc_ppp.cpp",
+  "source_sha256": "9c092a9abae374e8df3a73e88bac08793c1ffa0c494912925251ea20219dbf52",
+  "builder_source": "scripts/build_native_ppc_ppp.py",
+  "builder_sha256": "a584b17a110027e958f73cfcf4cf11cae4bc00c85a5cee9d9db79d36c6d472be",
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0",
+  "pinned_upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "native_library_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "earlier_native_build_proof": "docs/comparison/2026-10-21-ppc-ppp-first/native-initial.json",
+  "earlier_native_build_proof_sha256": "f39e9a063da4e0b3c8ede183b7a6a6573138f85114d2b4106c9e5b3fa3503d65",
+  "upstream_source_patched": false,
+  "native_observation_RINEX_pipeline": false,
+  "shared_predecoded_input": true,
+  "binary_sha256": "879d67be615f28ebd9104e3ccf7e95d6d4beba98698209cd8b5cd731278388e0"
+}

@@ -1,0 +1,22 @@
+{
+  "input_readback": {
+    "rows": 2134,
+    "epochs": 128,
+    "observation_groups": 2006,
+    "all_float_bits_values_flags_and_source_options_identical": true,
+    "native_LLI_SSI_presence_retained_as_external_metadata": true
+  },
+  "bias_readback": {
+    "rows": 64,
+    "numeric_values_sigmas_units_identical": true,
+    "maximum_metres_difference": 8.881784197001252e-16,
+    "bound_m": 1e-10
+  },
+  "first_128_full_run_nontiming_fields_identical": true,
+  "all_pilot_epochs_PPP_FLOAT": true,
+  "first_filter_ZTD_m": 0.485966706918854,
+  "last_filter_ZTD_m": -4.7923187468752575,
+  "pilot_binary_cached_at": "/workspace/.cloud-setup/ppp-native-smoke-20261021/binary-before-timing",
+  "pilot_binary_sha256": "0615e53c32cb2986b7cbeb737eaa5d6c393e4d95707fab33fa294d6c03a95beb",
+  "pilot_source_differs_by_timing_instrumentation": true
+}

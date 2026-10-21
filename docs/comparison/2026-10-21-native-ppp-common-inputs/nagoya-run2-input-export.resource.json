@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_ppp_inputs",
+    "observations",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2/rover.obs"
+  ],
+  "returncode": 0,
+  "wall_seconds": 1.1954246399691328,
+  "user_seconds": 1.166272,
+  "system_seconds": 0.02828,
+  "peak_RSS_KiB": 5120,
+  "scope": "one process, includes input parsing and CSV output",
+  "performance_accepted": false
+}

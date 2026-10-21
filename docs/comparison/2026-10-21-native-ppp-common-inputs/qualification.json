@@ -1,0 +1,39 @@
+{
+  "checks": [
+    {
+      "name": "examples",
+      "command": "cargo build --locked --offline --release --examples",
+      "returncode": 0,
+      "log": "examples.qualification.log.gz",
+      "uncompressed_sha256": "6bfa9e18ffdef821c711a542cfebd7db0982665615563e5a191285e489609c6f"
+    },
+    {
+      "name": "fmt",
+      "command": "cargo fmt --check",
+      "returncode": 0,
+      "log": "fmt.qualification.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": "cargo clippy --locked --offline -j2 --all-targets -- -D warnings",
+      "returncode": 0,
+      "log": "clippy.qualification.log.gz",
+      "uncompressed_sha256": "ee1d3fffa2022e962e63e0dbe4d35c9c198450a20c29fc09030f635dbb38bfcd"
+    },
+    {
+      "name": "release",
+      "command": "cargo build --locked --offline --release",
+      "returncode": 0,
+      "log": "release.qualification.log.gz",
+      "uncompressed_sha256": "9576f1f7e73fc2bb1ec2336aae60cb485c591eadc60a1b998573411c34057e08"
+    }
+  ],
+  "predeclared_inputs_sha256": "a79725e14f313f83e80b7c06ba5bbdf6c29ce438a681119ba20909e1c1047639",
+  "unchanged_library_tests": {
+    "archive": "docs/comparison/2026-10-21-ppp-epoch-clock",
+    "qualification_sha256": "74730c82d9c5a73ada83c26ab3acfbbccbe692fc040438cf94b9d92d34538719",
+    "passed_tests": 413,
+    "library_source_changed": false
+  }
+}

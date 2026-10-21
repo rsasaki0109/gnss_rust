@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_ppp_inputs",
+    "native-bias",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_01D_OSB.BIA",
+    "2325",
+    "550380.00000000000000000",
+    "551910.00000000000000000",
+    "/workspace/.cloud-setup/native-ppp-common-inputs-20261021/nagoya-run1.native-code.bsx"
+  ],
+  "returncode": 0,
+  "wall_seconds": 0.019904219021555036,
+  "user_seconds": 0.011732999999999999,
+  "system_seconds": 0.007672,
+  "peak_RSS_KiB": 7592,
+  "scope": "one process, includes input parsing and CSV output",
+  "performance_accepted": false
+}

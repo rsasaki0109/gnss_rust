@@ -1675,3 +1675,20 @@ stress profiles add declared common range terms to code and carrier of the
 existing independent moving fixtures, preserving their geometry and flags.
 No measured PPC clock jumps or whole-native performance are implied. See the
 [epoch-clock evidence](../../docs/comparison/2026-10-21-ppp-epoch-clock/README.md).
+
+## Whole native PPP shared-input benchmark (2026-10-21)
+
+`scripts/native_ppc_ppp.cpp` invokes the actual unchanged pinned
+`PPPProcessor::processEpoch` 117,268 times across built-in/header-seed profiles
+on all six PPC runs. This is a GPS 1C/2W shared decoded-input comparison,
+explicitly excluding the native RINEX observation parser. Twelve readbacks
+verify all float bits, missing options and raw flags, plus 64 existing code
+OSBs per profile through an explicit OBS2 compatibility view. Native SP3/CLK,
+NAV and ANTEX loaders execute. Native SPP fallback and provisional PPP outputs,
+including negative ZTD and large errors, are retained by status and origin.
+The 128-epoch pilot retains its own earlier adapter source and matches all
+non-timing output fields in the full run. Rust GNSS library sources remain
+unchanged from the 413-test qualification, and all six old 29-column control
+outputs are byte-identical. This is whole-solver diagnostic evidence, without
+practical accuracy, multi-GNSS or runtime acceptance. See the
+[native PPP evidence](../../docs/comparison/2026-10-21-native-ppp-common-inputs/README.md).

@@ -7,6 +7,20 @@
 現在のこのコピーのチェックリストは18/24（75%）。旧83%の資料は再検証できないため、
 以後の開発と比較記録を codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[全native PPPとの共通入力比較](docs/comparison/2026-10-21-native-ppp-common-inputs/README.md)を初めて実行。
+GPS 1C/2W・全6走行58,634エポック×4条件234,536行、実PPPProcessor::processEpoch 117,268呼出し。
+native観測RINEX読込は未実行と明示し、共通decoded入力894,040組の値/欠測/LLI/SSIを12対照で照合。
+CODEの64コードOSBはOBS2のみ明示互換ビュー化し、元行/値/sigma/単位/有効期間とnative読戻しを監査。
+PPPはRust原head141/native head212、元C++既定1,959/header-zero4,660点。
+元C++はSPP退避54,104/51,403点、INVALIDはいずれも2,571点。SPPをPPPへ数えない。
+元C++のPPP中852/3,352点はZTD負、Nagoya run3既定PPP RMS455.827 m・最大1,559.580 mも保持。
+一方、同走行の共通118点は元C++2.150 m/Rust8.374 m。成功集合別と共通時刻精度を分けて保存。
+両原点・Tokyo両レバーアーム・状態/継続・参考CPU/RSS/段階時間を保持。計測範囲が異なり速度受け入れなし。
+GNSSライブラリは413テスト資格時から無変更、新example/fmt/clippy/release通過、旧6対照29列は全バイト一致。
+128点pilotの旧source/全非時間列一致・初回adapterコンパイル失敗も保持。nativeソース修正なし。
+次はSPP初期化/退避・位相アーク継続/棄却後復帰と、native複数衛星系を調べる。
+実用RTK/PPP受け入れ未達、全体18/24（75%）を維持。
+
 [エポック別の独立時計事前](docs/comparison/2026-10-21-ppp-epoch-clock/README.md)を選択式で追加。
 時計の行/列のみを置換し、残る状態の全周辺共分散を保持。元scalar再初期化16実呼出しを照合。
 1e8 m²の有限事前は前回確定平均が中心。SPP/Doppler未融合、時計Qは未使用、既定RW/ゲート不変。

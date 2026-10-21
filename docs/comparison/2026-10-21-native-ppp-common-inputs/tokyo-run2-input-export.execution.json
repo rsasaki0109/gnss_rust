@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_ppp_inputs",
+    "observations",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2/rover.obs"
+  ],
+  "returncode": 0,
+  "csv_sha256": "1e05886053fd9e8e495d06bfef351c2f92d368da53cf10cfc3b21b953658d805",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "c70d8eb40910cc4f804fe8c184f6a6ecc50a5db0b11c9f8d03e696efb392772e"
+}

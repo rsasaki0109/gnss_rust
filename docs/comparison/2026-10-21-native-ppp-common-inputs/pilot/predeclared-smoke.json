@@ -1,0 +1,34 @@
+{
+  "source_sha256": {
+    "scripts/native_ppc_ppp.cpp": "9ffd4ecdc27d1ccef137ed37948a3ad01596425c3ada9a514d03da7d4047012c",
+    "examples/ppc_ppp_inputs.rs": "0458d5493706f3a06acd9d244de12db457589f0dcb2663f206f2aab150fb3178"
+  },
+  "native_binary_sha256": "0615e53c32cb2986b7cbeb737eaa5d6c393e4d95707fab33fa294d6c03a95beb",
+  "command": [
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_ppp",
+    "/workspace/.cloud-setup/ppp-native-smoke-20261021/observations.csv",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_05M_ORB.SP3",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_30S_CLK.CLK",
+    "/workspace/.cloud-setup/ppp-native-smoke-20261021/native-code-view.bsx",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1/base.nav",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/gps-subset/gps-satellite-igs20.atx",
+    "/workspace/.cloud-setup/ppp-native-smoke-20261021/native-builtin.csv",
+    "/workspace/.cloud-setup/ppp-native-smoke-20261021/native-builtin-readback.csv",
+    "/workspace/.cloud-setup/ppp-native-smoke-20261021/native-builtin-bias.csv",
+    "builtin",
+    "128"
+  ],
+  "input_sha256": {
+    "/workspace/.cloud-setup/ppp-native-smoke-20261021/observations.csv": "687116ae9afbfe5836bebedecc84eedc3a9846833668ca2ddbcd2038a3084fbb",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_05M_ORB.SP3": "95f7c41cd562fdbdda57bff9c4359472e6109e81e762658cffe831f2f95c949f",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242160000_01D_30S_CLK.CLK": "4302530c1ed6a061952b82ebfd2458f6491c13e830c59cf93096d946d396aa77",
+    "/workspace/.cloud-setup/ppp-native-smoke-20261021/native-code-view.bsx": "f298fc994ce81ca8094c79fd9ef41d867d9b45bfe14b19a723acb26497e84f39",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1/base.nav": "4a8e0e074c45604052936043a5dadd674d9a972c5f9c27a866ca4f9667df22d5",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/gps-subset/gps-satellite-igs20.atx": "9a1ed94778b7ca521a0f485ef73a39883711bdab04bafa4b4e359a94ad108b14"
+  },
+  "maximum_epochs": 128,
+  "truth_used_by_solver": false,
+  "whole_native_processEpoch_intended": true,
+  "practical_parity_accepted": false,
+  "GNSS_environment_removed": []
+}
