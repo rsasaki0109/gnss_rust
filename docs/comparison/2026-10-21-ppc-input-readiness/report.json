@@ -1,0 +1,24 @@
+{
+  "performance_accepted": false,
+  "RTK_solutions_produced": 0,
+  "PPP_solutions_produced": 0,
+  "observations": {
+    "rover_epochs": 58634,
+    "base_epochs": 11746,
+    "coincident_pairs": 11733,
+    "rover_only": 46901,
+    "base_only": 13,
+    "common_gps_l1_ge4_pairs": 8924,
+    "excluded_nav_records": 20049
+  },
+  "products": {
+    "orbit_samples": 27648,
+    "clock_samples": 803519,
+    "dsb_records": 7542,
+    "osb_records": 0,
+    "receiver_clock_records": 513427,
+    "excluded_receiver_bias_rows": 46008,
+    "midpoint_states_with_clock": 279,
+    "midpoint_unavailable": 9
+  }
+}

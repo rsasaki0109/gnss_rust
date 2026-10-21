@@ -1,4 +1,4 @@
-use gnss_rust::rinex::{RinexObservationReader, read_navigation};
+use gnss_rust::rinex::{RinexObservationReader, read_navigation, read_navigation_for_systems};
 use gnss_rust::time::{CalendarDateTime, TimeScale};
 use gnss_rust::{Error, GnssSystem, GnssTime, SatelliteId};
 use std::io::Cursor;
@@ -281,7 +281,7 @@ fn unsupported_or_malformed_headers_and_navigation_are_explicit_errors() {
 fn scaled_and_phase_shifted_data_are_not_silently_misinterpreted() {
     for (content, label) in [
         ("G   10", "SYS / SCALE FACTOR"),
-        ("G L1C  0.25000", "SYS / PHASE SHIFT"),
+        ("G L1C  invalid", "SYS / PHASE SHIFT"),
         ("9999999999999999999", "GLONASS SLOT / FRQ #"),
     ] {
         let text = header(
@@ -299,6 +299,108 @@ fn scaled_and_phase_shifted_data_are_not_silently_misinterpreted() {
         + &header("G    1", "SYS / SCALE FACTOR")
         + &header("", "END OF HEADER");
     assert!(RinexObservationReader::new(Cursor::new(unit_scale)).is_ok());
+}
+
+#[test]
+fn phase_shift_metadata_retains_blank_zero_and_applied_values_without_reapplying() {
+    let text = header(
+        "     3.04           O                   M",
+        "RINEX VERSION / TYPE",
+    ) + &header("G    4 C1C L1C C2W L2W", "SYS / # / OBS TYPES")
+        + &header("G L1C", "SYS / PHASE SHIFT")
+        + &header("G L2W  0.00000", "SYS / PHASE SHIFT")
+        + &header("G L1C  0.25000", "SYS / PHASE SHIFT")
+        + &header("", "END OF HEADER")
+        + &epoch(1)
+        + &format!(
+            "G 1{:14.3}  {:14.3}  {:14.3}  {:14.3}  \n",
+            2e7, 123.5, 2e7, 456.75
+        );
+    let mut reader = RinexObservationReader::new(Cursor::new(text)).unwrap();
+    let declarations = &reader.header().phase_shifts;
+    assert_eq!(declarations.len(), 3);
+    assert_eq!(declarations[0].applied_cycles, None);
+    assert_eq!(declarations[1].applied_cycles, Some(0.0));
+    assert_eq!(declarations[2].applied_cycles, Some(0.25));
+    assert_eq!(declarations[2].observation_code, "L1C");
+    let parsed = reader.next().unwrap().unwrap();
+    assert_eq!(parsed.observations[0].satellite, "G01".parse().unwrap());
+    assert_eq!(parsed.observations[0].carrier_phase_cycles, Some(123.5));
+    assert_eq!(parsed.observations[1].carrier_phase_cycles, Some(456.75));
+}
+
+#[test]
+fn phase_shift_satellite_scope_and_continuations_are_preserved_and_validated() {
+    let prefix = header(
+        "     3.04           O                   M",
+        "RINEX VERSION / TYPE",
+    ) + &header("G    1 L1C", "SYS / # / OBS TYPES");
+    let first = format!(
+        "G L1C -0.25000  12 {}",
+        (1..=10).map(|i| format!("G{i:02} ")).collect::<String>()
+    );
+    let continuation = format!("{}G11 G12", " ".repeat(19));
+    let text = prefix.clone()
+        + &header(&first, "SYS / PHASE SHIFT")
+        + &header(&continuation, "SYS / PHASE SHIFT")
+        + &header("", "END OF HEADER");
+    let reader = RinexObservationReader::new(Cursor::new(text)).unwrap();
+    assert_eq!(reader.header().phase_shifts[0].satellites.len(), 12);
+    assert_eq!(reader.header().phase_shifts[0].applied_cycles, Some(-0.25));
+    for content in [
+        "G L1C  0.25000   1 R01",
+        "G L1C  0.25000   2 G01 G01",
+        "G C1C  0.00000",
+        "G L1C      NaN",
+        "G L1C  0.25000   1",
+    ] {
+        let text =
+            prefix.clone() + &header(content, "SYS / PHASE SHIFT") + &header("", "END OF HEADER");
+        assert!(
+            RinexObservationReader::new(Cursor::new(text)).is_err(),
+            "{content}"
+        );
+    }
+}
+
+#[test]
+fn selected_navigation_reports_unsupported_records_and_normalizes_padded_prns() {
+    let all = include_str!("fixtures/upstream_broadcast.nav");
+    let end = all.find("END OF HEADER").unwrap();
+    let end = all[end..].find('\n').unwrap() + end + 1;
+    let unsupported = "R01 2024 02 08 00 00 00\n    1 2 3\n    4 5 6\n    7 8 9\n";
+    let text = all[..end].to_owned() + unsupported + &all[end..].replace("G01 ", "G 1 ");
+    assert!(read_navigation(Cursor::new(&text)).is_err());
+    let selected = read_navigation_for_systems(Cursor::new(&text), &[GnssSystem::Gps]).unwrap();
+    let original = read_navigation(Cursor::new(all)).unwrap();
+    let expected: Vec<_> = original
+        .records()
+        .filter(|e| e.satellite.system() == GnssSystem::Gps)
+        .collect();
+    assert_eq!(selected.navigation.records().collect::<Vec<_>>(), expected);
+    assert_eq!(
+        selected.excluded_records[0].satellite,
+        "R01".parse().unwrap()
+    );
+    assert_eq!(
+        selected.excluded_records[0].raw_records.join("\n") + "\n",
+        unsupported
+    );
+    assert!(
+        selected
+            .excluded_records
+            .iter()
+            .all(|r| r.satellite.system() != GnssSystem::Gps)
+    );
+    for systems in [
+        vec![],
+        vec![GnssSystem::Glonass],
+        vec![GnssSystem::Gps, GnssSystem::Gps],
+    ] {
+        assert!(read_navigation_for_systems(Cursor::new(all), &systems).is_err());
+    }
+    let truncated = all[..end].to_owned() + "R01 2024 02 08 00 00 00\n    1 2 3\n";
+    assert!(read_navigation_for_systems(Cursor::new(truncated), &[GnssSystem::Gps]).is_err());
 }
 
 #[test]

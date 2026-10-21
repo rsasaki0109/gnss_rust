@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_input_audit",
+    "observations",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset"
+  ],
+  "returncode": 0,
+  "stdout_sha256": "c530b155d4459ffe6a81d1e1005b42baff704f82fed354c8f7aa1218e4f60aa4",
+  "stderr_sha256": "da8bf65e8e401a105bddbf023003c54d5e6534d1dfbdc08b19054b14e1a6feb2"
+}

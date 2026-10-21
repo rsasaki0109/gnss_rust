@@ -14,6 +14,32 @@ fn file(rows: &str) -> String {
     )
 }
 const ROW: &str = " OSB G080 G01           C1C      2024:039:00600 2024:039:02520 ns 1.234 0.1";
+
+#[test]
+fn free_form_comments_and_explicit_receiver_exclusion_preserve_satellite_biases() {
+    let receiver = "DSB G G ABMF C1C C1W 2024:039:00600 2024:039:02520 ns 1.6090 0.0115";
+    let text = file(&(ROW.to_owned() + "\n" + receiver)).replacen(
+        "+BIAS/DESCRIPTION",
+        "+FILE/COMMENT\n- Daily DCB estimates\n+ arbitrary comment text\n-FILE/COMMENT\n+BIAS/DESCRIPTION",
+        1,
+    );
+    assert!(parse(&text).is_err());
+    let selected = read_satellite_biases(Cursor::new(&text), Default::default()).unwrap();
+    let mut expected = parse(&file(ROW)).unwrap().entries().to_vec();
+    // The inserted comment block adds four source lines.
+    expected[0].line += 4;
+    assert_eq!(selected.products.entries(), expected);
+    assert_eq!(selected.excluded_receiver_records.len(), 1);
+    assert_eq!(selected.excluded_receiver_records[0].station, "ABMF");
+    assert_eq!(selected.excluded_receiver_records[0].raw_record, receiver);
+    assert_eq!(
+        selected.excluded_receiver_records[0].system,
+        gnss_rust::GnssSystem::Gps
+    );
+    assert!(read_satellite_biases(Cursor::new(file(receiver)), Default::default()).is_err());
+    let truncated = text.replace("-FILE/COMMENT\n", "");
+    assert!(read_satellite_biases(Cursor::new(truncated), Default::default()).is_err());
+}
 fn time() -> GnssTime {
     GnssTime::new(2300, 346200.0).unwrap()
 }

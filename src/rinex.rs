@@ -80,6 +80,18 @@ impl<R: BufRead> Input<R> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct PhaseShiftDeclaration {
+    pub system: GnssSystem,
+    pub observation_code: String,
+    /// RINEX describes a correction already applied by the file producer.
+    /// None retains a blank reference-signal field, distinct from explicit zero.
+    /// The reader does not apply this correction again to the observations.
+    pub applied_cycles: Option<f64>,
+    /// Empty means the declaration applies to all satellites of this system.
+    pub satellites: Vec<SatelliteId>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct RinexHeader {
     pub version: f64,
     pub observation_types: BTreeMap<GnssSystem, Vec<String>>,
@@ -88,6 +100,8 @@ pub struct RinexHeader {
     pub clock_offsets_applied: bool,
     /// Ordered ledger, retaining duplicate GLONASS channel declarations.
     pub glonass_channels: Vec<(SatelliteId, i8)>,
+    /// Ordered ledger, including blank, zero and nonzero applied phase shifts.
+    pub phase_shifts: Vec<PhaseShiftDeclaration>,
     pub gps_ionosphere_alpha: Option<[f64; 4]>,
     pub gps_ionosphere_beta: Option<[f64; 4]>,
 }
@@ -103,6 +117,22 @@ fn system(prefix: u8, line: usize) -> Result<GnssSystem, RinexError> {
         b'I' => Ok(GnssSystem::NavIC),
         _ => Err(unsupported(line, "satellite system")),
     }
+}
+fn satellite_field(text: &str, line: usize) -> Result<SatelliteId, RinexError> {
+    if text.len() != 3 {
+        return Err(bad(line, "invalid satellite field width"));
+    }
+    let sys = system(text.as_bytes()[0], line)?;
+    let prn = text[1..].trim_start();
+    if prn.is_empty() || !prn.bytes().all(|b| b.is_ascii_digit()) {
+        return Err(bad(line, "invalid satellite PRN"));
+    }
+    SatelliteId::new(
+        sys,
+        prn.parse()
+            .map_err(|_| bad(line, "invalid satellite PRN"))?,
+    )
+    .map_err(|_| bad(line, "invalid satellite PRN"))
 }
 fn numeric(text: &str, line: usize) -> Result<f64, RinexError> {
     let value: f64 = text
@@ -158,6 +188,7 @@ fn read_header<R: BufRead>(input: &mut Input<R>, kind: u8) -> Result<RinexHeader
         time_scale: TimeScale::Gps,
         clock_offsets_applied: false,
         glonass_channels: Vec::new(),
+        phase_shifts: Vec::new(),
         gps_ionosphere_alpha: None,
         gps_ionosphere_beta: None,
     };
@@ -325,8 +356,60 @@ fn apply_header_line<R: BufRead>(
                 return Err(unsupported(line, "non-unit observation scale factor"));
             }
         }
-        "SYS / PHASE SHIFT" if numeric(field(text, 6, 8), line)? != 0.0 => {
-            return Err(unsupported(line, "nonzero carrier phase shift"));
+        "SYS / PHASE SHIFT" => {
+            let sys = system(text.as_bytes()[0], line)?;
+            let code = field(text, 2, 3);
+            let bytes = code.as_bytes();
+            if bytes.len() != 3
+                || bytes[0] != b'L'
+                || !bytes[1].is_ascii_digit()
+                || !bytes[2].is_ascii_uppercase()
+            {
+                return Err(bad(line, "invalid phase shift observation code"));
+            }
+            let applied_cycles = optional_numeric(field(text, 6, 8), line)?;
+            let count = field(text, 16, 2).trim();
+            let count: usize = if count.is_empty() {
+                0
+            } else {
+                count
+                    .parse()
+                    .map_err(|_| bad(line, "invalid phase shift satellite count"))?
+            };
+            let mut satellites = Vec::new();
+            let mut row = text.to_owned();
+            let mut row_line = line;
+            loop {
+                for offset in (19..59).step_by(4) {
+                    let entry = field(&row, offset, 3);
+                    if !entry.trim().is_empty() {
+                        let satellite = satellite_field(entry, row_line)?;
+                        if satellite.system() != sys || satellites.contains(&satellite) {
+                            return Err(bad(row_line, "invalid phase shift satellite list"));
+                        }
+                        satellites.push(satellite);
+                    }
+                }
+                if satellites.len() >= count {
+                    break;
+                }
+                (row_line, row) = input.required()?;
+                if !row.get(60..).is_some_and(|s| s.trim() == label)
+                    || !field(&row, 0, 18).trim().is_empty()
+                    || field(&row, 19, 40).trim().is_empty()
+                {
+                    return Err(bad(row_line, "invalid phase shift continuation"));
+                }
+            }
+            if satellites.len() != count {
+                return Err(bad(line, "phase shift satellite count mismatch"));
+            }
+            header.phase_shifts.push(PhaseShiftDeclaration {
+                system: sys,
+                observation_code: code.to_owned(),
+                applied_cycles,
+                satellites,
+            });
         }
         _ => {}
     }
@@ -419,9 +502,7 @@ impl<R: BufRead> RinexObservationReader<R> {
             let mut seen = std::collections::BTreeSet::new();
             for _ in 0..count {
                 let (sat_line, sat_text) = self.input.required()?;
-                let sat: SatelliteId = field(&sat_text, 0, 3)
-                    .parse()
-                    .map_err(|_| bad(sat_line, "invalid satellite record"))?;
+                let sat = satellite_field(field(&sat_text, 0, 3), sat_line)?;
                 if !seen.insert(sat) {
                     return Err(bad(sat_line, "duplicate satellite in epoch"));
                 }
@@ -546,6 +627,57 @@ fn observation_fields(payload: &str, line: usize) -> Result<Vec<String>, RinexEr
 /// Read RINEX 3 Kepler navigation. GLONASS/SBAS state-vector records and RINEX
 /// 2/4 are deliberately rejected until their models and parsers are implemented.
 pub fn read_navigation<R: BufRead>(reader: R) -> Result<NavigationData, RinexError> {
+    read_navigation_impl(reader, None).map(|result| result.navigation)
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ExcludedNavigationRecord {
+    pub satellite: SatelliteId,
+    pub first_line: usize,
+    /// Original records, without newline terminators; no orbit model is inferred.
+    pub raw_records: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SelectedNavigation {
+    pub navigation: NavigationData,
+    /// Every record outside the explicitly selected systems, including raw data.
+    pub excluded_records: Vec<ExcludedNavigationRecord>,
+}
+
+/// Explicit constellation selection for mixed RINEX 3 navigation. Unselected
+/// 4-line GLONASS/SBAS or 8-line Kepler records are retained in the exclusion
+/// ledger. Selected systems must have a supported Kepler orbit model.
+/// read_navigation remains strict and never makes this selection implicitly.
+pub fn read_navigation_for_systems<R: BufRead>(
+    reader: R,
+    systems: &[GnssSystem],
+) -> Result<SelectedNavigation, RinexError> {
+    if systems.is_empty()
+        || systems.iter().any(|s| {
+            !matches!(
+                s,
+                GnssSystem::Gps | GnssSystem::Galileo | GnssSystem::Qzss | GnssSystem::BeiDou
+            )
+        })
+        || systems
+            .iter()
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+            != systems.len()
+    {
+        return Err(unsupported(
+            0,
+            "navigation selection requires distinct supported systems",
+        ));
+    }
+    read_navigation_impl(reader, Some(systems))
+}
+
+fn read_navigation_impl<R: BufRead>(
+    reader: R,
+    systems: Option<&[GnssSystem]>,
+) -> Result<SelectedNavigation, RinexError> {
     let mut input = Input {
         reader,
         line: 0,
@@ -553,14 +685,33 @@ pub fn read_navigation<R: BufRead>(reader: R) -> Result<NavigationData, RinexErr
     };
     let header = read_header(&mut input, b'N')?;
     let mut navigation = NavigationData::default();
+    let mut excluded_records = Vec::new();
     navigation.gps_ionosphere = header.gps_ionosphere_alpha.zip(header.gps_ionosphere_beta);
     while let Some((line, text)) = input.next_line()? {
         if text.trim().is_empty() {
             continue;
         }
-        let satellite: SatelliteId = field(&text, 0, 3)
-            .parse()
-            .map_err(|_| bad(line, "invalid navigation satellite"))?;
+        let satellite = satellite_field(field(&text, 0, 3), line)?;
+        if systems.is_some_and(|selected| !selected.contains(&satellite.system())) {
+            let count = match satellite.system() {
+                GnssSystem::Glonass | GnssSystem::Sbas => 4,
+                _ => 8,
+            };
+            let mut raw_records = vec![text];
+            for _ in 1..count {
+                let (next_line, record) = input.required()?;
+                if !record.starts_with("    ") {
+                    return Err(bad(next_line, "invalid excluded navigation continuation"));
+                }
+                raw_records.push(record);
+            }
+            excluded_records.push(ExcludedNavigationRecord {
+                satellite,
+                first_line: line,
+                raw_records,
+            });
+            continue;
+        }
         if !matches!(
             satellite.system(),
             GnssSystem::Gps | GnssSystem::Galileo | GnssSystem::Qzss | GnssSystem::BeiDou
@@ -660,5 +811,8 @@ pub fn read_navigation<R: BufRead>(reader: R) -> Result<NavigationData, RinexErr
             .add_ephemeris(eph)
             .map_err(|e| bad(line, e.to_string()))?;
     }
-    Ok(navigation)
+    Ok(SelectedNavigation {
+        navigation,
+        excluded_records,
+    })
 }

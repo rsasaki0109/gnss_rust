@@ -439,6 +439,38 @@ impl ClockData {
 /// Read RINEX 3.00–3.04 satellite AS clocks, including 1–6 values and
 /// continuation lines. Other clock record types fail explicitly.
 pub fn read_clk<R: BufRead>(reader: R) -> Result<ClockData, ProductError> {
+    read_clk_impl(reader, false).map(|selected| selected.clocks)
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReceiverClockRecord {
+    pub receiver_name: String,
+    pub time: GnssTime,
+    /// Bias/sigma (s), drift/sigma (s/s), rate/sigma (s/s²), as present.
+    pub values: Vec<f64>,
+    pub first_line: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct SelectedSatelliteClocks {
+    pub clocks: ClockData,
+    /// Explicitly excluded AR records. They are never satellite clock samples.
+    pub receiver_records: Vec<ReceiverClockRecord>,
+}
+
+/// Read satellite AS clocks from mixed AS/AR RINEX clock products, retaining
+/// every receiver AR record separately. Both types' values and times are
+/// validated; other clock record types remain unsupported.
+pub fn read_satellite_clocks<R: BufRead>(
+    reader: R,
+) -> Result<SelectedSatelliteClocks, ProductError> {
+    read_clk_impl(reader, true)
+}
+
+fn read_clk_impl<R: BufRead>(
+    reader: R,
+    allow_receivers: bool,
+) -> Result<SelectedSatelliteClocks, ProductError> {
     let mut input = Input { reader, line: 0 };
     let first = input.required()?;
     if first.get(60..).unwrap_or("").trim() != "RINEX VERSION / TYPE" {
@@ -479,6 +511,7 @@ pub fn read_clk<R: BufRead>(reader: R) -> Result<ClockData, ProductError> {
         }
     }
     let mut samples: BTreeMap<SatelliteId, Vec<ClockSample>> = BTreeMap::new();
+    let mut receiver_records = Vec::new();
     let mut last_epoch = None;
     while let Some(text) = input.next()? {
         if text.trim().is_empty() {
@@ -486,13 +519,18 @@ pub fn read_clk<R: BufRead>(reader: R) -> Result<ClockData, ProductError> {
         }
         let line = input.line;
         let tokens: Vec<_> = text.split_whitespace().collect();
-        if tokens.first().copied() != Some("AS") {
+        let receiver = tokens.first().copied() == Some("AR") && allow_receivers;
+        if tokens.first().copied() != Some("AS") && !receiver {
             return Err(unsupported(line, "non-AS clock record"));
         }
         if tokens.len() < 10 {
             return Err(bad(line, "short clock record"));
         }
-        let sat = satellite(tokens[1], line)?;
+        let sat = if receiver {
+            None
+        } else {
+            Some(satellite(tokens[1], line)?)
+        };
         let time = calendar(&tokens[2..8], header.time_scale, line)?;
         if last_epoch.is_some_and(|t| time < t) {
             return Err(bad(line, "clock epochs must not decrease"));
@@ -523,6 +561,15 @@ pub fn read_clk<R: BufRead>(reader: R) -> Result<ClockData, ProductError> {
                 return Err(bad(line, "negative clock sigma"));
             }
         }
+        let Some(sat) = sat else {
+            receiver_records.push(ReceiverClockRecord {
+                receiver_name: tokens[1].to_owned(),
+                time,
+                values,
+                first_line: line,
+            });
+            continue;
+        };
         let rows = samples.entry(sat).or_default();
         if rows.last().is_some_and(|s| s.time == time) {
             return Err(bad(line, "duplicate satellite clock epoch"));
@@ -541,7 +588,10 @@ pub fn read_clk<R: BufRead>(reader: R) -> Result<ClockData, ProductError> {
     if samples.is_empty() {
         return Err(bad(input.line, "no AS clocks"));
     }
-    Ok(ClockData { header, samples })
+    Ok(SelectedSatelliteClocks {
+        clocks: ClockData { header, samples },
+        receiver_records,
+    })
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

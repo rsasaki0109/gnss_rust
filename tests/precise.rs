@@ -1,6 +1,6 @@
 use gnss_rust::precise::{
     ClockSource, InterpolationConfig, InterpolationError, OrbitReferencePoint, PreciseProducts,
-    ProductError, precise_clock_relativistic_correction, read_clk, read_sp3,
+    ProductError, precise_clock_relativistic_correction, read_clk, read_satellite_clocks, read_sp3,
 };
 use gnss_rust::time::TimeScale;
 use gnss_rust::{EcefCoord, GnssTime};
@@ -9,6 +9,64 @@ use std::io::Cursor;
 const SP3: &str = include_str!("fixtures/synthetic_precise.sp3");
 const TWO: &str = include_str!("fixtures/synthetic_precise_two.sp3");
 const CLK: &str = include_str!("fixtures/synthetic_precise.clk");
+
+#[test]
+fn mixed_receiver_and_satellite_clocks_require_explicit_selection_and_keep_values() {
+    let first = CLK.lines().find(|line| line.starts_with("AS")).unwrap();
+    let ar = first.replacen("AS G01", "AR GPST", 1);
+    let mixed = CLK.replacen(first, &(ar.clone() + "\n" + first), 1);
+    assert!(read_clk(Cursor::new(&mixed)).is_err());
+    let selected = read_satellite_clocks(Cursor::new(&mixed)).unwrap();
+    let original = read_clk(Cursor::new(CLK)).unwrap();
+    assert_eq!(selected.clocks.header(), original.header());
+    assert_eq!(selected.clocks.samples(), original.samples());
+    assert_eq!(selected.receiver_records.len(), 1);
+    let receiver = &selected.receiver_records[0];
+    let expected: Vec<f64> = ar
+        .split_whitespace()
+        .skip(9)
+        .map(|v| v.parse().unwrap())
+        .collect();
+    assert_eq!(receiver.values, expected);
+    assert_eq!(receiver.receiver_name, "GPST");
+    assert_eq!(
+        receiver.time,
+        original.samples().values().next().unwrap()[0].time
+    );
+    assert!(
+        selected
+            .clocks
+            .samples()
+            .keys()
+            .all(|s| s.to_string().starts_with('G'))
+    );
+}
+
+#[test]
+fn excluded_receiver_clocks_still_validate_values_and_continuations() {
+    let first = CLK.lines().find(|line| line.starts_with("AS")).unwrap();
+    let prefix = first
+        .split_whitespace()
+        .take(8)
+        .collect::<Vec<_>>()
+        .join(" ");
+    let prefix = prefix.replacen("AS G01", "AR GPST", 1);
+    let receiver = prefix.clone() + " 6 1.0e-6 2.0e-12\n    3.0e-12 4.0e-14 5.0e-16 6.0e-18";
+    let mixed = CLK.replacen(first, &(receiver + "\n" + first), 1);
+    let result = read_satellite_clocks(Cursor::new(mixed)).unwrap();
+    assert_eq!(result.receiver_records[0].values.len(), 6);
+    assert_eq!(result.receiver_records[0].values[5], 6e-18);
+    for body in [
+        prefix.clone() + " 2 1e-6 -2e-12",
+        prefix.clone() + " 2 NaN 2e-12",
+        prefix.clone() + " 7 1e-6",
+        prefix + " 6 1e-6 2e-12",
+        first.replacen("AS", "CR", 1),
+    ] {
+        let mixed = CLK.replacen(first, &(body + "\n" + first), 1);
+        assert!(read_satellite_clocks(Cursor::new(mixed)).is_err());
+    }
+}
 fn products(sp3: &str, clk: Option<&str>) -> PreciseProducts {
     PreciseProducts::new(
         read_sp3(Cursor::new(sp3)).unwrap(),

@@ -1,0 +1,42 @@
+{
+  "source_commit": "58562c69b25934c9f4f8fcedeb21712878f78d7c",
+  "cases": [
+    {
+      "case": "nagoya-run1",
+      "observed_returncode": 1,
+      "stderr": "gnss-rust: RINEX line 21: invalid number \"        \"\n",
+      "stdout_bytes": 0
+    },
+    {
+      "case": "nagoya-run2",
+      "observed_returncode": 1,
+      "stderr": "gnss-rust: RINEX line 21: invalid number \"        \"\n",
+      "stdout_bytes": 0
+    },
+    {
+      "case": "nagoya-run3",
+      "observed_returncode": 1,
+      "stderr": "gnss-rust: RINEX line 21: invalid number \"        \"\n",
+      "stdout_bytes": 0
+    },
+    {
+      "case": "tokyo-run1",
+      "observed_returncode": 1,
+      "stderr": "gnss-rust: RINEX line 19: invalid number \"        \"\n",
+      "stdout_bytes": 0
+    },
+    {
+      "case": "tokyo-run2",
+      "observed_returncode": 1,
+      "stderr": "gnss-rust: RINEX line 19: invalid number \"        \"\n",
+      "stdout_bytes": 0
+    },
+    {
+      "case": "tokyo-run3",
+      "observed_returncode": 1,
+      "stderr": "gnss-rust: RINEX line 19: invalid number \"        \"\n",
+      "stdout_bytes": 0
+    }
+  ],
+  "measurement_solutions": 0
+}

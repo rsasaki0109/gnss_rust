@@ -8,7 +8,7 @@ use crate::dual_frequency::{
 };
 use crate::precise::ClockSource;
 use crate::time::{CalendarDateTime, TimeScale};
-use crate::{GnssTime, SatelliteId, constants::SPEED_OF_LIGHT};
+use crate::{GnssSystem, GnssTime, SatelliteId, constants::SPEED_OF_LIGHT};
 use std::{collections::BTreeMap, fmt, io::BufRead};
 
 #[derive(Debug)]
@@ -533,6 +533,39 @@ pub fn read_bias_sinex(
     reader: impl BufRead,
     options: BiasReadOptions,
 ) -> Result<BiasProducts, BiasError> {
+    read_bias_impl(reader, options, false).map(|selected| selected.products)
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ExcludedReceiverBias {
+    pub system: GnssSystem,
+    pub station: String,
+    pub line: usize,
+    /// Uninterpreted receiver-only solution row; not a satellite correction.
+    pub raw_record: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct SelectedSatelliteBiases {
+    pub products: BiasProducts,
+    pub excluded_receiver_records: Vec<ExcludedReceiverBias>,
+}
+
+/// Select satellite rows while retaining CAS-style receiver-only rows in an
+/// explicit, uninterpreted ledger. DSBs remain relative and require a declared
+/// gauge before conversion to signal corrections. No receiver bias is applied.
+pub fn read_satellite_biases(
+    reader: impl BufRead,
+    options: BiasReadOptions,
+) -> Result<SelectedSatelliteBiases, BiasError> {
+    read_bias_impl(reader, options, true)
+}
+
+fn read_bias_impl(
+    reader: impl BufRead,
+    options: BiasReadOptions,
+    select_satellites: bool,
+) -> Result<SelectedSatelliteBiases, BiasError> {
     let mut header = None;
     let mut block: Option<String> = None;
     let mut description: BTreeMap<String, Vec<Vec<String>>> = BTreeMap::new();
@@ -565,6 +598,11 @@ pub fn read_bias_sinex(
                 return Err(bad(line, "unclosed block"));
             }
             ended = true;
+            continue;
+        }
+        // FILE/COMMENT contains free text, including lines beginning with +/-
+        // that are not block delimiters.
+        if block.as_deref() == Some("FILE/COMMENT") && text != "-FILE/COMMENT" {
             continue;
         }
         if let Some(name) = text.strip_prefix('+') {
@@ -631,9 +669,40 @@ pub fn read_bias_sinex(
         .or(options.time_scale)
         .ok_or(BiasError::MissingTimeScale)?;
     let mut entries: Vec<BiasEntry> = Vec::new();
+    let mut excluded_receiver_records = Vec::new();
     let mut groups = BTreeMap::new();
     let mut osb_index: BTreeMap<_, Vec<usize>> = BTreeMap::new();
     for (line, text) in raw_rows {
+        let fields: Vec<_> = text.split_whitespace().collect();
+        if select_satellites
+            && matches!(fields.first().copied(), Some("OSB" | "DSB"))
+            && fields.get(1).is_some_and(|s| s.len() == 1)
+            && fields.get(1) == fields.get(2)
+        {
+            let system = match fields[1] {
+                "G" => GnssSystem::Gps,
+                "R" => GnssSystem::Glonass,
+                "E" => GnssSystem::Galileo,
+                "C" => GnssSystem::BeiDou,
+                "J" => GnssSystem::Qzss,
+                "S" => GnssSystem::Sbas,
+                "I" => GnssSystem::NavIC,
+                _ => return Err(bad(line, "invalid receiver bias system")),
+            };
+            let station = fields
+                .get(3)
+                .ok_or_else(|| bad(line, "missing receiver station"))?;
+            if station.len() > 9 || !station.bytes().all(|c| c.is_ascii_alphanumeric()) {
+                return Err(bad(line, "invalid receiver station"));
+            }
+            excluded_receiver_records.push(ExcludedReceiverBias {
+                system,
+                station: (*station).to_owned(),
+                line,
+                raw_record: text,
+            });
+            continue;
+        }
         let entry = row(&text, line, time_scale)?;
         let other = entry
             .observation_2
@@ -681,11 +750,17 @@ pub fn read_bias_sinex(
             }
         }
     }
-    Ok(BiasProducts {
-        header: header.unwrap_or_default(),
-        description,
-        time_scale,
-        entries,
-        osb_index,
+    if entries.is_empty() {
+        return Err(bad(0, "no satellite bias rows"));
+    }
+    Ok(SelectedSatelliteBiases {
+        products: BiasProducts {
+            header: header.unwrap_or_default(),
+            description,
+            time_scale,
+            entries,
+            osb_index,
+        },
+        excluded_receiver_records,
     })
 }
