@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_candidates",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3",
+    "galileo-slips-velocity",
+    "-3817680.730073338,3562839.5233945786,3650159.241788432"
+  ],
+  "returncode": 0,
+  "csv_sha256": "702f1dbf2241577463898c99b15b19328c3d2ace36fdca8dae328c3d5c259a67",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "8d23bbc04b28f7aee03c4ff5a55580359d2ea8aead11107cadb9ce01de40296e"
+}

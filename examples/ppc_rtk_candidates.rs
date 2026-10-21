@@ -100,18 +100,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     if args.len() != 3 {
         return Err(
-            "usage: ppc_rtk_candidates CASE_DIRECTORY galileo|galileo-slips BASE_X,BASE_Y,BASE_Z (append -velocity for GPS 1C Doppler diagnostics, or -velocity-mixed for GPS/Galileo with separate clocks)"
+            "usage: ppc_rtk_candidates CASE_DIRECTORY galileo|galileo-slips BASE_X,BASE_Y,BASE_Z (append -velocity for GPS 1C Doppler diagnostics, or -velocity-mixed for GPS/Galileo with separate clocks; append -locked to require finite carrier phase and clear LLI)"
                 .into(),
         );
     }
-    let mixed_velocity = args[1].ends_with("-velocity-mixed");
+    let require_carrier_lock = args[1].ends_with("-locked");
+    let requested_mode = args[1].strip_suffix("-locked").unwrap_or(&args[1]);
+    let mixed_velocity = requested_mode.ends_with("-velocity-mixed");
     let requested = if mixed_velocity {
-        args[1].strip_suffix("-mixed").unwrap()
+        requested_mode.strip_suffix("-mixed").unwrap()
     } else {
-        &args[1]
+        requested_mode
     };
     let use_velocity = requested.ends_with("-velocity");
     let mode = requested.strip_suffix("-velocity").unwrap_or(requested);
+    if require_carrier_lock && !use_velocity {
+        return Err("carrier lock admission requires velocity diagnostics".into());
+    }
     let slip_detection = match mode {
         "galileo" => None,
         "galileo-slips" => Some(RtkSlipConfig::default()),
@@ -233,6 +238,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                         &navigation.navigation,
                                         p,
                                         VelocityEpochConfig {
+                                            require_carrier_lock,
                                             velocity: VelocityConfig {
                                                 clock_model: VelocityClockModel::PerSystem,
                                                 ..Default::default()
@@ -245,7 +251,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                                         &rover,
                                         &navigation.navigation,
                                         p,
-                                        VelocityEpochConfig::default(),
+                                        VelocityEpochConfig {
+                                            require_carrier_lock,
+                                            ..Default::default()
+                                        },
                                     )
                                 };
                                 write_velocity(&mut row, velocity);
@@ -359,6 +368,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         eprintln!(
             "velocity_diagnostics={model} no_velocity_feedback=true no_motion_gate_evaluated=true"
         );
+        if require_carrier_lock {
+            eprintln!(
+                "velocity_require_carrier_lock=true phase_values_not_fused=true no_temporal_or_lock_duration_claim=true"
+            );
+        }
     }
     Ok(())
 }

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_candidates",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2",
+    "galileo-slips-velocity-locked",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875"
+  ],
+  "returncode": 0,
+  "csv_sha256": "fc6491dd75a31f2def8d7f1e7a90a5ff257063e52f90800585ffbba89e11aa1d",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "0c3867afa871c06bef123943d22c2cea44620c2f2dc9edac9ee45505cace8910"
+}

@@ -1,0 +1,11 @@
+{
+  "prior_manifest_sha256": "477970bfc7e030d73cf47f492adbfd03076a5808f0cbb4f11201fe9037f459b2",
+  "verified_input_sha256": {
+    "nagoya-run1": "d9ee4e38c857f109cb430dab34e7958867060edb99e5f8b1c020abdd29d345cb",
+    "nagoya-run2": "e838a42e9a9ea5e982807949e66b8fcd6c33de1202568ff47a656a3c5392edc6",
+    "nagoya-run3": "41e6a6c886abca3034f570dbfdc6fe070e76427dd8e46fbfdc0e9b0aa3e67c46",
+    "tokyo-run1": "97e7b370d381a64760cd07d251bcf5df2dc2b3b6dd2444323ff8d6f35e4689e5",
+    "tokyo-run2": "e53eb349617edf22d1df677d1c40348108c7eba97dd0fadbdc8f1b3bff035098",
+    "tokyo-run3": "ea8e16a7b0093e6a4d108cb5baea2ac8b1986bf274f0bba5612a6fba23a4f3a3"
+  }
+}

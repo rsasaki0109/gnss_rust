@@ -325,3 +325,48 @@ fn raw_preparation_rejects_stale_navigation_bad_code_duplicates_and_epoch_metada
         Err(Error::InvalidConfiguration)
     );
 }
+
+#[test]
+fn optional_carrier_lock_admission_retains_zero_phase_and_reports_each_failure() {
+    use gnss_rust::velocity::{DopplerRejection, VelocityEpochConfig, solve_gps_l1_epoch as solve};
+    let (mut epoch, nav, position) = epoch_data();
+    epoch.observations[0].carrier_phase_cycles = None;
+    epoch.observations[1].lli = Some(1);
+    epoch.observations[2].lli = Some(2);
+    epoch.observations[3].carrier_phase_cycles = Some(f64::NAN);
+    epoch.observations[4].carrier_phase_cycles = Some(0.0);
+    let legacy = solve(&epoch, &nav, position, VelocityEpochConfig::default()).unwrap();
+    assert_eq!(legacy.prepared.len(), 9);
+    let locked = solve(
+        &epoch,
+        &nav,
+        position,
+        VelocityEpochConfig {
+            require_carrier_lock: true,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert_eq!(locked.prepared.len(), 5);
+    assert_eq!(
+        locked
+            .rejected
+            .iter()
+            .map(|(_, why)| *why)
+            .collect::<Vec<_>>(),
+        vec![
+            DopplerRejection::MissingCarrierPhase,
+            DopplerRejection::CarrierLossOfLock,
+            DopplerRejection::CarrierLossOfLock,
+            DopplerRejection::InvalidCarrierPhase
+        ]
+    );
+    assert!(
+        locked
+            .prepared
+            .iter()
+            .any(|p| p.raw.satellite == epoch.observations[4].satellite
+                && p.raw.carrier_phase_cycles == Some(0.0))
+    );
+    assert!(legacy.rejected.is_empty());
+}

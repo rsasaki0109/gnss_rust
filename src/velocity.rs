@@ -359,6 +359,10 @@ fn least_squares_with_clocks(
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct VelocityEpochConfig {
     pub velocity: VelocityConfig,
+    /// Optional admission rule: require a finite carrier phase and clear LLI
+    /// loss-of-lock/half-cycle bits. Phase values are not fused into velocity.
+    /// No lock duration or temporal continuity is inferred from this rule.
+    pub require_carrier_lock: bool,
     pub max_ephemeris_age_s: f64,
     pub elevation_mask_rad: f64,
 }
@@ -366,6 +370,7 @@ impl Default for VelocityEpochConfig {
     fn default() -> Self {
         Self {
             velocity: VelocityConfig::default(),
+            require_carrier_lock: false,
             max_ephemeris_age_s: 14400.0,
             elevation_mask_rad: 10_f64.to_radians(),
         }
@@ -377,6 +382,9 @@ pub enum DopplerRejection {
     AlternativeTrackingCode,
     MissingDoppler,
     InvalidDoppler,
+    MissingCarrierPhase,
+    InvalidCarrierPhase,
+    CarrierLossOfLock,
     InvalidCode,
     Navigation(Error),
     BelowElevationMask,
@@ -491,6 +499,23 @@ fn solve_epoch(
         if !doppler.is_finite() {
             reject(DopplerRejection::InvalidDoppler);
             continue;
+        }
+        if config.require_carrier_lock {
+            match raw.carrier_phase_cycles {
+                None => {
+                    reject(DopplerRejection::MissingCarrierPhase);
+                    continue;
+                }
+                Some(value) if !value.is_finite() => {
+                    reject(DopplerRejection::InvalidCarrierPhase);
+                    continue;
+                }
+                Some(_) => {}
+            }
+            if raw.loss_of_lock() || raw.half_cycle_ambiguity() {
+                reject(DopplerRejection::CarrierLossOfLock);
+                continue;
+            }
         }
         let travel = match raw.pseudorange_m {
             None => 0.075,
