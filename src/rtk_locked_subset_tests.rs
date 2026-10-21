@@ -114,6 +114,26 @@ fn locked_marginal_matches_native_selection_subset_and_independent_schur_covaria
         {
             close(a, b);
         }
+        assert!(subset.ambiguity_pair_subset(&[]).is_err());
+        assert!(subset.ambiguity_pair_subset(&[k]).is_err());
+        assert!(subset.ambiguity_pair_subset(&[0, 0]).is_err());
+        if k > 1 {
+            let view = subset
+                .ambiguity_pair_subset(&(0..k - 1).collect::<Vec<_>>())
+                .unwrap()
+                .unwrap();
+            let reduced = view.ambiguities().unwrap();
+            for i in 0..k - 1 {
+                close(reduced.dd_float_cycles[i], expected_dd[i]);
+                for (j, &value) in expected_qbb[i].iter().take(k - 1).enumerate() {
+                    close(reduced.ambiguity_covariance_cycles2[i][j], value);
+                }
+                for (j, row) in expected_qab.iter().enumerate() {
+                    close(reduced.head_ambiguity_covariance[j][i], row[i]);
+                }
+            }
+            assert_eq!(subset.head_prior(), view.head_prior());
+        }
         let integers: Vec<_> = expected_dd.iter().map(|v| v.round() as i64).collect();
         let fixed = crate::rtk_fix::condition_head(
             &subset.head_prior(),

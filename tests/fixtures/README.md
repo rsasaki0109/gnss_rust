@@ -1547,3 +1547,16 @@ the 1e-11 × max(1,abs(expected)) component-conditioning tolerance and verifies
 that the original snapshot is unchanged. This does not test whole native
 subset-search policy or practical performance. The comparison archive retains
 compiler/source/binary/library hashes, command, logs and repeated fixture hash.
+
+## Native ambiguity variance selection (2026-10-21)
+
+`upstream_rtk_ar_selection.csv` calls pinned native
+`filterPairsByRelativeVariance` and `buildProgressiveVarianceDropSubsets` in
+`scripts/upstream_rtk_ar_selection.cpp`. Forty cases cover exact/adjacent
+threshold values, upper median for even length, zero variance, minimum-pair
+fallback, equal-variance order, zero steps and bounded progressive drop paths.
+Rust separately rejects invalid/nonfinite inputs and threshold overflow.
+The component does not run LAMBDA or declare FIX. The optional policy uses
+only the one-shot prefilter; progressive candidate testing remains pending.
+Compilation and two exact fixture regenerations are retained in
+[`2026-10-21-variance-subset-ar`](../../docs/comparison/2026-10-21-variance-subset-ar/README.md).

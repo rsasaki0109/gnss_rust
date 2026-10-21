@@ -59,6 +59,7 @@ pub mod precise_transmit;
 pub mod rinex;
 pub mod rtk;
 pub mod rtk_ambiguity;
+pub mod rtk_ar_selection;
 pub mod rtk_fix;
 pub mod rtk_quality;
 pub mod rtk_reference;

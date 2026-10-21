@@ -87,6 +87,43 @@ fn locked_policy(mode: ReferenceGateMode) -> RtkFixPolicy {
     )
     .unwrap()
 }
+
+#[test]
+fn relative_variance_opt_in_keeps_clean_mixed_results_and_posterior_unchanged() {
+    for mode in [
+        ReferenceGateMode::Selected,
+        ReferenceGateMode::AllReferences,
+    ] {
+        let d = data();
+        let mut engine = filter(&d);
+        let mut locked = locked_policy(mode);
+        let mut variance = RtkFixPolicy::for_kinematic_variance_subset(
+            RtkFixConfig::default(),
+            KinematicMotionConfig::default(),
+            mode,
+        )
+        .unwrap();
+        for i in 0..d.rover.len() {
+            let float = engine
+                .process_pair(&d.rover[i], &d.base[i], &d.nav)
+                .unwrap();
+            let before = engine.state().cloned();
+            let v = motion(d.rover[i].time);
+            let a = locked.evaluate_kinematic(&float, Some(&v)).unwrap();
+            let b = variance.evaluate_kinematic(&float, Some(&v)).unwrap();
+            assert!(
+                b.relative_variance_selection
+                    .as_ref()
+                    .is_none_or(|s| !s.applied),
+                "epoch {i}"
+            );
+            assert_eq!(a.decision, b.decision, "epoch {i}");
+            assert_eq!(a.fixed_solution, b.fixed_solution);
+            assert_eq!(a.ar_satellites, b.ar_satellites);
+            assert_eq!(engine.state(), before.as_ref());
+        }
+    }
+}
 fn distance(a: EcefCoord, b: EcefCoord) -> f64 {
     (a.x - b.x).hypot(a.y - b.y).hypot(a.z - b.z)
 }

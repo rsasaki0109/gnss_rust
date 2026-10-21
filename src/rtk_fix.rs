@@ -738,9 +738,17 @@ pub struct RtkFixAttempt {
     pub ar_reference_satellites: Vec<SatelliteId>,
     /// All original FLOAT lock counts, including excluded satellites.
     pub satellite_lock_epochs: Vec<(SatelliteId, usize)>,
+    pub relative_variance_selection: Option<RtkVarianceSelection>,
     pub confirmation_count: usize,
     /// Present only after every policy and local validation check passes.
     pub fixed_solution: Option<PositionSolution>,
+}
+#[derive(Debug, Clone, PartialEq)]
+pub struct RtkVarianceSelection {
+    pub source_references: Vec<SatelliteId>,
+    pub source_targets: Vec<SatelliteId>,
+    pub selection: crate::rtk_ar_selection::RelativeVarianceSelection,
+    pub applied: bool,
 }
 /// Scope of local candidate gates. Search, lock, ratio, confirmation and history
 /// remain separate. AllReferences can reject candidates that pass Selected.
@@ -826,6 +834,7 @@ pub struct RtkFixPolicy {
     config: RtkFixConfig,
     motion_config: Option<KinematicMotionConfig>,
     locked_subset: bool,
+    relative_variance: bool,
     reference_gate_mode: ReferenceGateMode,
     locks: BTreeMap<SatelliteId, usize>,
     last_time: Option<GnssTime>,
@@ -848,6 +857,7 @@ impl RtkFixPolicy {
             config,
             motion_config: None,
             locked_subset: false,
+            relative_variance: false,
             reference_gate_mode,
             locks: BTreeMap::new(),
             last_time: None,
@@ -885,6 +895,19 @@ impl RtkFixPolicy {
     ) -> Result<Self, FixError> {
         let mut policy = Self::for_kinematic(config, motion, reference_gate_mode)?;
         policy.locked_subset = true;
+        Ok(policy)
+    }
+    /// One lock-qualified subset followed by the native relative-variance
+    /// prefilter (10 times upper median, minimum 1e-4 cycles squared). Empty
+    /// filter results retain the lock-qualified set, matching native flow.
+    /// No repeated ratio-driven searches or integer holding are introduced.
+    pub fn for_kinematic_variance_subset(
+        config: RtkFixConfig,
+        motion: KinematicMotionConfig,
+        reference_gate_mode: ReferenceGateMode,
+    ) -> Result<Self, FixError> {
+        let mut policy = Self::for_kinematic_locked_subset(config, motion, reference_gate_mode)?;
+        policy.relative_variance = true;
         Ok(policy)
     }
     pub fn reset(&mut self) {
@@ -1038,14 +1061,55 @@ impl RtkFixPolicy {
             ar_satellites: satellites.clone(),
             ar_reference_satellites: context.reference_satellites(),
             satellite_lock_epochs: self.locks.iter().map(|(&s, &n)| (s, n)).collect(),
+            relative_variance_selection: None,
             confirmation_count: 0,
             fixed_solution: None,
         };
-        let subset = if self.locked_subset {
+        let mut subset = if self.locked_subset {
             context.locked_subset(&self.locks, self.config.min_lock_epochs)?
         } else {
             None
         };
+        if self.relative_variance {
+            if let Some(source) = subset.as_ref() {
+                let ambiguity = match source.ambiguities() {
+                    Ok(a) => a,
+                    Err(_) => return Ok(self.reject(attempt, FixDecision::ConditioningFailed)),
+                };
+                let variances: Vec<_> = ambiguity
+                    .ambiguity_covariance_cycles2
+                    .iter()
+                    .enumerate()
+                    .map(|(i, r)| r[i])
+                    .collect();
+                let selection = match crate::rtk_ar_selection::filter_pairs_by_relative_variance(
+                    &variances,
+                    crate::rtk_ar_selection::RelativeVarianceConfig {
+                        minimum_pairs: self.config.min_ambiguity_pairs,
+                        ..Default::default()
+                    },
+                ) {
+                    Ok(s) => s,
+                    Err(_) => return Ok(self.reject(attempt, FixDecision::ConditioningFailed)),
+                };
+                let applied = !selection.selected_indices.is_empty()
+                    && selection.selected_indices.len() < variances.len();
+                let selected = if applied {
+                    source.ambiguity_pair_subset(&selection.selected_indices)?
+                } else {
+                    None
+                };
+                attempt.relative_variance_selection = Some(RtkVarianceSelection {
+                    source_references: source.reference_satellites(),
+                    source_targets: source.ambiguity_satellites(),
+                    selection,
+                    applied,
+                });
+                if applied {
+                    subset = selected;
+                }
+            }
+        }
         if self.locked_subset {
             attempt.ar_satellites = subset
                 .as_ref()
@@ -1234,6 +1298,91 @@ mod tests {
     use crate::rinex::{RinexObservationReader, read_navigation};
     use crate::rtk::{RtkFloatConfig, RtkFloatFilter};
     use std::io::Cursor;
+
+    #[test]
+    fn high_variance_nonreference_arc_is_marginalized_without_fixing_or_mutating_it() {
+        use crate::rtk::{RtkConstellations, RtkPositionMode};
+        let mut rover = RinexObservationReader::new(Cursor::new(include_str!(
+            "../tests/fixtures/synthetic_rtk_mixed_rover.obs"
+        )))
+        .unwrap();
+        let mut base = RinexObservationReader::new(Cursor::new(include_str!(
+            "../tests/fixtures/synthetic_rtk_mixed_base.obs"
+        )))
+        .unwrap();
+        let seed = rover.header().approximate_position.unwrap();
+        let base_position = base.header().approximate_position.unwrap();
+        let nav = read_navigation(Cursor::new(include_str!(
+            "../tests/fixtures/synthetic_rtk_mixed.nav"
+        )))
+        .unwrap();
+        let truth: Vec<Vec<f64>> = include_str!("../tests/fixtures/synthetic_rtk_mixed_truth.csv")
+            .lines()
+            .skip(1)
+            .map(|l| l.split(',').map(|v| v.parse().unwrap()).collect())
+            .collect();
+        let velocity = std::array::from_fn(|j| truth[1][2 + j] - truth[0][2 + j]);
+        let mut engine = RtkFloatFilter::new(
+            base_position,
+            seed,
+            RtkFloatConfig {
+                constellations: RtkConstellations::GpsGalileo,
+                position_mode: RtkPositionMode::Kinematic,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let mut policy = RtkFixPolicy::for_kinematic_variance_subset(
+            RtkFixConfig::default(),
+            KinematicMotionConfig::default(),
+            ReferenceGateMode::AllReferences,
+        )
+        .unwrap();
+        let mut fixed = 0;
+        for (i, (r, b)) in rover.by_ref().zip(base.by_ref()).enumerate() {
+            let r = r.unwrap();
+            let mut float = engine.process_pair(&r, &b.unwrap(), &nav).unwrap();
+            let posterior = engine.state().cloned();
+            let satellites = float.fix_context.satellites();
+            let references = float.fix_context.reference_satellites();
+            let index = satellites
+                .iter()
+                .position(|s| !references.contains(s))
+                .unwrap();
+            let excluded = satellites[index];
+            float.fix_context.state.covariance[3 + index][3 + index] += 1000.0;
+            let original = float.fix_context.clone();
+            let motion = RtkMotionEvidence {
+                time: r.time,
+                velocity_mps: velocity,
+                covariance_m2s2: [[1e-4, 0.0, 0.0], [0.0, 1e-4, 0.0], [0.0, 0.0, 1e-4]],
+            };
+            let attempt = policy.evaluate_kinematic(&float, Some(&motion)).unwrap();
+            if i >= 4 {
+                assert!(
+                    attempt
+                        .relative_variance_selection
+                        .as_ref()
+                        .unwrap()
+                        .applied
+                );
+                assert!(!attempt.ar_satellites.contains(&excluded));
+                assert_eq!(attempt.ar_satellites.len(), 7);
+            }
+            if let Some(solution) = attempt.fixed_solution {
+                fixed += 1;
+                assert!(
+                    distance(
+                        solution.position_ecef.unwrap(),
+                        EcefCoord::new(truth[i][2], truth[i][3], truth[i][4])
+                    ) < 0.003
+                );
+            }
+            assert_eq!(float.fix_context, original);
+            assert_eq!(engine.state(), posterior.as_ref());
+        }
+        assert_eq!(fixed, 27);
+    }
 
     #[test]
     fn kinematic_confirmations_survive_independent_reference_changes_in_both_systems() {

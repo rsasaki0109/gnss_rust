@@ -20,10 +20,14 @@ use std::{
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     if args.len() != 3 && args.len() != 4 {
-        return Err("usage: ppc_rtk_kinematic_fix CASE_DIRECTORY selected|all|selected-slips|all-slips[with -locked suffix] BASE_X,BASE_Y,BASE_Z [MAX_MOTION_STD_MPS]".into());
+        return Err("usage: ppc_rtk_kinematic_fix CASE_DIRECTORY selected|all|selected-slips|all-slips[with -locked or -variance suffix] BASE_X,BASE_Y,BASE_Z [MAX_MOTION_STD_MPS]".into());
     }
-    let locked_subset = args[1].ends_with("-locked");
-    let mode = args[1].strip_suffix("-locked").unwrap_or(&args[1]);
+    let relative_variance = args[1].ends_with("-variance");
+    let locked_subset = args[1].ends_with("-locked") || relative_variance;
+    let mode = args[1]
+        .strip_suffix("-variance")
+        .or_else(|| args[1].strip_suffix("-locked"))
+        .unwrap_or(&args[1]);
     let (gates, slips) = match mode {
         "selected" => (ReferenceGateMode::Selected, false),
         "all" => (ReferenceGateMode::AllReferences, false),
@@ -64,7 +68,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         1.0
     };
-    let constructor = if locked_subset {
+    let constructor = if relative_variance {
+        RtkFixPolicy::for_kinematic_variance_subset
+    } else if locked_subset {
         RtkFixPolicy::for_kinematic_locked_subset
     } else {
         RtkFixPolicy::for_kinematic
@@ -88,10 +94,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut out = BufWriter::new(std::io::stdout().lock());
     writeln!(
         out,
-        "kind,week,tow,side,status,x_m,y_m,z_m,float_x_m,float_y_m,float_z_m,used_satellites,reference_satellites,ambiguity_pairs,ambiguity_resets,decision,ratio,confirmation_count,velocity_status,vx_mps,vy_mps,vz_mps,velocity_max_std_mps,velocity_reason,fixed_correction_m,fixed_phase_rms_m,fixed_code_rms_m,motion_max_residual_m,motion_checks,integers,float_code_rms_m,float_phase_rms_m,float_qxx_m2,float_qyy_m2,float_qzz_m2,solution_qxx_m2,solution_qyy_m2,solution_qzz_m2,system_reference_sets,reason,velocity_qxx,velocity_qxy,velocity_qxz,velocity_qyx,velocity_qyy,velocity_qyz,velocity_qzx,velocity_qzy,velocity_qzz,ar_satellites,ar_reference_satellites,ar_ambiguity_pairs,satellite_lock_epochs"
+        "kind,week,tow,side,status,x_m,y_m,z_m,float_x_m,float_y_m,float_z_m,used_satellites,reference_satellites,ambiguity_pairs,ambiguity_resets,decision,ratio,confirmation_count,velocity_status,vx_mps,vy_mps,vz_mps,velocity_max_std_mps,velocity_reason,fixed_correction_m,fixed_phase_rms_m,fixed_code_rms_m,motion_max_residual_m,motion_checks,integers,float_code_rms_m,float_phase_rms_m,float_qxx_m2,float_qyy_m2,float_qzz_m2,solution_qxx_m2,solution_qyy_m2,solution_qzz_m2,system_reference_sets,reason,velocity_qxx,velocity_qxy,velocity_qxz,velocity_qyx,velocity_qyy,velocity_qyz,velocity_qzx,velocity_qzy,velocity_qzz,ar_satellites,ar_reference_satellites,ar_ambiguity_pairs,satellite_lock_epochs,variance_source_references,variance_source_targets,variance_dd_cycles2,variance_median_cycles2,variance_threshold_cycles2,variance_selected_indices,variance_applied"
     )?;
     for event in EpochMatcher::new(rover, base) {
-        let mut row = vec![String::new(); 53];
+        let mut row = vec![String::new(); 60];
         match event? {
             EpochMatch::Unmatched { side, epoch } => {
                 row[0] = "unmatched".into();
@@ -194,6 +200,43 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 },
                             }
                             let attempt = policy.evaluate_kinematic(&float, evidence.as_ref())?;
+                            if let Some(v) = &attempt.relative_variance_selection {
+                                row[53] = v
+                                    .source_references
+                                    .iter()
+                                    .map(ToString::to_string)
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[54] = v
+                                    .source_targets
+                                    .iter()
+                                    .map(ToString::to_string)
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[55] = v
+                                    .selection
+                                    .variances_cycles2
+                                    .iter()
+                                    .map(|v| format!("{v:.17e}"))
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[56] = v
+                                    .selection
+                                    .median_variance_cycles2
+                                    .map_or_else(String::new, |v| format!("{v:.17e}"));
+                                row[57] = v
+                                    .selection
+                                    .threshold_cycles2
+                                    .map_or_else(String::new, |v| format!("{v:.17e}"));
+                                row[58] = v
+                                    .selection
+                                    .selected_indices
+                                    .iter()
+                                    .map(ToString::to_string)
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[59] = v.applied.to_string();
+                            }
                             row[49] = attempt
                                 .ar_satellites
                                 .iter()
@@ -277,7 +320,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     out.flush()?;
     eprintln!(
-        "kinematic_FIX_policy=true locked_subset={locked_subset} full_set_only={} integer_holding=false fixed_or_velocity_feedback=false GPS_Galileo=true carrier_lock_required=true motion_max_std_mps={motion_std} motion_max_gap_s=2 displacement_residual_limit_m=0.1 confirmation_epochs=2 reference_gates={gates:?} performance_accepted=false",
+        "kinematic_FIX_policy=true locked_subset={locked_subset} relative_variance={relative_variance} full_set_only={} integer_holding=false fixed_or_velocity_feedback=false GPS_Galileo=true carrier_lock_required=true motion_max_std_mps={motion_std} motion_max_gap_s=2 displacement_residual_limit_m=0.1 confirmation_epochs=2 reference_gates={gates:?} performance_accepted=false",
         !locked_subset
     );
     Ok(())

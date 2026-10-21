@@ -457,9 +457,43 @@ impl FixContext {
         locks: &BTreeMap<SatelliteId, usize>,
         minimum_lock: usize,
     ) -> Result<Option<Self>, RtkError> {
+        let qualified = self
+            .data
+            .iter()
+            .filter_map(|d| {
+                (locks.get(&d.satellite).copied().unwrap_or(0) >= minimum_lock)
+                    .then_some(d.satellite)
+            })
+            .collect();
+        self.satellite_subset(&qualified)
+    }
+    pub(crate) fn ambiguity_pair_subset(
+        &self,
+        indices: &[usize],
+    ) -> Result<Option<Self>, RtkError> {
+        let pairs = dd_pairs(&self.data, &self.references);
+        let mut unique = std::collections::BTreeSet::new();
+        let mut qualified = std::collections::BTreeSet::new();
+        if indices.is_empty() {
+            return Err(FilterError::InvalidDimensions.into());
+        }
+        for &i in indices {
+            if i >= pairs.len() || !unique.insert(i) {
+                return Err(FilterError::InvalidDimensions.into());
+            }
+            let (r, s) = pairs[i];
+            qualified.insert(self.data[r].satellite);
+            qualified.insert(self.data[s].satellite);
+        }
+        self.satellite_subset(&qualified)
+    }
+    fn satellite_subset(
+        &self,
+        qualified: &std::collections::BTreeSet<SatelliteId>,
+    ) -> Result<Option<Self>, RtkError> {
         let mut groups = BTreeMap::<_, Vec<usize>>::new();
         for (i, d) in self.data.iter().enumerate() {
-            if locks.get(&d.satellite).copied().unwrap_or(0) >= minimum_lock {
+            if qualified.contains(&d.satellite) {
                 groups.entry(d.satellite.system()).or_default().push(i);
             }
         }

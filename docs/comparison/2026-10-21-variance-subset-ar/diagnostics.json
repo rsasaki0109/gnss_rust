@@ -1,0 +1,1065 @@
+{
+  "reference_truth_read": false,
+  "cases": {
+    "nagoya-run1": {
+      "galileo_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      }
+    },
+    "nagoya-run2": {
+      "galileo_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      }
+    },
+    "nagoya-run3": {
+      "galileo_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      }
+    },
+    "tokyo-run1": {
+      "galileo_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 1,
+          "ar_ambiguity_pairs": 1
+        },
+        "applied_count": 1,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {
+          "motion_uncertain": 1
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "188353.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 11.569146157454847,
+            "prior_AR_satellites": "G05;G11;G13;G20;E04;E09;E36",
+            "AR_satellites": "G05;G11;G13;G20;E09;E36",
+            "prior_ratio": "",
+            "ratio": ""
+          }
+        ]
+      },
+      "galileo_slips_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ratio": 1,
+          "integers": 1,
+          "ar_satellites": 1,
+          "ar_ambiguity_pairs": 1
+        },
+        "applied_count": 1,
+        "applied_with_admitted_motion": 1,
+        "applied_decisions": {
+          "ratio_rejected": 1
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "188353.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 11.569146157454847,
+            "prior_AR_satellites": "G05;G11;G13;G20;E04;E09;E36",
+            "AR_satellites": "G05;G11;G13;G20;E09;E36",
+            "prior_ratio": "1.91954413968255722e0",
+            "ratio": "2.45404888460866877e0"
+          }
+        ]
+      },
+      "galileo_slips_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 1,
+          "ar_ambiguity_pairs": 1
+        },
+        "applied_count": 1,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {
+          "motion_uncertain": 1
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "188353.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 11.569146157454847,
+            "prior_AR_satellites": "G05;G11;G13;G20;E04;E09;E36",
+            "AR_satellites": "G05;G11;G13;G20;E09;E36",
+            "prior_ratio": "",
+            "ratio": ""
+          }
+        ]
+      },
+      "galileo_slips_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ratio": 1,
+          "integers": 1,
+          "ar_satellites": 1,
+          "ar_ambiguity_pairs": 1
+        },
+        "applied_count": 1,
+        "applied_with_admitted_motion": 1,
+        "applied_decisions": {
+          "ratio_rejected": 1
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "188353.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 11.569146157454847,
+            "prior_AR_satellites": "G05;G11;G13;G20;E04;E09;E36",
+            "AR_satellites": "G05;G11;G13;G20;E09;E36",
+            "prior_ratio": "1.91954413968255722e0",
+            "ratio": "2.45404888460866877e0"
+          }
+        ]
+      }
+    },
+    "tokyo-run2": {
+      "galileo_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 9,
+          "ar_ambiguity_pairs": 9
+        },
+        "applied_count": 9,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {
+          "motion_uncertain": 9
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "177203.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 10.575938734993123,
+            "prior_AR_satellites": "G03;G06;G17;G19;E10;E11;E12",
+            "AR_satellites": "G06;G17;G19;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178325.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 17.033153635818607,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178326.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 17.00957417083377,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178331.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 11.789491496829056,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178332.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 12.383624405528602,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178333.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 12.836574417018223,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178334.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 13.186924419359988,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178335.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 13.412528903256167,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178336.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 13.633077536477908,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          }
+        ]
+      },
+      "galileo_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 9,
+          "ar_ambiguity_pairs": 9,
+          "ratio": 8,
+          "integers": 8
+        },
+        "applied_count": 9,
+        "applied_with_admitted_motion": 8,
+        "applied_decisions": {
+          "motion_uncertain": 1,
+          "ratio_rejected": 8
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "177203.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 10.575938734993123,
+            "prior_AR_satellites": "G03;G06;G17;G19;E10;E11;E12",
+            "AR_satellites": "G06;G17;G19;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178325.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 17.033153635818607,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.63040477357840174e0",
+            "ratio": "1.61458827825320150e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178326.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 17.00957417083377,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.62968766553539446e0",
+            "ratio": "1.61615168321322988e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178331.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 11.789491496829056,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.75692395500752596e0",
+            "ratio": "1.76917141203146278e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178332.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 12.383624405528602,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.87571011704076152e0",
+            "ratio": "1.80675671370912139e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178333.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 12.836574417018223,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "2.00838049552258546e0",
+            "ratio": "1.93269246620265633e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178334.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 13.186924419359988,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.97353211462866618e0",
+            "ratio": "1.86350015078815945e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178335.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 13.412528903256167,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.96123918366771277e0",
+            "ratio": "1.80164842017826765e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178336.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 13.633077536477908,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "2.32930373947907432e0",
+            "ratio": "2.01777002345376655e0"
+          }
+        ]
+      },
+      "galileo_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 9,
+          "ar_ambiguity_pairs": 9
+        },
+        "applied_count": 9,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {
+          "motion_uncertain": 9
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "177203.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 10.575938734993123,
+            "prior_AR_satellites": "G03;G06;G17;G19;E10;E11;E12",
+            "AR_satellites": "G06;G17;G19;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178325.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 17.033153635818607,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178326.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 17.00957417083377,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178331.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 11.789491496829056,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178332.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 12.383624405528602,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178333.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 12.836574417018223,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178334.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 13.186924419359988,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178335.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 13.412528903256167,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178336.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 13.633077536477908,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          }
+        ]
+      },
+      "galileo_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 9,
+          "ar_ambiguity_pairs": 9,
+          "ratio": 8,
+          "integers": 8
+        },
+        "applied_count": 9,
+        "applied_with_admitted_motion": 8,
+        "applied_decisions": {
+          "motion_uncertain": 1,
+          "ratio_rejected": 8
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "177203.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 10.575938734993123,
+            "prior_AR_satellites": "G03;G06;G17;G19;E10;E11;E12",
+            "AR_satellites": "G06;G17;G19;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178325.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 17.033153635818607,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.63040477357840174e0",
+            "ratio": "1.61458827825320150e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178326.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 17.00957417083377,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.62968766553539446e0",
+            "ratio": "1.61615168321322988e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178331.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 11.789491496829056,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.75692395500752596e0",
+            "ratio": "1.76917141203146278e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178332.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 12.383624405528602,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.87571011704076152e0",
+            "ratio": "1.80675671370912139e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178333.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 12.836574417018223,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "2.00838049552258546e0",
+            "ratio": "1.93269246620265633e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178334.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 13.186924419359988,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.97353211462866618e0",
+            "ratio": "1.86350015078815945e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178335.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 13.412528903256167,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.96123918366771277e0",
+            "ratio": "1.80164842017826765e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178336.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 13.633077536477908,
+            "prior_AR_satellites": "G03;G04;G06;G09;G12;G17;G19;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "2.32930373947907432e0",
+            "ratio": "2.01777002345376655e0"
+          }
+        ]
+      },
+      "galileo_slips_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 3,
+          "ar_ambiguity_pairs": 3
+        },
+        "applied_count": 3,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {
+          "motion_uncertain": 3
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "177203.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 10.576233367420226,
+            "prior_AR_satellites": "G03;G06;G17;G19;E10;E11;E12",
+            "AR_satellites": "G06;G17;G19;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178325.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 17.0331536374949,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178326.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 17.009574172297008,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          }
+        ]
+      },
+      "galileo_slips_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 3,
+          "ar_ambiguity_pairs": 3,
+          "ratio": 2,
+          "integers": 2
+        },
+        "applied_count": 3,
+        "applied_with_admitted_motion": 2,
+        "applied_decisions": {
+          "motion_uncertain": 1,
+          "ratio_rejected": 2
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "177203.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 10.576233367420226,
+            "prior_AR_satellites": "G03;G06;G17;G19;E10;E11;E12",
+            "AR_satellites": "G06;G17;G19;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178325.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 17.0331536374949,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.63039026912071905e0",
+            "ratio": "1.61455327367827595e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178326.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 17.009574172297008,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.62967527363734610e0",
+            "ratio": "1.61612195442976314e0"
+          }
+        ]
+      },
+      "galileo_slips_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 3,
+          "ar_ambiguity_pairs": 3
+        },
+        "applied_count": 3,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {
+          "motion_uncertain": 3
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "177203.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 10.576233367420226,
+            "prior_AR_satellites": "G03;G06;G17;G19;E10;E11;E12",
+            "AR_satellites": "G06;G17;G19;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178325.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 17.0331536374949,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178326.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 17.009574172297008,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          }
+        ]
+      },
+      "galileo_slips_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {
+          "ar_satellites": 3,
+          "ar_ambiguity_pairs": 3,
+          "ratio": 2,
+          "integers": 2
+        },
+        "applied_count": 3,
+        "applied_with_admitted_motion": 2,
+        "applied_decisions": {
+          "motion_uncertain": 1,
+          "ratio_rejected": 2
+        },
+        "applied": [
+          {
+            "week": 2324,
+            "tow": "177203.00000000000000000",
+            "decision": "motion_uncertain",
+            "prior_decision": "motion_uncertain",
+            "motion_admitted": false,
+            "maximum_to_upper_median": 10.576233367420226,
+            "prior_AR_satellites": "G03;G06;G17;G19;E10;E11;E12",
+            "AR_satellites": "G06;G17;G19;E10;E11;E12",
+            "prior_ratio": "",
+            "ratio": ""
+          },
+          {
+            "week": 2324,
+            "tow": "178325.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 17.0331536374949,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.63039026912071905e0",
+            "ratio": "1.61455327367827595e0"
+          },
+          {
+            "week": 2324,
+            "tow": "178326.00000000000000000",
+            "decision": "ratio_rejected",
+            "prior_decision": "ratio_rejected",
+            "motion_admitted": true,
+            "maximum_to_upper_median": 17.009574172297008,
+            "prior_AR_satellites": "G03;G04;G06;G09;G17;G19;E02;E04;E10;E11;E12",
+            "AR_satellites": "G03;G04;G06;G09;G17;G19;E04;E10;E11;E12",
+            "prior_ratio": "1.62967527363734610e0",
+            "ratio": "1.61612195442976314e0"
+          }
+        ]
+      }
+    },
+    "tokyo-run3": {
+      "galileo_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_selected_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_selected_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_all_std1_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      },
+      "galileo_slips_all_std2_locked_variance": {
+        "changed_original_53_column_counts": {},
+        "applied_count": 0,
+        "applied_with_admitted_motion": 0,
+        "applied_decisions": {},
+        "applied": []
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "checks": [
+    {
+      "name": "rust",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2"
+      ],
+      "returncode": 0,
+      "log": "rust.qualification.log.gz",
+      "uncompressed_sha256": "299ad57637414a0069a6ba899290ef46b052c12fb57b99ccc7160f32c17a7fa2",
+      "passed_tests": 362
+    },
+    {
+      "name": "examples",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--examples"
+      ],
+      "returncode": 0,
+      "log": "examples.qualification.log.gz",
+      "uncompressed_sha256": "ef793e4611829d3ea33580f319529b35129ca7f78c2133b8d66c160e20f30aab"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "returncode": 0,
+      "log": "fmt.qualification.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "returncode": 0,
+      "log": "clippy.qualification.log.gz",
+      "uncompressed_sha256": "02db5a66fa0c60ca8618bd08aac556eac4f3ec863e8630a0d353dba6a0f6e126"
+    },
+    {
+      "name": "release",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--release"
+      ],
+      "returncode": 0,
+      "log": "release.qualification.log.gz",
+      "uncompressed_sha256": "3ae82d8c1b3d8760f550bebb852aeb9b0b8355ca00b896b00f4a08d8858816d2"
+    }
+  ],
+  "predeclared_inputs_sha256": "36f677ac9908dbb78e277a39b886ccf94328da8b94b5f93c852fd0a81a2919d9"
+}
