@@ -1,2 +1,3 @@
 # Preserve the blank LLI/SNR slots in new fixed-width RINEX observations.
 synthetic_rtk_moving*.obs whitespace=-blank-at-eol
+synthetic_rtk_mixed*.obs whitespace=-blank-at-eol
