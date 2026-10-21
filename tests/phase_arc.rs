@@ -105,6 +105,176 @@ fn decision(t: &PhaseArcTracker, prn: u8) -> &PhaseArcDecision {
 }
 
 #[test]
+fn rejected_retention_preserves_accepted_counts_times_and_gf_mw_anchors() {
+    let s = selections();
+    let mut t = tracker();
+    init(&mut t, &s);
+    let old = t.arc(sat(1)).unwrap().clone();
+    let mut rejected = epoch(1.0);
+    *rejected.observations[0]
+        .carrier_phase_cycles
+        .as_mut()
+        .unwrap() += 0.3 * c::GPS_L1_FREQ / c::SPEED_OF_LIGHT;
+    t.prepare_epoch(&rejected, &table(&s), &s).unwrap();
+    let r = t.reject_epoch_retaining_continuous().unwrap();
+    assert_eq!(r.retained.len(), 2);
+    assert!(r.interrupted.is_empty());
+    assert_eq!(t.arc(sat(1)), Some(&old));
+    assert_eq!(t.last_epoch(), Some(rejected.time));
+    let mut next = epoch(2.0);
+    *next.observations[0].carrier_phase_cycles.as_mut().unwrap() +=
+        0.6 * c::GPS_L1_FREQ / c::SPEED_OF_LIGHT;
+    t.prepare_epoch(&next, &table(&s), &s).unwrap();
+    assert!(
+        decision(&t, 1)
+            .reset_reasons
+            .contains(&ArcResetReason::GeometryFreeJump)
+    );
+    assert!(
+        (decision(&t, 1)
+            .combination_slip
+            .unwrap()
+            .geometry_free_delta_m
+            - 0.6)
+            .abs()
+            < 1e-7
+    );
+    assert_eq!(decision(&t, 2).previous_accepted_epochs, 1);
+    let accepted = accept_all(&mut t);
+    assert_eq!(accepted.accepted[&sat(2)].accepted_epochs, 2);
+}
+
+#[test]
+fn repeated_rejected_retention_cannot_extend_the_last_accepted_gap_limit() {
+    let s = selections();
+    let mut t = tracker();
+    init(&mut t, &s);
+    let old = t.arc(sat(1)).unwrap().clone();
+    for time in [60.0, 119.0, 120.0] {
+        t.prepare_epoch(&epoch(time), &table(&s), &s).unwrap();
+        assert_eq!(
+            t.reject_epoch_retaining_continuous()
+                .unwrap()
+                .retained
+                .len(),
+            2
+        );
+        assert_eq!(t.arc(sat(1)), Some(&old));
+    }
+    t.prepare_epoch(&epoch(120.001), &table(&s), &s).unwrap();
+    let r = t.reject_epoch_retaining_continuous().unwrap();
+    assert!(r.retained.is_empty());
+    assert!(r.interrupted[&sat(1)].contains(&ArcResetReason::TimeGap));
+    assert!(t.arc(sat(1)).is_none());
+}
+
+#[test]
+fn intrinsic_discontinuities_interrupt_even_when_the_estimator_rejects_the_epoch() {
+    for case in 0..12 {
+        let mut s = selections();
+        let mut t = tracker();
+        init(&mut t, &s);
+        let mut e = epoch(1.0);
+        let reason = match case {
+            0 => {
+                e.observations[0].lli = Some(1);
+                ArcResetReason::LossOfLock
+            }
+            1 => {
+                e.observations[0].lli = Some(2);
+                ArcResetReason::PhaseUnavailable(PhaseUnavailable::HalfCycle {
+                    tracking_code: "1C".into(),
+                })
+            }
+            2 => {
+                e.observations[0].carrier_phase_cycles = None;
+                ArcResetReason::PhaseUnavailable(PhaseUnavailable::MissingPhase {
+                    tracking_code: "1C".into(),
+                })
+            }
+            3 => {
+                e.observations.retain(|o| o.satellite != sat(1));
+                ArcResetReason::MissingSatellite
+            }
+            4 => {
+                s.remove(&sat(1));
+                ArcResetReason::NotSelected
+            }
+            5 => {
+                e.flag = 1;
+                ArcResetReason::PowerFailure
+            }
+            6 => {
+                e.flag = 6;
+                ArcResetReason::CycleSlipEvent
+            }
+            7 => {
+                s.get_mut(&sat(1)).unwrap().clock_reference = "changed-clock".into();
+                ArcResetReason::ClockDatumChanged
+            }
+            8 => {
+                s.get_mut(&sat(1)).unwrap().phase_reference = "changed-phase".into();
+                ArcResetReason::PhaseDatumChanged
+            }
+            9 => {
+                *e.observations[0].carrier_phase_cycles.as_mut().unwrap() +=
+                    c::GPS_L1_FREQ / c::SPEED_OF_LIGHT;
+                ArcResetReason::GeometryFreeJump
+            }
+            10 => {
+                *e.observations[0].pseudorange_m.as_mut().unwrap() += 1000.0;
+                ArcResetReason::MelbourneWubbenaJump
+            }
+            11 => {
+                e.observations[1].tracking_code = "2L".into();
+                s.get_mut(&sat(1)).unwrap().tracking_codes[1] = "2L".into();
+                ArcResetReason::SignalChanged
+            }
+            _ => unreachable!(),
+        };
+        t.prepare_epoch(&e, &table(&s), &s).unwrap();
+        let r = t.reject_epoch_retaining_continuous().unwrap();
+        assert!(
+            r.interrupted[&sat(1)].contains(&reason),
+            "case {case}: {r:?}"
+        );
+        assert!(!r.retained.contains_key(&sat(1)));
+        assert!(t.arc(sat(1)).is_none());
+        assert_eq!(r.retained.contains_key(&sat(2)), !matches!(case, 5 | 6));
+    }
+}
+
+#[test]
+fn rejected_new_arcs_are_never_accepted_and_default_rejection_still_interrupts() {
+    let s = selections();
+    let mut t = tracker();
+    assert_eq!(
+        t.reject_epoch_retaining_continuous(),
+        Err(PhaseArcError::NoPendingUpdate)
+    );
+    t.prepare_epoch(&epoch(0.0), &table(&s), &s).unwrap();
+    let proposed = decision(&t, 1).proposed_arc.unwrap();
+    assert!(
+        t.reject_epoch_retaining_continuous()
+            .unwrap()
+            .retained
+            .is_empty()
+    );
+    assert!(t.arc(sat(1)).is_none());
+    t.prepare_epoch(&epoch(1.0), &table(&s), &s).unwrap();
+    assert!(decision(&t, 1).proposed_arc.unwrap() > proposed);
+    accept_all(&mut t);
+    t.prepare_epoch(&epoch(2.0), &table(&s), &s).unwrap();
+    assert!(
+        t.finish_epoch(&BTreeSet::new())
+            .unwrap()
+            .accepted
+            .is_empty()
+    );
+    assert!(t.arc(sat(1)).is_none());
+}
+
+#[test]
 fn native_48_predicates_match_floor_and_strict_positive_negative_boundaries() {
     let mut count = 0;
     for line in include_str!("fixtures/upstream_phase_arc.csv")

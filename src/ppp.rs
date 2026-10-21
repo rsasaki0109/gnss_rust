@@ -93,6 +93,7 @@ impl PppPositionModel {
 pub struct PppFilterSettings {
     pub position_model: PppPositionModel,
     pub clock_model: PppClockModel,
+    pub rejected_update_policy: PppRejectedUpdatePolicy,
     /// Strict calibrated phase remains the default. Explicit raw mode retains
     /// absent phase OSBs and absorbs constant biases only into FLOAT ambiguities.
     pub phase_bias_mode: PhaseBiasMode,
@@ -116,6 +117,7 @@ impl Default for PppFilterSettings {
         Self {
             position_model: PppPositionModel::Static,
             clock_model: PppClockModel::RandomWalk,
+            rejected_update_policy: PppRejectedUpdatePolicy::InterruptAllArcs,
             phase_bias_mode: PhaseBiasMode::RequireSignalCorrections,
             initial_head_variance_m2: [1e6, 1e6, 1e6, 1e8, 100.0],
             head_process_noise_m2_per_s: [0.0, 0.0, 0.0, 100.0, 1e-8],
@@ -140,6 +142,17 @@ pub enum PppClockModel {
     /// clock mean; discard its correlations, preserving the other marginal.
     /// No SPP clock, Doppler or observed clock seed is fused. Clock Q is unused.
     IndependentEpoch,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum PppRejectedUpdatePolicy {
+    #[default]
+    InterruptAllArcs,
+    /// On measurement/geometry rejection, keep only previously accepted arcs
+    /// with unchanged identity and no current slip/missing/gap/reset reason.
+    /// Numeric state, accepted counts, GF/MW and wind-up anchors do not advance.
+    /// Configuration, product, model and arithmetic errors still interrupt all.
+    RetainContinuousArcs,
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct PppConfig {
@@ -454,6 +467,7 @@ pub struct PppAmbiguity {
 pub struct PppSolution {
     pub position_model: PppPositionModel,
     pub clock_model: PppClockModel,
+    pub rejected_update_policy: PppRejectedUpdatePolicy,
     pub phase_bias_mode: PhaseBiasMode,
     /// XYZ state/report reference; model receiver_position_m is instantaneous.
     pub receiver_reference: ReceiverPositionReference,
@@ -489,6 +503,7 @@ pub struct PppFilter {
     layout: BTreeMap<SatelliteId, (usize, PhaseArcId)>,
     arcs: PhaseArcTracker,
     last_rejections: BTreeMap<SatelliteId, PppRejection>,
+    last_retained_phase_arcs: BTreeSet<SatelliteId>,
     windup: BTreeMap<SatelliteId, PppWindupState>,
 }
 impl PppFilter {
@@ -520,6 +535,7 @@ impl PppFilter {
             layout: BTreeMap::new(),
             arcs,
             last_rejections: BTreeMap::new(),
+            last_retained_phase_arcs: BTreeSet::new(),
             windup: BTreeMap::new(),
         })
     }
@@ -536,19 +552,26 @@ impl PppFilter {
     pub fn last_rejections(&self) -> &BTreeMap<SatelliteId, PppRejection> {
         &self.last_rejections
     }
+    /// Arcs retained after the last processed rejected measurement update.
+    /// Empty after a successful update, event or global invalidation.
+    pub fn last_retained_phase_arcs(&self) -> &BTreeSet<SatelliteId> {
+        &self.last_retained_phase_arcs
+    }
     pub fn windup_state(&self, sat: SatelliteId) -> Option<&PppWindupState> {
         self.windup.get(&sat)
     }
     pub fn invalidate_phase(&mut self) -> Result<(), PppError> {
         self.arcs.invalidate_all()?;
         self.windup.clear();
+        self.last_retained_phase_arcs.clear();
         Ok(())
     }
 
     /// GPS-only IF PPP in the configured position model. Every code/phase requires declared
     /// corrections, matching actual selected clock source, frame and reference
     /// point. At least five independent code rows and four phases are required.
-    /// Failure preserves numeric mean/covariance and interrupts phase continuity.
+    /// Failure preserves numeric mean/covariance. The default interrupts all
+    /// phase continuity; optional retention never accepts rejected measurements.
     pub fn process_epoch(
         &mut self,
         epoch: &ObservationEpoch,
@@ -591,10 +614,12 @@ impl PppFilter {
             Ok(prepared) => prepared.decisions().clone(),
             Err(error) => {
                 self.windup.clear();
+                self.last_retained_phase_arcs.clear();
                 return Err(error.into());
             }
         };
         self.last_rejections.clear();
+        self.last_retained_phase_arcs.clear();
         if epoch.flag == 6 {
             self.windup.clear();
             return Ok(PppEpoch::Event(self.arcs.finish_epoch(&BTreeSet::new())?));
@@ -668,6 +693,7 @@ impl PppFilter {
                 let solution = PppSolution {
                     position_model: self.config.filter.position_model,
                     clock_model: self.config.filter.clock_model,
+                    rejected_update_policy: self.config.filter.rejected_update_policy,
                     phase_bias_mode: self.config.filter.phase_bias_mode,
                     receiver_reference: self.config.receiver_reference,
                     position,
@@ -691,8 +717,27 @@ impl PppFilter {
                 Ok(PppEpoch::Solution(Box::new(solution)))
             }
             Err(error) => {
-                self.arcs.finish_epoch(&BTreeSet::new())?;
-                self.windup.clear();
+                let retain = self.config.filter.rejected_update_policy
+                    == PppRejectedUpdatePolicy::RetainContinuousArcs
+                    && matches!(
+                        error,
+                        PppError::InsufficientCode { .. }
+                            | PppError::InsufficientPhase { .. }
+                            | PppError::NonConvergent
+                            | PppError::PostfitRejected
+                            | PppError::NonPhysicalState
+                            | PppError::Filter(FilterError::InnovationRejected)
+                            | PppError::Gnss(Error::SingularGeometry)
+                    );
+                if retain {
+                    let rejection = self.arcs.reject_epoch_retaining_continuous()?;
+                    self.last_retained_phase_arcs = rejection.retained.keys().copied().collect();
+                    self.windup
+                        .retain(|sat, _| self.last_retained_phase_arcs.contains(sat));
+                } else {
+                    self.arcs.finish_epoch(&BTreeSet::new())?;
+                    self.windup.clear();
+                }
                 Err(error)
             }
         }

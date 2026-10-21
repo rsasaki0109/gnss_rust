@@ -294,6 +294,103 @@ fn distance(a: EcefCoord, t: &[f64]) -> f64 {
 }
 
 #[test]
+fn retained_moving_arcs_keep_exact_state_and_only_successful_lock_counts() {
+    let p = products();
+    let selection = selections();
+    let mut cfg = config();
+    cfg.filter.rejected_update_policy = PppRejectedUpdatePolicy::RetainContinuousArcs;
+    let mut f = PppFilter::new(cfg).unwrap();
+    let mut ee = epochs(false);
+    for e in &ee[..6] {
+        f.process_epoch(e, &p, &biases(e.time), &selection).unwrap();
+    }
+    let old: BTreeMap<_, _> = selection
+        .keys()
+        .filter_map(|s| f.phase_arc(*s).map(|a| (*s, a.clone())))
+        .collect();
+    let state = f.state().clone();
+    let time = f.state_time();
+    let broken = ee[6].observations[0].satellite;
+    *ee[6].observations[0].pseudorange_m.as_mut().unwrap() += 1000.0;
+    assert!(
+        f.process_epoch(&ee[6], &p, &biases(ee[6].time), &selection)
+            .is_err()
+    );
+    assert_eq!(f.state(), &state);
+    assert_eq!(f.state_time(), time);
+    assert!(!f.last_retained_phase_arcs().is_empty());
+    assert!(f.phase_arc(broken).is_none());
+    for s in f.last_retained_phase_arcs() {
+        assert_eq!(f.phase_arc(*s), old.get(s));
+    }
+    let retained = f.last_retained_phase_arcs().clone();
+    let r = solution(
+        f.process_epoch(&ee[7], &p, &biases(ee[7].time), &selection)
+            .unwrap(),
+    );
+    assert_eq!(
+        r.rejected_update_policy,
+        PppRejectedUpdatePolicy::RetainContinuousArcs
+    );
+    assert!(f.last_retained_phase_arcs().is_empty());
+    for s in retained {
+        let a = &r.arc_commit.accepted[&s];
+        assert_eq!(a.id, old[&s].id);
+        assert_eq!(a.accepted_epochs, old[&s].accepted_epochs + 1);
+    }
+    assert!(distance(r.position.position_ecef.unwrap(), &truth()[7][3..6]) < 0.002);
+}
+
+#[test]
+fn retention_cannot_accept_failed_initialization_or_survive_events_and_invalid_epochs() {
+    let p = products();
+    let s = selections();
+    let mut cfg = config();
+    cfg.filter.rejected_update_policy = PppRejectedUpdatePolicy::RetainContinuousArcs;
+    let mut f = PppFilter::new(cfg).unwrap();
+    let mut ee = epochs(false);
+    *ee[0].observations[0].pseudorange_m.as_mut().unwrap() += 1000.0;
+    assert!(
+        f.process_epoch(&ee[0], &p, &biases(ee[0].time), &s)
+            .is_err()
+    );
+    assert!(f.state_time().is_none());
+    assert!(f.last_retained_phase_arcs().is_empty());
+    for e in &ee[1..5] {
+        f.process_epoch(e, &p, &biases(e.time), &s).unwrap();
+    }
+    let old = f.state().clone();
+    ee[5].flag = 6;
+    assert!(matches!(
+        f.process_epoch(&ee[5], &p, &biases(ee[5].time), &s)
+            .unwrap(),
+        PppEpoch::Event(_)
+    ));
+    assert_eq!(f.state(), &old);
+    assert!(s.keys().all(|s| f.phase_arc(*s).is_none()));
+    let recovered = solution(
+        f.process_epoch(&ee[6], &p, &biases(ee[6].time), &s)
+            .unwrap(),
+    );
+    assert!(
+        recovered
+            .arc_commit
+            .accepted
+            .values()
+            .all(|a| a.accepted_epochs == 1)
+    );
+    let old = f.state().clone();
+    ee[7].flag = 9;
+    assert!(
+        f.process_epoch(&ee[7], &p, &biases(ee[7].time), &s)
+            .is_err()
+    );
+    assert_eq!(f.state(), &old);
+    assert!(f.last_retained_phase_arcs().is_empty());
+    assert!(s.keys().all(|s| f.phase_arc(*s).is_none()));
+}
+
+#[test]
 fn rounded_clean_trace_retains_full_trace_two_mm_failures_and_meets_the_bound_afterward() {
     let products = products();
     let mut f = PppFilter::new(config()).unwrap();

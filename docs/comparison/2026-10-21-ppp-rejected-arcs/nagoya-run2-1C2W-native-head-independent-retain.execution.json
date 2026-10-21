@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_ppp",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2/rover.obs",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242020000_01D_05M_ORB.SP3",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242020000_01D_30S_CLK.CLK",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/code-rapid-20261021/COD0OPSRAP_20242020000_01D_01D_OSB.BIA",
+    "/workspace/.cloud-setup/datasets/PPC-Precise/antex-20261021/gps-subset/gps-satellite-igs20.atx",
+    "nagoya-run2",
+    "1C2W",
+    "calibrated",
+    "native-head",
+    "-epoch-clock",
+    "-retain-arcs"
+  ],
+  "returncode": 0,
+  "csv_sha256": "34f2b5354ee439e463c9b15c4c4271c5bea15463480203caa7c696b00c1ea0e5",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "c6429c4d4a77d246a832f34e001d9a32187bc2926492ac94b430aade60820ccf"
+}

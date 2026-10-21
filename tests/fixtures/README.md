@@ -1692,3 +1692,18 @@ unchanged from the 413-test qualification, and all six old 29-column control
 outputs are byte-identical. This is whole-solver diagnostic evidence, without
 practical accuracy, multi-GNSS or runtime acceptance. See the
 [native PPP evidence](../../docs/comparison/2026-10-21-native-ppp-common-inputs/README.md).
+
+## Rejected-update phase continuity (2026-10-21)
+
+The optional Rust `RetainContinuousArcs` policy adds no new native physics
+fixture. Seven additional tests reuse the independently generated moving/static
+PPP and wind-up fixtures, covering unchanged accepted anchors/counts, strict
+cumulative gap expiry, 12 intrinsic resets, rejected new IDs, moving recovery,
+events/global invalidation and exact numeric/wind-up equivalence to skipping
+rejected common-clock observations. Existing accuracy/gate bounds are preserved;
+the satellite-calibration expiry regression also exercises the new policy.
+All 420 tests and standard checks pass. Ninety-six full-rate PPC runs retain
+both origins and common/new/lost epochs; 48 off controls reproduce the prior
+CSV bytes exactly. Higher counts and explicit arc retention do not accept
+positioning accuracy or whole-native lifecycle parity. See the
+[rejected-arc evidence](../../docs/comparison/2026-10-21-ppp-rejected-arcs/README.md).

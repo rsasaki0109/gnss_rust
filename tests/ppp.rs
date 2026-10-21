@@ -737,6 +737,7 @@ fn expired_or_missing_satellite_calibration_is_a_hard_failure_with_no_zero_fallb
         .valid_until = Some(epochs[1].time);
     let mut cfg = satellite_config();
     cfg.satellite_antenna = Some(SatelliteAntennaModel::new(a.binding().clone(), entries).unwrap());
+    cfg.filter.rejected_update_policy = PppRejectedUpdatePolicy::RetainContinuousArcs;
     let mut f = PppFilter::new(cfg).unwrap();
     for e in &epochs[..2] {
         f.process_epoch(e, &p, &biases(), &selections()).unwrap();
@@ -757,6 +758,7 @@ fn expired_or_missing_satellite_calibration_is_a_hard_failure_with_no_zero_fallb
     assert_eq!(f.state_time(), time);
     assert!(f.phase_arc(sat).is_none());
     assert!(f.windup_state(sat).is_none());
+    assert!(f.last_retained_phase_arcs().is_empty());
     let mut cfg = satellite_config();
     cfg.satellite_antenna = Some(
         SatelliteAntennaModel::new(
@@ -1097,6 +1099,56 @@ fn windup_filter() -> PppFilter {
     let mut config = config();
     config.phase_windup = Some(PppWindupModel::NominalYawApproximateSun);
     PppFilter::new(config).unwrap()
+}
+
+#[test]
+fn retained_windup_and_numeric_state_equal_skipping_rejected_common_clock_observations() {
+    let mut cfg = config();
+    cfg.phase_windup = Some(PppWindupModel::NominalYawApproximateSun);
+    cfg.filter.rejected_update_policy = PppRejectedUpdatePolicy::RetainContinuousArcs;
+    let mut f = PppFilter::new(cfg.clone()).unwrap();
+    let mut skipped = PppFilter::new(cfg).unwrap();
+    let ee = windup_epochs(false);
+    let p = products();
+    let s = selections();
+    for e in &ee[..8] {
+        f.process_epoch(e, &p, &biases(), &s).unwrap();
+        skipped.process_epoch(e, &p, &biases(), &s).unwrap();
+    }
+    let old = f.state().clone();
+    let time = f.state_time();
+    let anchors: BTreeMap<_, _> = s
+        .keys()
+        .filter_map(|sat| f.windup_state(*sat).map(|w| (*sat, w.clone())))
+        .collect();
+    let mut bad = ee[8].clone();
+    for o in &mut bad.observations {
+        let hz = tracking_frequency_hz(o.satellite, &o.tracking_code, o.glonass_channel).unwrap();
+        if let Some(code) = &mut o.pseudorange_m {
+            *code += 5000.0;
+        }
+        if let Some(phase) = &mut o.carrier_phase_cycles {
+            *phase += 5000.0 * hz / c::SPEED_OF_LIGHT;
+        }
+    }
+    assert_eq!(
+        f.process_epoch(&bad, &p, &biases(), &s),
+        Err(PppError::Filter(FilterError::InnovationRejected))
+    );
+    assert_eq!(f.state(), &old);
+    assert_eq!(f.state_time(), time);
+    assert_eq!(f.last_retained_phase_arcs().len(), anchors.len());
+    for (sat, w) in &anchors {
+        assert_eq!(f.windup_state(*sat), Some(w));
+    }
+    let a = solution(f.process_epoch(&ee[9], &p, &biases(), &s).unwrap());
+    let b = solution(skipped.process_epoch(&ee[9], &p, &biases(), &s).unwrap());
+    assert_eq!(f.state(), skipped.state());
+    assert_eq!(a.measurements, b.measurements);
+    assert_eq!(a.arc_commit, b.arc_commit);
+    f.invalidate_phase().unwrap();
+    assert!(f.last_retained_phase_arcs().is_empty());
+    assert!(s.keys().all(|sat| f.windup_state(*sat).is_none()));
 }
 fn windup_reference() -> BTreeMap<(usize, SatelliteId), (f64, f64)> {
     include_str!("fixtures/upstream_ppp_windup.csv")

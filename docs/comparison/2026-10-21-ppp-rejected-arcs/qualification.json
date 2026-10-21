@@ -1,0 +1,41 @@
+{
+  "checks": [
+    {
+      "name": "tests",
+      "command": "cargo test --locked --offline -j2",
+      "returncode": 0,
+      "log": "tests.qualification.log.gz",
+      "uncompressed_sha256": "0b760a933f8e3b4feda833fdedd0bc025ba33799cf44b93ee2eccaf3c96dfd69"
+    },
+    {
+      "name": "fmt",
+      "command": "cargo fmt --check",
+      "returncode": 0,
+      "log": "fmt.qualification.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": "cargo clippy --locked --offline -j2 --all-targets -- -D warnings",
+      "returncode": 0,
+      "log": "clippy.qualification.log.gz",
+      "uncompressed_sha256": "063181bf14346b3db629d1cbb718e460d1ec2f64b454f7e34366fe545eda815f"
+    },
+    {
+      "name": "release",
+      "command": "cargo build --locked --offline --release",
+      "returncode": 0,
+      "log": "release.qualification.log.gz",
+      "uncompressed_sha256": "b073b7132b22d6002f383dfd25c1637c7f8ef84602537b94260abc23df5c5d84"
+    },
+    {
+      "name": "examples",
+      "command": "cargo build --locked --offline --release --examples",
+      "returncode": 0,
+      "log": "examples.qualification.log.gz",
+      "uncompressed_sha256": "80a81e9df5aaea42e000e0cc6868a64b6a05f951d1a4e2b65293015ed9999aca"
+    }
+  ],
+  "predeclared_inputs_sha256": "8d69b22f0bea5b68a39a5f4014ec36837add265067ae9faaf0f7fb113f630962",
+  "passed_tests": 420
+}

@@ -7,6 +7,7 @@ use gnss_rust::dual_frequency::{
 };
 use gnss_rust::ppp::{
     PppClockModel, PppConfig, PppEpoch, PppFilter, PppFilterSettings, PppPositionModel,
+    PppRejectedUpdatePolicy,
 };
 use gnss_rust::precise::{
     ClockSource, OrbitReferencePoint, PreciseProducts, read_satellite_clocks, read_sp3,
@@ -34,6 +35,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if timing {
         args.pop();
     }
+    let retain_arcs = args.last().is_some_and(|s| s == "-retain-arcs");
+    if retain_arcs {
+        args.pop();
+    }
     let epoch_clock = args.last().is_some_and(|s| s == "-epoch-clock");
     if epoch_clock {
         args.pop();
@@ -47,7 +52,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "native-variances" | "climatology" | "native-head"
             ))
     {
-        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-timing]".into());
+        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-retain-arcs] [-timing]".into());
     }
     let open = |name: &str| File::open(name).map(BufReader::new);
     let orbit = read_sp3(open(&args[1])?)?;
@@ -195,6 +200,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         config.filter.clock_model = PppClockModel::IndependentEpoch;
         eprintln!("clock_model=IndependentEpoch SPP_fused=false thresholds_changed=false");
     }
+    if retain_arcs {
+        config.filter.rejected_update_policy = PppRejectedUpdatePolicy::RetainContinuousArcs;
+        eprintln!(
+            "rejected_update_policy=RetainContinuousArcs rejected_measurements_accepted=false thresholds_changed=false"
+        );
+    }
     eprintln!(
         "config={config:?} case={} pair={} phase={} RINEX_phase_shift_declarations={phase_shifts} excluded_receiver_clocks={} excluded_receiver_bias_rows={} byte_comment_lines={} receiver_calibration_known=false satellite_PCV_applied=false solid_earth_tide_applied=false truth_used_by_solver=false whole_native_PPP_executed=false practical_parity_accepted=false",
         args[5],
@@ -208,9 +219,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut out = BufWriter::new(std::io::stdout().lock());
     writeln!(
         out,
-        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}",
+        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}",
         if timing {
             ",filter_ms,epoch_stage_ms"
+        } else {
+            ""
+        },
+        if retain_arcs {
+            ",retained_arcs,retained_satellites"
         } else {
             ""
         }
@@ -246,7 +262,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .filter(|c| c.phase_add_m.is_some())
             .count();
         let corrections = SignalCorrections::new(corrections)?;
-        let mut row = vec![String::new(); if timing { 31 } else { 29 }];
+        let mut row =
+            vec![String::new(); 29 + 2 * usize::from(timing) + 2 * usize::from(retain_arcs)];
         row[0] = epoch.time.week().to_string();
         row[1] = format!("{:.17}", epoch.time.tow());
         row[20] = format!(
@@ -268,6 +285,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         if let Some(started) = epoch_started {
             row[30] = format!("{:.17e}", started.elapsed().as_secs_f64() * 1000.0);
+        }
+        if retain_arcs {
+            let index = 29 + 2 * usize::from(timing);
+            row[index] = filter.last_retained_phase_arcs().len().to_string();
+            row[index + 1] = filter
+                .last_retained_phase_arcs()
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join(";");
         }
         match result {
             Ok(PppEpoch::Solution(s)) => {

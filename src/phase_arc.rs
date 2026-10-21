@@ -178,6 +178,15 @@ pub struct PhaseArcCommit {
     pub interrupted: BTreeMap<SatelliteId, Vec<ArcResetReason>>,
 }
 
+/// A rejected estimator update accepts no new phase measurements. Retained
+/// arcs keep their previous accepted time, count, identity and GF/MW anchors.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PhaseArcRejection {
+    pub time: GnssTime,
+    pub retained: BTreeMap<SatelliteId, PhaseArc>,
+    pub interrupted: BTreeMap<SatelliteId, Vec<ArcResetReason>>,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 struct Identity {
     tracking: [String; 2],
@@ -505,6 +514,29 @@ impl PhaseArcTracker {
         &mut self,
         accepted: &BTreeSet<SatelliteId>,
     ) -> Result<PhaseArcCommit, PhaseArcError> {
+        self.finish_with_retention(accepted, false).map(|(c, _)| c)
+    }
+
+    /// Reject all measurements while preserving only already active arcs whose
+    /// current proposal has the same ID and no intrinsic reset reason. Missing
+    /// phases, LLI/slips, events, datum changes and gaps still interrupt arcs.
+    /// Rejected values never advance accepted time/count or GF/MW anchors.
+    pub fn reject_epoch_retaining_continuous(
+        &mut self,
+    ) -> Result<PhaseArcRejection, PhaseArcError> {
+        let (commit, retained) = self.finish_with_retention(&BTreeSet::new(), true)?;
+        Ok(PhaseArcRejection {
+            time: commit.time,
+            retained,
+            interrupted: commit.interrupted,
+        })
+    }
+
+    fn finish_with_retention(
+        &mut self,
+        accepted: &BTreeSet<SatelliteId>,
+        retain_continuous: bool,
+    ) -> Result<(PhaseArcCommit, BTreeMap<SatelliteId, PhaseArc>), PhaseArcError> {
         let pending = self
             .pending
             .as_ref()
@@ -517,6 +549,7 @@ impl PhaseArcTracker {
         let mut pending = self.pending.take().unwrap();
         let mut committed = BTreeMap::new();
         let mut interrupted = BTreeMap::new();
+        let mut retained = BTreeMap::new();
         for (sat, decision) in &pending.view.decisions {
             let h = self.histories.entry(*sat).or_default();
             if accepted.contains(sat) {
@@ -525,6 +558,13 @@ impl PhaseArcTracker {
                 h.active = Some(candidate);
                 h.ever_accepted = true;
                 h.break_reasons.clear();
+            } else if retain_continuous
+                && decision.reset_reasons.is_empty()
+                && h.active
+                    .as_ref()
+                    .is_some_and(|old| decision.proposed_arc == Some(old.arc.id))
+            {
+                retained.insert(*sat, h.active.as_ref().unwrap().arc.clone());
             } else {
                 let mut reasons = decision.reset_reasons.clone();
                 if decision.proposed_arc.is_some() {
@@ -540,10 +580,13 @@ impl PhaseArcTracker {
         }
         self.last_epoch = Some(pending.view.time);
         self.next_id = pending.next_id;
-        Ok(PhaseArcCommit {
-            time: pending.view.time,
-            accepted: committed,
-            interrupted,
-        })
+        Ok((
+            PhaseArcCommit {
+                time: pending.view.time,
+                accepted: committed,
+                interrupted,
+            },
+            retained,
+        ))
     }
 }
