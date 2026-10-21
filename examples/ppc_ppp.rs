@@ -41,6 +41,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if retain_arcs {
         args.pop();
     }
+    let native_screen = args.last().is_some_and(|s| s == "-native-screen");
+    if native_screen {
+        args.pop();
+    }
     let seed_profile = if args.len() >= 2
         && matches!(
             args[args.len() - 2].as_str(),
@@ -69,7 +73,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "native-variances" | "climatology" | "native-head"
             ))
     {
-        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-seed-shadow|-seed-position|-seed-doppler BASE_NAV] [-retain-arcs] [-timing]".into());
+        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-seed-shadow|-seed-position|-seed-doppler BASE_NAV] [-native-screen] [-retain-arcs] [-timing]".into());
     }
     let open = |name: &str| File::open(name).map(BufReader::new);
     let orbit = read_sp3(open(&args[1])?)?;
@@ -255,11 +259,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             config.filter.motion_seed_policy
         );
     }
+    if native_screen {
+        config.filter.standardized_residual_gate_sigma = Some(4.0);
+        eprintln!(
+            "standardized_residual_screen_sigma=4 raw_sigma_screen=false whole_satellite_removed=true fresh_prior_every_retry=true existing_GNSS_gates_unchanged=true"
+        );
+    }
     let mut filter = PppFilter::new(config)?;
     let mut out = BufWriter::new(std::io::stdout().lock());
     writeln!(
         out,
-        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}{}{}",
+        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}{}{}{}",
         if timing {
             ",filter_ms,epoch_stage_ms"
         } else {
@@ -277,6 +287,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         if seed_profile.is_some() {
             ppp_seed::HEADER
+        } else {
+            ""
+        },
+        if native_screen {
+            ",screen_attempts,screened_satellites,screen_diagnostics"
         } else {
             ""
         }
@@ -440,6 +455,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         if let Some(r) = seed_record {
             row.extend(r.append(filter.last_motion_seed(), service_ppp.as_ref(), epoch.time));
+        }
+        if native_screen {
+            let d = filter.last_residual_screening();
+            row.extend([
+                d.len().to_string(),
+                d.iter()
+                    .filter(|d| d.removed)
+                    .map(|d| d.satellite.to_string())
+                    .collect::<Vec<_>>()
+                    .join(";"),
+                format!("{d:?}"),
+            ]);
         }
         writeln!(
             out,

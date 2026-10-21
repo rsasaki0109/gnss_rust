@@ -1,0 +1,114 @@
+[
+  {
+    "id": 8,
+    "maximum_relative_inverse_asymmetry": 1.3168671047518179e-08,
+    "absolute_asymmetry": 4.5562239961785544e-12,
+    "entry_scale": 0.000345989658313869,
+    "row": 14,
+    "column": 8
+  },
+  {
+    "id": 12,
+    "maximum_relative_inverse_asymmetry": 1.287584192305212e-10,
+    "absolute_asymmetry": 3.2226547819202978e-12,
+    "entry_scale": 0.02502869172500987,
+    "row": 8,
+    "column": 2
+  },
+  {
+    "id": 16,
+    "maximum_relative_inverse_asymmetry": 2.849813504734584e-10,
+    "absolute_asymmetry": 5.373611278169932e-12,
+    "entry_scale": 0.018856010294155727,
+    "row": 8,
+    "column": 2
+  },
+  {
+    "id": 20,
+    "maximum_relative_inverse_asymmetry": 4.3847258358977986e-10,
+    "absolute_asymmetry": 1.2382418007605978e-11,
+    "entry_scale": 0.02823989109246235,
+    "row": 6,
+    "column": 1
+  },
+  {
+    "id": 24,
+    "maximum_relative_inverse_asymmetry": 1.5289234860917413e-09,
+    "absolute_asymmetry": 2.400192024298864e-12,
+    "entry_scale": 0.0015698575148677147,
+    "row": 10,
+    "column": 3
+  },
+  {
+    "id": 28,
+    "maximum_relative_inverse_asymmetry": 2.1928754213113897e-09,
+    "absolute_asymmetry": 5.541170820799746e-12,
+    "entry_scale": 0.002526897226786371,
+    "row": 13,
+    "column": 7
+  },
+  {
+    "id": 32,
+    "maximum_relative_inverse_asymmetry": 2.2734695923374434e-10,
+    "absolute_asymmetry": 1.996581719398982e-12,
+    "entry_scale": 0.00878209115322373,
+    "row": 8,
+    "column": 1
+  },
+  {
+    "id": 36,
+    "maximum_relative_inverse_asymmetry": 1.117524650434504e-09,
+    "absolute_asymmetry": 6.213851481973176e-12,
+    "entry_scale": 0.005560370842430341,
+    "row": 12,
+    "column": 2
+  },
+  {
+    "id": 40,
+    "maximum_relative_inverse_asymmetry": 1.7996421661695876e-10,
+    "absolute_asymmetry": 5.39889660755577e-12,
+    "entry_scale": 0.029999833906131146,
+    "row": 5,
+    "column": 0
+  },
+  {
+    "id": 44,
+    "maximum_relative_inverse_asymmetry": 4.250186024417533e-10,
+    "absolute_asymmetry": 2.4112378760321462e-12,
+    "entry_scale": 0.005673252563957115,
+    "row": 8,
+    "column": 0
+  },
+  {
+    "id": 48,
+    "maximum_relative_inverse_asymmetry": 7.350051119008406e-10,
+    "absolute_asymmetry": 3.432289175098191e-12,
+    "entry_scale": 0.004669748712660981,
+    "row": 14,
+    "column": 8
+  },
+  {
+    "id": 52,
+    "maximum_relative_inverse_asymmetry": 2.0019272734391235e-10,
+    "absolute_asymmetry": 1.5987211554602254e-12,
+    "entry_scale": 0.007985910260934566,
+    "row": 8,
+    "column": 1
+  },
+  {
+    "id": 56,
+    "maximum_relative_inverse_asymmetry": 9.304044152802983e-10,
+    "absolute_asymmetry": 6.025014688548769e-12,
+    "entry_scale": 0.006475694428786264,
+    "row": 10,
+    "column": 0
+  },
+  {
+    "id": 60,
+    "maximum_relative_inverse_asymmetry": 3.719547454079105e-11,
+    "absolute_asymmetry": 2.976430213408321e-11,
+    "entry_scale": 0.8002129963805592,
+    "row": 3,
+    "column": 2
+  }
+]

@@ -854,3 +854,25 @@ fn nonfinite_diagnostics_and_invalid_configuration_are_errors() {
         Err(PhaseArcError::InvalidDiagnostic)
     );
 }
+
+#[test]
+fn quality_exclusion_breaks_only_named_arcs_without_advancing_other_rejected_history() {
+    let s = selections();
+    let b = table(&s);
+    let mut t = PhaseArcTracker::new(Default::default()).unwrap();
+    t.prepare_epoch(&epoch(0.0), &b, &s).unwrap();
+    t.finish_epoch(&BTreeSet::from([sat(1), sat(2)])).unwrap();
+    let one = t.arc(sat(1)).unwrap().clone();
+    let two = t.arc(sat(2)).unwrap().clone();
+    t.prepare_epoch(&epoch(1.0), &b, &s).unwrap();
+    let r = t
+        .reject_epoch_retaining_continuous_excluding(&BTreeSet::from([sat(1)]))
+        .unwrap();
+    assert_eq!(r.retained[&sat(2)], two);
+    assert!(!r.retained.contains_key(&sat(1)));
+    assert!(t.arc(sat(1)).is_none());
+    assert_eq!(t.arc(sat(2)), Some(&two));
+    let p = t.prepare_epoch(&epoch(2.0), &b, &s).unwrap();
+    assert_ne!(p.decisions()[&sat(1)].proposed_arc, Some(one.id));
+    assert_eq!(p.decisions()[&sat(2)].proposed_arc, Some(two.id));
+}

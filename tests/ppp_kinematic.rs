@@ -1454,3 +1454,196 @@ fn raw_float_and_relative_code_dsb_gauges_preserve_moving_positions_and_shift_re
         }
     }
 }
+
+fn add_code_fault(e: &mut gnss_rust::observation::ObservationEpoch, sat: SatelliteId, metres: f64) {
+    for o in e.observations.iter_mut().filter(|o| o.satellite == sat) {
+        if let Some(p) = &mut o.pseudorange_m {
+            *p += metres;
+        }
+    }
+}
+#[test]
+fn standardized_screening_is_opt_in_for_motion_with_finite_positive_sigma_only() {
+    let original = acceleration_config();
+    assert_eq!(original.filter.standardized_residual_gate_sigma, None);
+    for gate in [0.0, -4.0, f64::NAN, f64::INFINITY] {
+        let mut c = original.clone();
+        c.filter.standardized_residual_gate_sigma = Some(gate);
+        assert_eq!(
+            PppFilter::new(c).unwrap_err(),
+            PppError::InvalidConfiguration
+        );
+    }
+    let mut c = original.clone();
+    c.filter.position_model = PppPositionModel::Static;
+    c.filter.standardized_residual_gate_sigma = Some(4.0);
+    assert_eq!(
+        PppFilter::new(c).unwrap_err(),
+        PppError::InvalidConfiguration
+    );
+    for model in [
+        original.filter.position_model,
+        PppPositionModel::ConstantVelocity(Default::default()),
+    ] {
+        let mut c = original.clone();
+        c.filter.position_model = model;
+        c.filter.standardized_residual_gate_sigma = Some(4.0);
+        PppFilter::new(c).unwrap();
+    }
+}
+#[test]
+fn native_sigma_screen_keeps_clean_and_noisy_car_states_identical_without_false_exclusions() {
+    let p = products();
+    let s = selections();
+    for noisy in [false, true] {
+        let base = acceleration_config();
+        let mut c = base.clone();
+        c.filter.standardized_residual_gate_sigma = Some(4.0);
+        let mut actual = PppFilter::new(c).unwrap();
+        let mut control = PppFilter::new(base).unwrap();
+        for (i, e) in acceleration_epochs(noisy).iter().enumerate() {
+            let r = solution(actual.process_epoch(e, &p, &biases(e.time), &s).unwrap());
+            control.process_epoch(e, &p, &biases(e.time), &s).unwrap();
+            assert!(
+                r.residual_screening.is_empty(),
+                "car sigma screen noisy={noisy} epoch {i}: {:?}",
+                r.residual_screening
+            );
+            assert_eq!(actual.state(), control.state());
+        }
+    }
+}
+#[test]
+fn single_and_multiple_code_faults_remove_whole_satellites_and_recompute_from_the_same_prior() {
+    let ee = acceleration_epochs(false);
+    let p = products();
+    let s = selections();
+    let bad1: SatelliteId = "G09".parse().unwrap();
+    let bad2: SatelliteId = "G18".parse().unwrap();
+    for multiple in [false, true] {
+        let base = acceleration_config();
+        let mut c = base.clone();
+        c.filter.standardized_residual_gate_sigma = Some(4.0);
+        let mut actual = PppFilter::new(c).unwrap();
+        let mut control = PppFilter::new(base).unwrap();
+        for e in &ee[..12] {
+            actual.process_epoch(e, &p, &biases(e.time), &s).unwrap();
+            control.process_epoch(e, &p, &biases(e.time), &s).unwrap();
+        }
+        let mut faulty = ee[12].clone();
+        add_code_fault(&mut faulty, bad1, 40.0);
+        if multiple {
+            add_code_fault(&mut faulty, bad2, -80.0);
+        }
+        let mut omitted = ee[12].clone();
+        omitted
+            .observations
+            .retain(|o| o.satellite != bad1 && (!multiple || o.satellite != bad2));
+        let r = solution(
+            actual
+                .process_epoch(&faulty, &p, &biases(faulty.time), &s)
+                .unwrap(),
+        );
+        control
+            .process_epoch(&omitted, &p, &biases(omitted.time), &s)
+            .unwrap();
+        let excluded: std::collections::BTreeSet<_> =
+            r.residual_screening.iter().map(|d| d.satellite).collect();
+        assert_eq!(
+            excluded,
+            if multiple {
+                [bad1, bad2].into()
+            } else {
+                [bad1].into()
+            }
+        );
+        assert!(
+            r.residual_screening
+                .iter()
+                .all(|d| d.removed && d.standardized_residual.abs() > 4.0)
+        );
+        assert!(
+            r.measurements
+                .iter()
+                .all(|m| !excluded.contains(&m.satellite))
+        );
+        assert_eq!(actual.state(), control.state());
+        assert!(actual.phase_arc(bad1).is_none());
+        assert!(
+            distance(
+                r.position.position_ecef.unwrap(),
+                &acceleration_truth()[12][3..6]
+            ) < 0.01
+        );
+        let next = solution(
+            actual
+                .process_epoch(&ee[13], &p, &biases(ee[13].time), &s)
+                .unwrap(),
+        );
+        assert_eq!(next.arc_commit.accepted[&bad1].accepted_epochs, 1);
+    }
+}
+#[test]
+fn screening_exhaustion_is_transactional_and_retention_never_keeps_identified_bad_arcs() {
+    let ee = acceleration_epochs(false);
+    let p = products();
+    let s = selections();
+    let bad: SatelliteId = "G09".parse().unwrap();
+    let mut c = acceleration_config();
+    c.filter.standardized_residual_gate_sigma = Some(4.0);
+    c.filter.rejected_update_policy = PppRejectedUpdatePolicy::RetainContinuousArcs;
+    let mut f = PppFilter::new(c).unwrap();
+    for e in &ee[..12] {
+        f.process_epoch(e, &p, &biases(e.time), &s).unwrap();
+    }
+    let old = f.state().clone();
+    let time = f.state_time();
+    let mut faulty = ee[12].clone();
+    faulty.observations.retain(|o| o.satellite.prn() <= 9);
+    add_code_fault(&mut faulty, bad, 400.0);
+    assert!(matches!(
+        f.process_epoch(&faulty, &p, &biases(faulty.time), &s),
+        Err(PppError::ResidualScreeningExhausted { .. })
+    ));
+    assert_eq!(f.state(), &old);
+    assert_eq!(f.state_time(), time);
+    assert!(!f.last_residual_screening().last().unwrap().removed);
+    assert!(!f.last_retained_phase_arcs().contains(&bad));
+    assert!(f.phase_arc(bad).is_none());
+    assert!(
+        f.last_retained_phase_arcs()
+            .iter()
+            .all(|&sat| f.phase_arc(sat).unwrap().accepted_epochs == 12)
+    );
+    assert!(
+        f.process_epoch(&ee[13], &p, &biases(ee[13].time), &s)
+            .is_ok()
+    );
+}
+#[test]
+fn screened_retry_does_not_fuse_the_velocity_seed_more_than_once() {
+    let e = &acceleration_epochs(false)[0];
+    let p = products();
+    let s = selections();
+    let mut seed = code_motion_seed(e);
+    // Deliberate covariance unit input, not measured Doppler or a truth seed.
+    seed.solution.velocity_ecef = Some([1.0, -2.0, 3.0]);
+    seed.solution.velocity_covariance = Some([[4.0, 0.0, 0.0], [0.0, 4.0, 0.0], [0.0, 0.0, 4.0]]);
+    let mut faulty = e.clone();
+    add_code_fault(&mut faulty, "G09".parse().unwrap(), 400.0);
+    let mut c = acceleration_config();
+    c.filter.motion_seed_policy = Some(Default::default());
+    c.filter.standardized_residual_gate_sigma = Some(4.0);
+    let mut f = PppFilter::new(c).unwrap();
+    let r = solution(
+        f.process_epoch_with_seed(&faulty, &p, &biases(e.time), &s, Some(&seed))
+            .unwrap(),
+    );
+    assert!(!r.residual_screening.is_empty());
+    assert!(r.residual_screening.iter().all(|d| d.removed));
+    assert_eq!(r.position.velocity_ecef, seed.solution.velocity_ecef);
+    for i in 5..8 {
+        assert!((f.state().covariance[i][i] - 100.0 * 4.0 / 104.0).abs() < 1e-12);
+    }
+    assert!(r.motion_seed.unwrap().committed);
+}

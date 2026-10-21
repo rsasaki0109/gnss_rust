@@ -1737,3 +1737,14 @@ noise and uses Joseph covariance updates. See
 [the motion-seed contract](../../docs/ppp-motion-seeds.md) and
 [the PPC evidence](../../docs/comparison/2026-10-21-ppp-motion-seeds/README.md)
 for provenance, integration tests, limitations and separate PPP/SPP scores.
+
+`upstream_ppp_screening.csv` and `upstream_ppp_screening_gaussian.csv` retain
+64 actual native standardized-residual calls each, respectively using the
+explicit inverse from upstream helper tests and production LDLT solves.
+`python3 -B scripts/build_ppp_screening_fixtures.py --output-dir NEW_DIRECTORY`
+regenerates both files twice with unchanged pinned native code. The rows contain
+innovations, S, the supplied inverse and dimensionless standardized residuals.
+Decisions match exactly; kernel and independent Gaussian reconstructions retain
+the original relative 1e-10 bound after compensated residual refinement.
+See [the contract](../../docs/ppp-standardized-screening.md) and
+[the PPC comparison](../../docs/comparison/2026-10-21-ppp-standardized-screening/README.md).

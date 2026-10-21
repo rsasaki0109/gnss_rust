@@ -1,0 +1,72 @@
+{
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/src/algorithms",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "/workspace/gnss_rust/scripts/upstream_ppp_screening.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-Wl,--end-group",
+    "-o",
+    "/workspace/.cloud-setup/ppp-screening-native-ldlt-20261021/native"
+  ],
+  "returncode": 0,
+  "source_sha256": {
+    "scripts/upstream_ppp_screening.cpp": "f99bccbae1b8e90f9121360c3124139fc2498018abcd204a99c60681acdea0b9",
+    "scripts/build_ppp_screening_fixtures.py": "2a0305550971ce8d29e1dc74e51bb111362a8b1fc3be8b5295023d92b862bf96"
+  },
+  "native_library_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "native_private_header_sha256": {
+    "/workspace/.cloud-setup/reference/gnssplusplus-library/src/algorithms/ppp_internal.hpp": "6f94ce026663fd246fa42309548c6e7747cf59763e5e61dacc4b2d39f16eb832"
+  },
+  "pinned_upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "prior_proof": "docs/comparison/2026-10-21-ppc-ppp-first/native-initial.json",
+  "prior_proof_sha256": "f39e9a063da4e0b3c8ede183b7a6a6573138f85114d2b4106c9e5b3fa3503d65",
+  "upstream_source_patched": false,
+  "whole_native_PPP_executed": false,
+  "actual_worstStandardizedResidualRow_calls_per_repeat": 128,
+  "explicit_inverse_helper_calls_per_repeat": 64,
+  "production_LDLT_helper_calls_per_repeat": 64,
+  "repeat_runs": [
+    {
+      "command": [
+        "/workspace/.cloud-setup/ppp-screening-native-ldlt-20261021/native",
+        "/workspace/.cloud-setup/ppp-screening-native-ldlt-20261021/0"
+      ],
+      "returncode": 0,
+      "fixture_sha256": {
+        "upstream_ppp_screening.csv": "cad3edd6578417acc8c3d7b426bd3700ff99fe36f66fa902ffae0b608d8dcab5",
+        "upstream_ppp_screening_gaussian.csv": "96ec620dc324113acc3b159f6ef13d0ca0a3af898c07646cbaf9b897f29239fe"
+      }
+    },
+    {
+      "command": [
+        "/workspace/.cloud-setup/ppp-screening-native-ldlt-20261021/native",
+        "/workspace/.cloud-setup/ppp-screening-native-ldlt-20261021/1"
+      ],
+      "returncode": 0,
+      "fixture_sha256": {
+        "upstream_ppp_screening.csv": "cad3edd6578417acc8c3d7b426bd3700ff99fe36f66fa902ffae0b608d8dcab5",
+        "upstream_ppp_screening_gaussian.csv": "96ec620dc324113acc3b159f6ef13d0ca0a3af898c07646cbaf9b897f29239fe"
+      }
+    }
+  ],
+  "binary_sha256": "bfeb62c3ec38f7b21f5f53dd0b558e073e3faf8519502448f5191f8a657b6744",
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0",
+  "GNSS_environment_removed": []
+}

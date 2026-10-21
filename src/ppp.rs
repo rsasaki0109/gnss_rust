@@ -152,6 +152,8 @@ pub struct PppFilterSettings {
     pub rejected_update_policy: PppRejectedUpdatePolicy,
     /// Optional caller-admitted SPP/Doppler motion initialization/recovery.
     pub motion_seed_policy: Option<PppMotionSeedPolicy>,
+    /// Opt-in native covariance-standardized satellite exclusion (native sigma 4).
+    pub standardized_residual_gate_sigma: Option<f64>,
     /// Strict calibrated phase remains the default. Explicit raw mode retains
     /// absent phase OSBs and absorbs constant biases only into FLOAT ambiguities.
     pub phase_bias_mode: PhaseBiasMode,
@@ -177,6 +179,7 @@ impl Default for PppFilterSettings {
             clock_model: PppClockModel::RandomWalk,
             rejected_update_policy: PppRejectedUpdatePolicy::InterruptAllArcs,
             motion_seed_policy: None,
+            standardized_residual_gate_sigma: None,
             phase_bias_mode: PhaseBiasMode::RequireSignalCorrections,
             initial_head_variance_m2: [1e6, 1e6, 1e6, 1e8, 100.0],
             head_process_noise_m2_per_s: [0.0, 0.0, 0.0, 100.0, 1e-8],
@@ -292,6 +295,17 @@ pub struct PppMotionSeedDiagnostic {
     pub committed: bool,
 }
 #[derive(Debug, Clone, PartialEq)]
+pub struct PppResidualScreeningDiagnostic {
+    pub satellite: SatelliteId,
+    pub phase_row: bool,
+    pub standardized_residual: f64,
+    pub threshold_sigma: f64,
+    pub remaining_code_satellites: usize,
+    pub remaining_phase_satellites: usize,
+    /// False means minimum code/phase counts prevent another update attempt.
+    pub removed: bool,
+}
+#[derive(Debug, Clone, PartialEq)]
 pub struct PppConfig {
     /// Independent initial position in the declared SP3 coordinate frame.
     pub initial_position: EcefCoord,
@@ -319,10 +333,19 @@ pub enum PppError {
     InvalidConfiguration,
     MotionSeed(PppMotionSeedError),
     MissingMotionSeed,
+    ResidualScreeningExhausted {
+        satellite: SatelliteId,
+        code: usize,
+        phase: usize,
+    },
     ProductFrameMismatch,
     UnsupportedSelection(SatelliteId),
-    InsufficientCode { available: usize },
-    InsufficientPhase { available: usize },
+    InsufficientCode {
+        available: usize,
+    },
+    InsufficientPhase {
+        available: usize,
+    },
     NonConvergent,
     PostfitRejected,
     NonPhysicalState,
@@ -415,7 +438,9 @@ impl PppConfig {
         let f = self.filter;
         ecef_to_geodetic(self.initial_position)?;
         self.transmit.validate()?;
-        if !f.position_model.validate()
+        if f.standardized_residual_gate_sigma.is_some_and(|g| {
+            !g.is_finite() || g <= 0.0 || matches!(f.position_model, PppPositionModel::Static)
+        }) || !f.position_model.validate()
             || f.motion_seed_policy.is_some_and(|p| {
                 !p.valid() || !matches!(f.position_model, PppPositionModel::ConstantAcceleration(_))
             })
@@ -574,6 +599,7 @@ pub fn evaluate_ppp_model(
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PppRejection {
+    StandardizedResidual { phase_row: bool, statistic: f64 },
     Model(PppError),
     ClockSourceMismatch,
     BelowElevationMask,
@@ -629,6 +655,7 @@ pub struct PppSolution {
     pub acceleration_ecef_mps2: Option<[f64; 3]>,
     pub acceleration_covariance_m2_s4: Option<[[f64; 3]; 3]>,
     pub motion_seed: Option<PppMotionSeedDiagnostic>,
+    pub residual_screening: Vec<PppResidualScreeningDiagnostic>,
     pub ambiguities: Vec<PppAmbiguity>,
     pub measurements: Vec<PppMeasurement>,
     pub arc_decisions: BTreeMap<SatelliteId, PhaseArcDecision>,
@@ -660,6 +687,7 @@ pub struct PppFilter {
     last_rejections: BTreeMap<SatelliteId, PppRejection>,
     last_retained_phase_arcs: BTreeSet<SatelliteId>,
     last_motion_seed: Option<PppMotionSeedDiagnostic>,
+    last_residual_screening: Vec<PppResidualScreeningDiagnostic>,
     windup: BTreeMap<SatelliteId, PppWindupState>,
 }
 impl PppFilter {
@@ -699,6 +727,7 @@ impl PppFilter {
             last_rejections: BTreeMap::new(),
             last_retained_phase_arcs: BTreeSet::new(),
             last_motion_seed: None,
+            last_residual_screening: Vec::new(),
             windup: BTreeMap::new(),
         })
     }
@@ -720,6 +749,9 @@ impl PppFilter {
     pub fn last_retained_phase_arcs(&self) -> &BTreeSet<SatelliteId> {
         &self.last_retained_phase_arcs
     }
+    pub fn last_residual_screening(&self) -> &[PppResidualScreeningDiagnostic] {
+        &self.last_residual_screening
+    }
     pub fn last_motion_seed(&self) -> Option<&PppMotionSeedDiagnostic> {
         self.last_motion_seed.as_ref()
     }
@@ -731,6 +763,7 @@ impl PppFilter {
         self.windup.clear();
         self.last_retained_phase_arcs.clear();
         self.last_motion_seed = None;
+        self.last_residual_screening.clear();
         Ok(())
     }
 
@@ -805,12 +838,14 @@ impl PppFilter {
                 self.windup.clear();
                 self.last_retained_phase_arcs.clear();
                 self.last_motion_seed = None;
+                self.last_residual_screening.clear();
                 return Err(error.into());
             }
         };
         self.last_rejections.clear();
         self.last_retained_phase_arcs.clear();
         self.last_motion_seed = None;
+        self.last_residual_screening.clear();
         if epoch.flag == 6 {
             self.windup.clear();
             return Ok(PppEpoch::Event(self.arcs.finish_epoch(&BTreeSet::new())?));
@@ -922,6 +957,7 @@ impl PppFilter {
                         })
                     }),
                     motion_seed: self.last_motion_seed.clone(),
+                    residual_screening: self.last_residual_screening.clone(),
                     ambiguities,
                     measurements,
                     arc_decisions: decisions,
@@ -946,6 +982,7 @@ impl PppFilter {
                         error,
                         PppError::InsufficientCode { .. }
                             | PppError::InsufficientPhase { .. }
+                            | PppError::ResidualScreeningExhausted { .. }
                             | PppError::NonConvergent
                             | PppError::PostfitRejected
                             | PppError::NonPhysicalState
@@ -953,7 +990,14 @@ impl PppFilter {
                             | PppError::Gnss(Error::SingularGeometry)
                     );
                 if retain {
-                    let rejection = self.arcs.reject_epoch_retaining_continuous()?;
+                    let screened = self
+                        .last_residual_screening
+                        .iter()
+                        .map(|d| d.satellite)
+                        .collect();
+                    let rejection = self
+                        .arcs
+                        .reject_epoch_retaining_continuous_excluding(&screened)?;
                     self.last_retained_phase_arcs = rejection.retained.keys().copied().collect();
                     self.windup
                         .retain(|sat, _| self.last_retained_phase_arcs.contains(sat));
@@ -1269,64 +1313,23 @@ impl PppFilter {
             }
             observations.insert(sat, observation.clone());
         }
-        if observations.len() < 5 {
-            return Err(PppError::InsufficientCode {
-                available: observations.len(),
-            });
-        }
-        if layout.len() < 4 {
-            return Err(PppError::InsufficientPhase {
-                available: layout.len(),
-            });
-        }
-        let mut prior = self.predicted_prior(epoch.time, &layout)?;
-        self.apply_motion_seed(&mut prior, seed)?;
-        let windup_context = self.prepare_windup(epoch.time, products, &layout, &prior.mean)?;
-        let mut iterate = prior.mean.clone();
-        for iteration in 1..=self.config.filter.max_iterations {
-            let system = self.measurement_system(
-                epoch.time,
-                products,
-                &observations,
-                &layout,
-                &iterate,
-                windup_context.as_ref(),
-            )?;
-            ensure_geometry(&system.code_design)?;
-            // IEKF always relinearizes the SAME predicted prior. This correction
-            // prevents repeated iterations treating one epoch as independent data.
-            let innovation: Vec<_> = system
-                .innovations
-                .iter()
-                .zip(&system.design)
-                .map(|(r, h)| {
-                    r + h
-                        .iter()
-                        .zip(iterate.iter().zip(&prior.mean))
-                        .map(|(h, (x, p))| h * (x - p))
-                        .sum::<f64>()
-                })
-                .collect();
-            let update = measurement_update(
-                &prior,
-                &system.design,
-                &innovation,
-                &system.noise,
-                Some(self.config.filter.max_nis_per_row),
-            )?;
-            let difference = update
-                .posterior
-                .mean
-                .iter()
-                .zip(&iterate)
-                .map(|(a, b)| (a - b).abs())
-                .fold(0.0, f64::max);
-            iterate = update.posterior.mean.clone();
-            if difference <= self.config.filter.convergence_m {
-                if iterate[4] < 0.0 || !iterate[4].is_finite() {
-                    return Err(PppError::NonPhysicalState);
-                }
-                let final_system = self.measurement_system(
+        'screening: loop {
+            if observations.len() < 5 {
+                return Err(PppError::InsufficientCode {
+                    available: observations.len(),
+                });
+            }
+            if layout.len() < 4 {
+                return Err(PppError::InsufficientPhase {
+                    available: layout.len(),
+                });
+            }
+            let mut prior = self.predicted_prior(epoch.time, &layout)?;
+            self.apply_motion_seed(&mut prior, seed)?;
+            let windup_context = self.prepare_windup(epoch.time, products, &layout, &prior.mean)?;
+            let mut iterate = prior.mean.clone();
+            for iteration in 1..=self.config.filter.max_iterations {
+                let system = self.measurement_system(
                     epoch.time,
                     products,
                     &observations,
@@ -1334,23 +1337,120 @@ impl PppFilter {
                     &iterate,
                     windup_context.as_ref(),
                 )?;
-                if final_system.measurements.iter().any(|m| {
-                    m.code_residual_m.abs() > self.config.filter.max_postfit_code_m
-                        || m.phase_residual_m
-                            .is_some_and(|r| r.abs() > self.config.filter.max_postfit_phase_m)
-                }) {
-                    return Err(PppError::PostfitRejected);
+                ensure_geometry(&system.code_design)?;
+                // IEKF always relinearizes the SAME predicted prior. This correction
+                // prevents repeated iterations treating one epoch as independent data.
+                let innovation: Vec<_> = system
+                    .innovations
+                    .iter()
+                    .zip(&system.design)
+                    .map(|(r, h)| {
+                        r + h
+                            .iter()
+                            .zip(iterate.iter().zip(&prior.mean))
+                            .map(|(h, (x, p))| h * (x - p))
+                            .sum::<f64>()
+                    })
+                    .collect();
+                if iteration == 1
+                    && let Some(gate) = self.config.filter.standardized_residual_gate_sigma
+                {
+                    let screen = crate::ppp_screening::screen_measurements(
+                        &prior,
+                        &system.design,
+                        &innovation,
+                        &system.noise,
+                        gate,
+                    )?;
+                    if let Some(row) = screen.worst_row {
+                        let (satellite, phase_row) = system.row_satellites[row];
+                        let code = observations.len() - 1;
+                        let phase = layout.len() - usize::from(layout.contains_key(&satellite));
+                        let removed = code >= 5 && phase >= 4;
+                        let statistic = screen.standardized_residuals[row];
+                        self.last_residual_screening
+                            .push(PppResidualScreeningDiagnostic {
+                                satellite,
+                                phase_row,
+                                standardized_residual: statistic,
+                                threshold_sigma: gate,
+                                remaining_code_satellites: code,
+                                remaining_phase_satellites: phase,
+                                removed,
+                            });
+                        self.last_rejections.insert(
+                            satellite,
+                            PppRejection::StandardizedResidual {
+                                phase_row,
+                                statistic,
+                            },
+                        );
+                        if !removed {
+                            return Err(PppError::ResidualScreeningExhausted {
+                                satellite,
+                                code,
+                                phase,
+                            });
+                        }
+                        observations.remove(&satellite);
+                        layout = layout
+                            .iter()
+                            .filter(|(sat, _)| **sat != satellite)
+                            .enumerate()
+                            .map(|(j, (&sat, &(_, id)))| {
+                                (sat, (self.config.filter.position_model.head_len() + j, id))
+                            })
+                            .collect();
+                        // Every pass starts from the same committed state. Never feed
+                        // a rejected GNSS update or velocity-fused proposal back in.
+                        continue 'screening;
+                    }
                 }
-                return Ok((
-                    update.posterior,
-                    layout,
-                    final_system.measurements,
-                    iteration,
-                    update.normalized_innovation_squared,
-                ));
+                let update = measurement_update(
+                    &prior,
+                    &system.design,
+                    &innovation,
+                    &system.noise,
+                    Some(self.config.filter.max_nis_per_row),
+                )?;
+                let difference = update
+                    .posterior
+                    .mean
+                    .iter()
+                    .zip(&iterate)
+                    .map(|(a, b)| (a - b).abs())
+                    .fold(0.0, f64::max);
+                iterate = update.posterior.mean.clone();
+                if difference <= self.config.filter.convergence_m {
+                    if iterate[4] < 0.0 || !iterate[4].is_finite() {
+                        return Err(PppError::NonPhysicalState);
+                    }
+                    let final_system = self.measurement_system(
+                        epoch.time,
+                        products,
+                        &observations,
+                        &layout,
+                        &iterate,
+                        windup_context.as_ref(),
+                    )?;
+                    if final_system.measurements.iter().any(|m| {
+                        m.code_residual_m.abs() > self.config.filter.max_postfit_code_m
+                            || m.phase_residual_m
+                                .is_some_and(|r| r.abs() > self.config.filter.max_postfit_phase_m)
+                    }) {
+                        return Err(PppError::PostfitRejected);
+                    }
+                    return Ok((
+                        update.posterior,
+                        layout,
+                        final_system.measurements,
+                        iteration,
+                        update.normalized_innovation_squared,
+                    ));
+                }
             }
+            return Err(PppError::NonConvergent);
         }
-        Err(PppError::NonConvergent)
     }
     fn prepare_windup(
         &self,
@@ -1407,6 +1507,7 @@ impl PppFilter {
         let mut variances = Vec::new();
         let mut measurements = Vec::new();
         let mut code_design = Vec::new();
+        let mut row_satellites = Vec::new();
         for (&sat, observation) in observations {
             let model = evaluate_ppp_model(
                 products,
@@ -1446,6 +1547,7 @@ impl PppFilter {
             let code_residual = observation.code_if_m + antenna_add - model.code_prediction_m;
             design.push(row.clone());
             innovations.push(code_residual);
+            row_satellites.push((sat, false));
             variances.push(observation.code_variance_m2);
             let mut windup = None;
             let phase_residual = if let Some(&(index, _)) = layout.get(&sat) {
@@ -1480,6 +1582,7 @@ impl PppFilter {
                 row[index] = 1.0;
                 design.push(row);
                 innovations.push(residual);
+                row_satellites.push((sat, true));
                 variances.push(phase.variance_m2);
                 Some(residual)
             } else {
@@ -1505,6 +1608,7 @@ impl PppFilter {
             noise,
             measurements,
             code_design,
+            row_satellites,
         })
     }
 }
@@ -1619,6 +1723,7 @@ struct MeasurementSystem {
     noise: Matrix,
     measurements: Vec<PppMeasurement>,
     code_design: Vec<[f64; 5]>,
+    row_satellites: Vec<(SatelliteId, bool)>,
 }
 fn receiver(mean: &[f64]) -> EcefCoord {
     EcefCoord::new(mean[0], mean[1], mean[2])

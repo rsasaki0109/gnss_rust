@@ -514,7 +514,8 @@ impl PhaseArcTracker {
         &mut self,
         accepted: &BTreeSet<SatelliteId>,
     ) -> Result<PhaseArcCommit, PhaseArcError> {
-        self.finish_with_retention(accepted, false).map(|(c, _)| c)
+        self.finish_with_retention(accepted, false, &BTreeSet::new())
+            .map(|(c, _)| c)
     }
 
     /// Reject all measurements while preserving only already active arcs whose
@@ -524,7 +525,16 @@ impl PhaseArcTracker {
     pub fn reject_epoch_retaining_continuous(
         &mut self,
     ) -> Result<PhaseArcRejection, PhaseArcError> {
-        let (commit, retained) = self.finish_with_retention(&BTreeSet::new(), true)?;
+        self.reject_epoch_retaining_continuous_excluding(&BTreeSet::new())
+    }
+
+    /// As above, but always interrupt satellites identified by an external
+    /// quality screen. Healthy rejected measurements still never advance history.
+    pub fn reject_epoch_retaining_continuous_excluding(
+        &mut self,
+        excluded: &BTreeSet<SatelliteId>,
+    ) -> Result<PhaseArcRejection, PhaseArcError> {
+        let (commit, retained) = self.finish_with_retention(&BTreeSet::new(), true, excluded)?;
         Ok(PhaseArcRejection {
             time: commit.time,
             retained,
@@ -536,6 +546,7 @@ impl PhaseArcTracker {
         &mut self,
         accepted: &BTreeSet<SatelliteId>,
         retain_continuous: bool,
+        excluded: &BTreeSet<SatelliteId>,
     ) -> Result<(PhaseArcCommit, BTreeMap<SatelliteId, PhaseArc>), PhaseArcError> {
         let pending = self
             .pending
@@ -559,6 +570,7 @@ impl PhaseArcTracker {
                 h.ever_accepted = true;
                 h.break_reasons.clear();
             } else if retain_continuous
+                && !excluded.contains(sat)
                 && decision.reset_reasons.is_empty()
                 && h.active
                     .as_ref()
