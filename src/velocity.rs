@@ -1,9 +1,20 @@
-//! Single-system Doppler velocity/clock drift, from libgnss++ spp_velocity.
+//! Doppler velocity/clock drift, with optional independent constellation clocks.
+//! The single-system model follows libgnss++ spp_velocity.
 //! Copyright (c) 2024 LibGNSS++ Contributors. See LICENSE.
 use crate::constants::SPEED_OF_LIGHT;
 use crate::spp::{Row, least_squares};
 use crate::{EcefCoord, Error, SatelliteId};
-use std::{collections::BTreeSet, fmt};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fmt,
+};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VelocityClockModel {
+    SingleSystem,
+    /// One independent receiver clock-range-rate per observed constellation.
+    PerSystem,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DopplerObservation {
@@ -19,6 +30,7 @@ pub struct DopplerObservation {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct VelocityConfig {
+    pub clock_model: VelocityClockModel,
     pub doppler_sigma_mps: f64,
     pub min_satellites: usize,
     pub max_chi_square_per_dof: f64,
@@ -27,6 +39,7 @@ pub struct VelocityConfig {
 impl Default for VelocityConfig {
     fn default() -> Self {
         Self {
+            clock_model: VelocityClockModel::SingleSystem,
             doppler_sigma_mps: 0.5,
             min_satellites: 4,
             max_chi_square_per_dof: 25.0,
@@ -54,11 +67,17 @@ impl VelocityConfig {
 #[derive(Debug, Clone, PartialEq)]
 pub struct VelocitySolution {
     pub velocity_mps: [f64; 3],
+    /// First system's clock drift; all clocks are named below.
     pub receiver_clock_drift_sps: f64,
+    pub clock_systems: Vec<crate::GnssSystem>,
+    pub receiver_clock_drifts_sps: Vec<f64>,
     /// Covariance in [vx, vy, vz, clock-range rate] coordinates, (m/s)².
-    /// Includes velocity/clock cross terms. No position prior is used.
+    /// Leading 4x4 principal block with multiple clocks. Full matrices below
+    /// retain all velocity/clock and inter-clock cross terms. No position prior.
     pub covariance_m2s2: [[f64; 4]; 4],
     pub unscaled_covariance_m2s2: [[f64; 4]; 4],
+    pub full_covariance_m2s2: Option<Vec<Vec<f64>>>,
+    pub full_unscaled_covariance_m2s2: Option<Vec<Vec<f64>>>,
     pub satellites: Vec<SatelliteId>,
     pub residuals_mps: Vec<f64>,
     pub residual_rms_mps: f64,
@@ -106,7 +125,8 @@ impl From<Error> for VelocityError {
 /// `-Doppler*c/f - satellite_velocity·LOS + c*satellite_clock_drift`.
 /// Inputs are already admitted/prepared; invalid
 /// rows fail explicitly. A measured zero Doppler is valid, unlike the native
-/// numeric zero sentinel. One constellation/receiver clock only.
+/// numeric zero sentinel. SingleSystem is the default; PerSystem estimates
+/// independent clock-range rates without aligning inter-system clock datums.
 pub fn solve_velocity(
     observations: &[DopplerObservation],
     receiver: EcefCoord,
@@ -123,11 +143,14 @@ pub fn solve_velocity(
         return Err(VelocityError::InvalidObservation);
     }
     let systems: BTreeSet<_> = observations.iter().map(|o| o.satellite.system()).collect();
-    if systems.len() != 1 {
+    if systems.len() != 1 && config.clock_model == VelocityClockModel::SingleSystem {
         return Err(VelocityError::MultipleClockSystems);
     }
     if systems.contains(&crate::GnssSystem::Unknown) {
         return Err(VelocityError::InvalidObservation);
+    }
+    if observations.len() < 3 + systems.len() {
+        return Err(VelocityError::InsufficientObservations);
     }
     let mut seen = BTreeSet::new();
     let mut rows = Vec::with_capacity(observations.len());
@@ -180,17 +203,30 @@ pub fn solve_velocity(
             weight,
         });
     }
-    let (mean, unscaled) = least_squares(&rows)?;
+    let systems: Vec<_> = systems.into_iter().collect();
+    let fit = if systems.len() == 1 {
+        let (mean, covariance) = least_squares(&rows)?;
+        VelocityLinearFit {
+            mean: mean.to_vec(),
+            covariance: covariance.iter().map(|r| r.to_vec()).collect(),
+            design: rows.iter().map(|r| r.design.to_vec()).collect(),
+        }
+    } else {
+        least_squares_with_clocks(&rows, &systems)?
+    };
+    let mean = fit.mean;
+    let unscaled = fit.covariance;
     let residuals: Vec<_> = rows
         .iter()
-        .map(|r| r.residual - r.design.iter().zip(mean).map(|(h, x)| h * x).sum::<f64>())
+        .zip(&fit.design)
+        .map(|(r, h)| r.residual - h.iter().zip(&mean).map(|(h, x)| h * x).sum::<f64>())
         .collect();
     let weighted_sum: f64 = residuals
         .iter()
         .zip(&rows)
         .map(|(v, r)| (v * r.weight).powi(2))
         .sum();
-    let chi = weighted_sum / (observations.len() - 4).max(1) as f64;
+    let chi = weighted_sum / (observations.len() - mean.len()).max(1) as f64;
     if !chi.is_finite() || chi > config.max_chi_square_per_dof {
         return Err(VelocityError::InconsistentFit {
             chi_square_per_dof: chi,
@@ -203,7 +239,10 @@ pub fn solve_velocity(
         });
     }
     let scale = chi.max(1.0);
-    let covariance = unscaled.map(|row| row.map(|v| v * scale));
+    let covariance: Vec<Vec<f64>> = unscaled
+        .iter()
+        .map(|row| row.iter().map(|v| v * scale).collect())
+        .collect();
     let rms = (residuals.iter().map(|v| v * v).sum::<f64>() / residuals.len() as f64).sqrt();
     if !covariance.iter().flatten().all(|v| v.is_finite()) || !rms.is_finite() {
         return Err(Error::NonFinite.into());
@@ -211,13 +250,109 @@ pub fn solve_velocity(
     Ok(VelocitySolution {
         velocity_mps: [mean[0], mean[1], mean[2]],
         receiver_clock_drift_sps: mean[3] / SPEED_OF_LIGHT,
-        covariance_m2s2: covariance,
-        unscaled_covariance_m2s2: unscaled,
+        clock_systems: systems,
+        receiver_clock_drifts_sps: mean[3..].iter().map(|v| v / SPEED_OF_LIGHT).collect(),
+        covariance_m2s2: std::array::from_fn(|i| std::array::from_fn(|j| covariance[i][j])),
+        unscaled_covariance_m2s2: std::array::from_fn(|i| std::array::from_fn(|j| unscaled[i][j])),
+        full_covariance_m2s2: (mean.len() > 4).then_some(covariance),
+        full_unscaled_covariance_m2s2: (mean.len() > 4).then_some(unscaled),
         satellites: observations.iter().map(|o| o.satellite).collect(),
         residuals_mps: residuals,
         residual_rms_mps: rms,
         chi_square_per_dof: chi,
         covariance_scale: scale,
+    })
+}
+
+struct VelocityLinearFit {
+    mean: Vec<f64>,
+    covariance: Vec<Vec<f64>>,
+    design: Vec<Vec<f64>>,
+}
+fn least_squares_with_clocks(
+    rows: &[Row],
+    systems: &[crate::GnssSystem],
+) -> Result<VelocityLinearFit, Error> {
+    let n = 3 + systems.len();
+    let m = rows.len();
+    if m < n {
+        return Err(Error::InsufficientObservations);
+    }
+    let design: Vec<Vec<f64>> = rows
+        .iter()
+        .map(|r| {
+            let mut h = vec![0.0; n];
+            h[..3].copy_from_slice(&r.design[..3]);
+            h[3 + systems
+                .binary_search(&r.satellite.system())
+                .expect("collected system")] = 1.0;
+            h
+        })
+        .collect();
+    let mut a: Vec<Vec<f64>> = design
+        .iter()
+        .zip(rows)
+        .map(|(h, r)| h.iter().map(|v| v * r.weight).collect())
+        .collect();
+    let mut b: Vec<f64> = rows.iter().map(|r| r.residual * r.weight).collect();
+    let scale = rows.iter().map(|r| r.weight * r.weight).sum::<f64>().sqrt();
+    for k in 0..n {
+        let norm = a[k..].iter().fold(0.0_f64, |v, row| v.hypot(row[k]));
+        if !norm.is_finite() || norm <= scale * 1e-10 {
+            return Err(Error::SingularGeometry);
+        }
+        let mut v: Vec<f64> = a[k..].iter().map(|r| r[k]).collect();
+        v[0] += norm.copysign(v[0]);
+        let vnorm = v.iter().fold(0.0_f64, |v, x| v.hypot(*x));
+        for x in &mut v {
+            *x /= vnorm;
+        }
+        let dots: Vec<f64> = (0..n)
+            .map(|j| v.iter().enumerate().map(|(i, x)| x * a[k + i][j]).sum())
+            .collect();
+        for (row, vi) in a[k..].iter_mut().zip(&v) {
+            for j in k..n {
+                row[j] -= 2.0 * vi * dots[j];
+            }
+        }
+        let dot = v.iter().enumerate().map(|(i, x)| x * b[k + i]).sum::<f64>();
+        for (i, x) in v.iter().enumerate() {
+            b[k + i] -= 2.0 * x * dot;
+        }
+    }
+    let backsolve = |rhs: &[f64]| {
+        let mut x = vec![0.0; n];
+        for i in (0..n).rev() {
+            x[i] = (rhs[i] - (i + 1..n).map(|j| a[i][j] * x[j]).sum::<f64>()) / a[i][i];
+        }
+        x
+    };
+    let mean = backsolve(&b[..n]);
+    let inverse: Vec<Vec<f64>> = (0..n)
+        .map(|j| {
+            let mut e = vec![0.0; n];
+            e[j] = 1.0;
+            backsolve(&e)
+        })
+        .collect();
+    let covariance: Vec<Vec<f64>> = (0..n)
+        .map(|i| {
+            (0..n)
+                .map(|j| (0..n).map(|k| inverse[k][i] * inverse[k][j]).sum())
+                .collect()
+        })
+        .collect();
+    if !mean
+        .iter()
+        .chain(covariance.iter().flatten())
+        .all(|v| v.is_finite())
+    {
+        return Err(Error::NonFinite);
+    }
+    Ok(VelocityLinearFit {
+        mean,
+        covariance,
+        design,
     })
 }
 
@@ -239,6 +374,7 @@ impl Default for VelocityEpochConfig {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DopplerRejection {
     UnsupportedSignal,
+    AlternativeTrackingCode,
     MissingDoppler,
     InvalidDoppler,
     InvalidCode,
@@ -272,6 +408,31 @@ pub fn solve_gps_l1_epoch(
     receiver: EcefCoord,
     config: VelocityEpochConfig,
 ) -> Result<VelocityEpochReport, Error> {
+    solve_epoch(epoch, navigation, receiver, config, false)
+}
+
+/// GPS 1C plus Galileo E1 (valid Doppler and code preferred, then 1C before
+/// 1X). Requires explicit per-system clocks. All selected and alternate raw
+/// tracking groups and missing values remain in the report.
+pub fn solve_gps_galileo_e1_epoch(
+    epoch: &crate::observation::ObservationEpoch,
+    navigation: &crate::navigation::NavigationData,
+    receiver: EcefCoord,
+    config: VelocityEpochConfig,
+) -> Result<VelocityEpochReport, Error> {
+    if config.velocity.clock_model != VelocityClockModel::PerSystem {
+        return Err(Error::InvalidConfiguration);
+    }
+    solve_epoch(epoch, navigation, receiver, config, true)
+}
+
+fn solve_epoch(
+    epoch: &crate::observation::ObservationEpoch,
+    navigation: &crate::navigation::NavigationData,
+    receiver: EcefCoord,
+    config: VelocityEpochConfig,
+    include_galileo: bool,
+) -> Result<VelocityEpochReport, Error> {
     use crate::constants::{GPS_L1_FREQ, OMEGA_E};
     use crate::coordinates::{ecef_to_enu, ecef_to_geodetic};
     if config.velocity.validate().is_err()
@@ -285,17 +446,43 @@ pub fn solve_gps_l1_epoch(
         return Err(Error::InvalidConfiguration);
     }
     let geo = ecef_to_geodetic(receiver)?;
+    let eligible = |raw: &crate::observation::Observation| {
+        (raw.satellite.system() == crate::GnssSystem::Gps && raw.tracking_code == "1C")
+            || (include_galileo
+                && raw.satellite.system() == crate::GnssSystem::Galileo
+                && matches!(raw.tracking_code.as_str(), "1C" | "1X"))
+    };
     let mut seen = BTreeSet::new();
+    let mut selected = BTreeMap::<SatelliteId, &crate::observation::Observation>::new();
+    for raw in epoch.observations.iter().filter(|r| eligible(r)) {
+        if !seen.insert((raw.satellite, raw.tracking_code.as_str())) {
+            return Err(Error::InvalidConfiguration);
+        }
+        let rank = |r: &crate::observation::Observation| {
+            (
+                !r.doppler_hz.is_some_and(f64::is_finite),
+                !r.pseudorange_m.is_some_and(|v| v.is_finite() && v > 0.0),
+                r.tracking_code != "1C",
+            )
+        };
+        if selected
+            .get(&raw.satellite)
+            .is_none_or(|old| rank(raw) < rank(old))
+        {
+            selected.insert(raw.satellite, raw);
+        }
+    }
     let mut prepared = Vec::new();
     let mut rejected = Vec::new();
     for raw in &epoch.observations {
         let mut reject = |reason| rejected.push((raw.clone(), reason));
-        if raw.satellite.system() != crate::GnssSystem::Gps || raw.tracking_code != "1C" {
+        if !eligible(raw) {
             reject(DopplerRejection::UnsupportedSignal);
             continue;
         }
-        if !seen.insert(raw.satellite) {
-            return Err(Error::InvalidConfiguration);
+        if selected[&raw.satellite].tracking_code != raw.tracking_code {
+            reject(DopplerRejection::AlternativeTrackingCode);
+            continue;
         }
         let Some(doppler) = raw.doppler_hz else {
             reject(DopplerRejection::MissingDoppler);

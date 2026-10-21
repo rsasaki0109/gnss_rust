@@ -5,7 +5,10 @@ use gnss_rust::rinex::{RinexObservationReader, read_navigation_for_systems};
 use gnss_rust::rtk::{RtkConstellations, RtkFloatConfig, RtkFloatFilter, RtkPositionMode};
 use gnss_rust::rtk_fix::{RtkFixConfig, audit_candidate_system_references, validate_candidate};
 use gnss_rust::rtk_slip::RtkSlipConfig;
-use gnss_rust::velocity::{VelocityEpochConfig, VelocityEpochReport, solve_gps_l1_epoch};
+use gnss_rust::velocity::{
+    VelocityClockModel, VelocityConfig, VelocityEpochConfig, VelocityEpochReport,
+    solve_gps_galileo_e1_epoch, solve_gps_l1_epoch,
+};
 use gnss_rust::{EcefCoord, GnssSystem};
 use std::{
     error::Error,
@@ -37,6 +40,20 @@ fn write_velocity(row: &mut [String], report: Result<VelocityEpochReport, gnss_r
         .filter(|p| p.used_missing_code_travel_time)
         .count()
         .to_string();
+    if row.len() > 51 {
+        row[53] = report
+            .prepared
+            .iter()
+            .map(|p| format!("{}:{}", p.raw.satellite, p.raw.tracking_code))
+            .collect::<Vec<_>>()
+            .join(";");
+        row[54] = report
+            .rejected
+            .iter()
+            .map(|(raw, why)| format!("{}:{}:{why:?}", raw.satellite, raw.tracking_code))
+            .collect::<Vec<_>>()
+            .join(";");
+    }
     match report.solution {
         Err(error) => {
             row[29] = "INVALID_VELOCITY".into();
@@ -61,6 +78,20 @@ fn write_velocity(row: &mut [String], report: Result<VelocityEpochReport, gnss_r
                 .map(ToString::to_string)
                 .collect::<Vec<_>>()
                 .join(";");
+            if row.len() > 51 {
+                row[51] = solution
+                    .clock_systems
+                    .iter()
+                    .map(|s| s.rinex_prefix().to_string())
+                    .collect::<Vec<_>>()
+                    .join(";");
+                row[52] = solution
+                    .receiver_clock_drifts_sps
+                    .iter()
+                    .map(|v| format!("{v:.17e}"))
+                    .collect::<Vec<_>>()
+                    .join(";");
+            }
         }
     }
 }
@@ -69,12 +100,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     if args.len() != 3 {
         return Err(
-            "usage: ppc_rtk_candidates CASE_DIRECTORY galileo|galileo-slips BASE_X,BASE_Y,BASE_Z (append -velocity for GPS 1C Doppler diagnostics)"
+            "usage: ppc_rtk_candidates CASE_DIRECTORY galileo|galileo-slips BASE_X,BASE_Y,BASE_Z (append -velocity for GPS 1C Doppler diagnostics, or -velocity-mixed for GPS/Galileo with separate clocks)"
                 .into(),
         );
     }
-    let use_velocity = args[1].ends_with("-velocity");
-    let mode = args[1].strip_suffix("-velocity").unwrap_or(&args[1]);
+    let mixed_velocity = args[1].ends_with("-velocity-mixed");
+    let requested = if mixed_velocity {
+        args[1].strip_suffix("-mixed").unwrap()
+    } else {
+        &args[1]
+    };
+    let use_velocity = requested.ends_with("-velocity");
+    let mode = requested.strip_suffix("-velocity").unwrap_or(requested);
     let slip_detection = match mode {
         "galileo" => None,
         "galileo-slips" => Some(RtkSlipConfig::default()),
@@ -115,12 +152,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         ""
     };
+    let clock_suffix = if mixed_velocity {
+        ",velocity_clock_systems,velocity_clock_drifts_sps,velocity_tracking_codes,velocity_rejections"
+    } else {
+        ""
+    };
     writeln!(
         out,
-        "kind,week,tow,side,status,x_m,y_m,z_m,used_satellites,reference_satellites,ambiguity_pairs,ambiguity_resets,search_status,ratio,integers,local_status,local_rejection,conditioned_x_m,conditioned_y_m,conditioned_z_m,correction_m,phase_rms_m,code_rms_m,postfit_nis_per_row,max_position_std_m,audit_status,reference_sets,conservative_rejection,reason{suffix}"
+        "kind,week,tow,side,status,x_m,y_m,z_m,used_satellites,reference_satellites,ambiguity_pairs,ambiguity_resets,search_status,ratio,integers,local_status,local_rejection,conditioned_x_m,conditioned_y_m,conditioned_z_m,correction_m,phase_rms_m,code_rms_m,postfit_nis_per_row,max_position_std_m,audit_status,reference_sets,conservative_rejection,reason{suffix}{clock_suffix}"
     )?;
     for event in EpochMatcher::new(rover, base) {
-        let mut row = vec![String::new(); if use_velocity { 51 } else { 29 }];
+        let mut row = vec![
+            String::new();
+            if mixed_velocity {
+                55
+            } else if use_velocity {
+                51
+            } else {
+                29
+            }
+        ];
         match event? {
             EpochMatch::Unmatched { side, epoch } => {
                 row[0] = "unmatched".into();
@@ -176,15 +227,28 @@ fn main() -> Result<(), Box<dyn Error>> {
                             row[11] = float.reset_ambiguities.len().to_string();
                             let before = filter.state().cloned();
                             if use_velocity {
-                                write_velocity(
-                                    &mut row,
+                                let velocity = if mixed_velocity {
+                                    solve_gps_galileo_e1_epoch(
+                                        &rover,
+                                        &navigation.navigation,
+                                        p,
+                                        VelocityEpochConfig {
+                                            velocity: VelocityConfig {
+                                                clock_model: VelocityClockModel::PerSystem,
+                                                ..Default::default()
+                                            },
+                                            ..Default::default()
+                                        },
+                                    )
+                                } else {
                                     solve_gps_l1_epoch(
                                         &rover,
                                         &navigation.navigation,
                                         p,
                                         VelocityEpochConfig::default(),
-                                    ),
-                                );
+                                    )
+                                };
+                                write_velocity(&mut row, velocity);
                             }
                             match float.integer_candidates(LambdaConfig::default()) {
                                 Err(error) => {
@@ -287,8 +351,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         "candidate_diagnostics=true FIX_policy_evaluated=false no_lock_confirmation_or_motion_history=true no_feedback_to_FLOAT=true audit_only_if_ratio_and_local_gates_pass=true reference_used=false"
     );
     if use_velocity {
+        let model = if mixed_velocity {
+            "GPS_Galileo_separate_clocks_current_FLOAT_position"
+        } else {
+            "GPS_1C_current_FLOAT_position"
+        };
         eprintln!(
-            "velocity_diagnostics=GPS_1C_current_FLOAT_position no_velocity_feedback=true no_motion_gate_evaluated=true"
+            "velocity_diagnostics={model} no_velocity_feedback=true no_motion_gate_evaluated=true"
         );
     }
     Ok(())

@@ -1,0 +1,3851 @@
+{
+  "practical_PPC_parity_accepted": false,
+  "cases": {
+    "nagoya-run1": {
+      "galileo": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 846,
+            "INVALID_VELOCITY": 15
+          },
+          "velocity_failures": {
+            "InconsistentFit": 5,
+            "InsufficientObservations": 10
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 846,
+            "rms": 2.1639816089559725,
+            "p50": 1.3443023482888297,
+            "p95": 3.864587846778293,
+            "maximum": 12.929584942188658
+          },
+          "speed_mps": {
+            "epochs": 846,
+            "rms": 5.916400840039194,
+            "p50": 1.2451454824248884,
+            "p95": 11.417761327495754,
+            "maximum": 34.73306637435916
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 846,
+                  "rms": 1.6890104039470528,
+                  "p50": 0.07923015853609192,
+                  "p95": 2.223806016873328,
+                  "maximum": 21.802302906358285
+                },
+                "vertical_error_mps": {
+                  "epochs": 846,
+                  "rms": 3.278471549807054,
+                  "p50": 0.09104616334515829,
+                  "p95": 4.66613598259067,
+                  "maximum": 32.87356106268028
+                },
+                "3d_error_mps": {
+                  "epochs": 846,
+                  "rms": 3.6879712373520013,
+                  "p50": 0.15176283225338577,
+                  "p95": 5.360665816235479,
+                  "maximum": 34.503616436992004
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 846,
+                  "rms": 1.6886841593704276,
+                  "p50": 0.07562138845752799,
+                  "p95": 2.222655914969265,
+                  "maximum": 21.801805453811085
+                },
+                "vertical_error_mps": {
+                  "epochs": 846,
+                  "rms": 3.278671413574322,
+                  "p50": 0.09355871038568281,
+                  "p95": 4.654305466661899,
+                  "maximum": 32.87641621074137
+                },
+                "3d_error_mps": {
+                  "epochs": 846,
+                  "rms": 3.6879995157670575,
+                  "p50": 0.14832537182168049,
+                  "p95": 5.362283766007794,
+                  "maximum": 34.506980690206326
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 856,
+            "INVALID_VELOCITY": 5
+          },
+          "velocity_failures": {
+            "InconsistentFit": 5
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 856,
+            "rms": 1.7255083111179659,
+            "p50": 1.1771147204233314,
+            "p95": 3.363859460012706,
+            "maximum": 11.352637660541095
+          },
+          "speed_mps": {
+            "epochs": 856,
+            "rms": 5.258033657206829,
+            "p50": 1.241487190490914,
+            "p95": 11.309634063246499,
+            "maximum": 19.556366649995194
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 856,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 3973,
+              "G:1C": 5494
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 856,
+                  "rms": 0.9802576491547356,
+                  "p50": 0.07035810264866543,
+                  "p95": 1.6130529617185376,
+                  "maximum": 11.476784849035882
+                },
+                "vertical_error_mps": {
+                  "epochs": 856,
+                  "rms": 2.021372101745095,
+                  "p50": 0.08139184422058807,
+                  "p95": 3.804093281679835,
+                  "maximum": 18.41130835100454
+                },
+                "3d_error_mps": {
+                  "epochs": 856,
+                  "rms": 2.246519582029,
+                  "p50": 0.13876539097003976,
+                  "p95": 4.3213159763258995,
+                  "maximum": 19.88898028625164
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 856,
+                  "rms": 0.9797959001182145,
+                  "p50": 0.06917703358541905,
+                  "p95": 1.6167269190109912,
+                  "maximum": 11.487044653151422
+                },
+                "vertical_error_mps": {
+                  "epochs": 856,
+                  "rms": 2.0217064995875655,
+                  "p50": 0.08147360821527272,
+                  "p95": 3.8016878607343343,
+                  "maximum": 18.410793883043723
+                },
+                "3d_error_mps": {
+                  "epochs": 856,
+                  "rms": 2.2466190545713505,
+                  "p50": 0.13849316478907336,
+                  "p95": 4.32212855866968,
+                  "maximum": 19.889470391178982
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 844,
+          "GPS_only": 2,
+          "mixed_only": 12,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 844,
+                    "rms": 1.4768066344580593,
+                    "p50": 0.07907182677180002,
+                    "p95": 2.17335292747878,
+                    "maximum": 15.419752731784097
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 844,
+                    "rms": 3.1207967946818465,
+                    "p50": 0.09012603934551758,
+                    "p95": 4.3467829578066395,
+                    "maximum": 32.87356106268028
+                  },
+                  "3d_error_mps": {
+                    "epochs": 844,
+                    "rms": 3.4525831589225806,
+                    "p50": 0.1512178425805207,
+                    "p95": 5.121004990329079,
+                    "maximum": 34.503616436992004
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 844,
+                    "rms": 1.4763453346292486,
+                    "p50": 0.07554203884008066,
+                    "p95": 2.173990555193801,
+                    "maximum": 15.429369970905144
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 844,
+                    "rms": 3.120934656760823,
+                    "p50": 0.09321163408764657,
+                    "p95": 4.346160379243474,
+                    "maximum": 32.87641621074137
+                  },
+                  "3d_error_mps": {
+                    "epochs": 844,
+                    "rms": 3.4525104893182217,
+                    "p50": 0.1479612952521121,
+                    "p95": 5.108121161186606,
+                    "maximum": 34.506980690206326
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 844,
+                    "rms": 0.9782188143844799,
+                    "p50": 0.07016846994457636,
+                    "p95": 1.5057463272048714,
+                    "maximum": 11.476784849035882
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 844,
+                    "rms": 1.9928846381284457,
+                    "p50": 0.08100755409626534,
+                    "p95": 3.76071609848269,
+                    "maximum": 18.41130835100454
+                  },
+                  "3d_error_mps": {
+                    "epochs": 844,
+                    "rms": 2.2200227993658364,
+                    "p50": 0.13837170408310578,
+                    "p95": 4.14385971052348,
+                    "maximum": 19.88898028625164
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 844,
+                    "rms": 0.9777146694416654,
+                    "p50": 0.06867568336323526,
+                    "p95": 1.501339966155384,
+                    "maximum": 11.487044653151422
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 844,
+                    "rms": 1.9932150405965738,
+                    "p50": 0.0814356497012425,
+                    "p95": 3.7464969770868772,
+                    "maximum": 18.410793883043723
+                  },
+                  "3d_error_mps": {
+                    "epochs": 844,
+                    "rms": 2.2200973341053825,
+                    "p50": 0.13814829056291483,
+                    "p95": 4.151197925624272,
+                    "maximum": 19.889470391178982
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "galileo_slips": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 852,
+            "INVALID_VELOCITY": 15
+          },
+          "velocity_failures": {
+            "InconsistentFit": 5,
+            "InsufficientObservations": 10
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 852,
+            "rms": 2.1645357031693933,
+            "p50": 1.3444329612102923,
+            "p95": 3.8632504472467173,
+            "maximum": 12.929583354392484
+          },
+          "speed_mps": {
+            "epochs": 852,
+            "rms": 5.925042606726711,
+            "p50": 1.2653606609602845,
+            "p95": 11.411210677450295,
+            "maximum": 34.73306637436912
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 852,
+                  "rms": 1.6882768085454194,
+                  "p50": 0.0797198223852866,
+                  "p95": 2.30367268923015,
+                  "maximum": 21.802165652309842
+                },
+                "vertical_error_mps": {
+                  "epochs": 852,
+                  "rms": 3.270825632787826,
+                  "p50": 0.09304685890566478,
+                  "p95": 4.620682393960846,
+                  "maximum": 32.87356106269039
+                },
+                "3d_error_mps": {
+                  "epochs": 852,
+                  "rms": 3.68083942903982,
+                  "p50": 0.15228096976543198,
+                  "p95": 5.308903567533641,
+                  "maximum": 34.503616437002684
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 852,
+                  "rms": 1.6878725853249636,
+                  "p50": 0.07666295985658313,
+                  "p95": 2.2799818976983675,
+                  "maximum": 21.801668281313788
+                },
+                "vertical_error_mps": {
+                  "epochs": 852,
+                  "rms": 3.2710235840749498,
+                  "p50": 0.09428501479763172,
+                  "p95": 4.613833607954016,
+                  "maximum": 32.876416210751486
+                },
+                "3d_error_mps": {
+                  "epochs": 852,
+                  "rms": 3.6808299542176774,
+                  "p50": 0.14943122764049155,
+                  "p95": 5.309791396711073,
+                  "maximum": 34.506980690217006
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 862,
+            "INVALID_VELOCITY": 5
+          },
+          "velocity_failures": {
+            "InconsistentFit": 5
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 862,
+            "rms": 1.7232140810436978,
+            "p50": 1.1772018774401074,
+            "p95": 3.351154756453117,
+            "maximum": 11.352519366249156
+          },
+          "speed_mps": {
+            "epochs": 862,
+            "rms": 5.271771616501096,
+            "p50": 1.2599927673086557,
+            "p95": 11.306538581862856,
+            "maximum": 19.556226449775092
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 862,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 4001,
+              "G:1C": 5529
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 862,
+                  "rms": 0.9816603654236971,
+                  "p50": 0.07141580328315698,
+                  "p95": 1.6483176089310467,
+                  "maximum": 11.476449975194257
+                },
+                "vertical_error_mps": {
+                  "epochs": 862,
+                  "rms": 2.018463347027549,
+                  "p50": 0.08165906839792465,
+                  "p95": 3.7895176976906404,
+                  "maximum": 18.41120658635628
+                },
+                "3d_error_mps": {
+                  "epochs": 862,
+                  "rms": 2.244515840072741,
+                  "p50": 0.13978439536330842,
+                  "p95": 4.315659885315382,
+                  "maximum": 19.888874468267094
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 862,
+                  "rms": 0.9810559009193947,
+                  "p50": 0.07029629494738403,
+                  "p95": 1.6543315475928253,
+                  "maximum": 11.486709665813175
+                },
+                "vertical_error_mps": {
+                  "epochs": 862,
+                  "rms": 2.018794027022336,
+                  "p50": 0.08170773071165499,
+                  "p95": 3.786320629197104,
+                  "maximum": 18.410692118395467
+                },
+                "3d_error_mps": {
+                  "epochs": 862,
+                  "rms": 2.2445489534135414,
+                  "p50": 0.1402772373428006,
+                  "p95": 4.315066363211354,
+                  "maximum": 19.889364689036686
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 850,
+          "GPS_only": 2,
+          "mixed_only": 12,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 850,
+                    "rms": 1.4775738725412955,
+                    "p50": 0.07940757961448877,
+                    "p95": 2.1807619791041506,
+                    "maximum": 15.41923139485643
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 850,
+                    "rms": 3.1138769486460176,
+                    "p50": 0.0922902970530073,
+                    "p95": 4.287078325583716,
+                    "maximum": 32.87356106269039
+                  },
+                  "3d_error_mps": {
+                    "epochs": 850,
+                    "rms": 3.4466584107111213,
+                    "p50": 0.151961636017799,
+                    "p95": 5.051257851727717,
+                    "maximum": 34.503616437002684
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 850,
+                    "rms": 1.477024277619306,
+                    "p50": 0.0763474337729122,
+                    "p95": 2.1868736533535538,
+                    "maximum": 15.428848372342777
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 850,
+                    "rms": 3.1140131244089675,
+                    "p50": 0.09405540522478473,
+                    "p95": 4.282786352694728,
+                    "maximum": 32.876416210751486
+                  },
+                  "3d_error_mps": {
+                    "epochs": 850,
+                    "rms": 3.446545873141417,
+                    "p50": 0.14891589543127692,
+                    "p95": 5.048553006821075,
+                    "maximum": 34.506980690217006
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 850,
+                    "rms": 0.9796577450069504,
+                    "p50": 0.07110205747889875,
+                    "p95": 1.5313822800019887,
+                    "maximum": 11.476449975194257
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 850,
+                    "rms": 1.9900956458042989,
+                    "p50": 0.08139173894788099,
+                    "p95": 3.75053769954249,
+                    "maximum": 18.41120658635628
+                  },
+                  "3d_error_mps": {
+                    "epochs": 850,
+                    "rms": 2.218154633203315,
+                    "p50": 0.1390630254271818,
+                    "p95": 4.140602723573477,
+                    "maximum": 19.888874468267094
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 850,
+                    "rms": 0.979008940493646,
+                    "p50": 0.06999075734028865,
+                    "p95": 1.5207039028387659,
+                    "maximum": 11.486709665813175
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 850,
+                    "rms": 1.9904222520767334,
+                    "p50": 0.08147356666668244,
+                    "p95": 3.7398442504158202,
+                    "maximum": 18.410692118395467
+                  },
+                  "3d_error_mps": {
+                    "epochs": 850,
+                    "rms": 2.218161231094058,
+                    "p50": 0.139425936107172,
+                    "p95": 4.150138432600363,
+                    "maximum": 19.889364689036686
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "nagoya-run2": {
+      "galileo": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1398,
+            "INVALID_VELOCITY": 40
+          },
+          "velocity_failures": {
+            "InconsistentFit": 10,
+            "InsufficientObservations": 23,
+            "WeakGeometry": 7
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1398,
+            "rms": 2.6995933439037603,
+            "p50": 1.7750264508129736,
+            "p95": 5.177250475007063,
+            "maximum": 12.318544386143348
+          },
+          "speed_mps": {
+            "epochs": 1398,
+            "rms": 7.131242624973933,
+            "p50": 0.3344677107602255,
+            "p95": 11.501467655601516,
+            "maximum": 86.39360256218998
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1398,
+                  "rms": 1.808246184973474,
+                  "p50": 0.07115695754565945,
+                  "p95": 2.190142610508472,
+                  "maximum": 31.47084592038803
+                },
+                "vertical_error_mps": {
+                  "epochs": 1398,
+                  "rms": 5.510218734593523,
+                  "p50": 0.11477442021198087,
+                  "p95": 5.822360942680895,
+                  "maximum": 82.52107444150809
+                },
+                "3d_error_mps": {
+                  "epochs": 1398,
+                  "rms": 5.799333131364032,
+                  "p50": 0.1632563774358774,
+                  "p95": 6.267770466073074,
+                  "maximum": 87.30998505785747
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 1398,
+                  "rms": 1.8094954933842027,
+                  "p50": 0.0720227682738584,
+                  "p95": 2.184616932194268,
+                  "maximum": 31.483482559444735
+                },
+                "vertical_error_mps": {
+                  "epochs": 1398,
+                  "rms": 5.510021920534771,
+                  "p50": 0.11281254901892215,
+                  "p95": 5.833354323942513,
+                  "maximum": 82.48414612904834
+                },
+                "3d_error_mps": {
+                  "epochs": 1398,
+                  "rms": 5.7995358008509115,
+                  "p50": 0.16223067837304664,
+                  "p95": 6.263677261176415,
+                  "maximum": 87.30995202285997
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1425,
+            "INVALID_VELOCITY": 13
+          },
+          "velocity_failures": {
+            "InconsistentFit": 12,
+            "WeakGeometry": 1
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1425,
+            "rms": 1.6423629737315275,
+            "p50": 1.1273227512507284,
+            "p95": 2.8900481949713055,
+            "maximum": 9.24373775607587
+          },
+          "speed_mps": {
+            "epochs": 1425,
+            "rms": 4.742932532496834,
+            "p50": 0.23443428580011635,
+            "p95": 10.942490308170482,
+            "maximum": 34.95119109688937
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 1425,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 7461,
+              "G:1C": 8942
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1425,
+                  "rms": 0.9776057115975707,
+                  "p50": 0.064627434288861,
+                  "p95": 2.0575102705795287,
+                  "maximum": 10.114300462197924
+                },
+                "vertical_error_mps": {
+                  "epochs": 1425,
+                  "rms": 2.010098133669265,
+                  "p50": 0.08134484150782868,
+                  "p95": 4.187628039341911,
+                  "maximum": 33.78347984907569
+                },
+                "3d_error_mps": {
+                  "epochs": 1425,
+                  "rms": 2.2352197731607637,
+                  "p50": 0.1273836470895657,
+                  "p95": 4.75947557654849,
+                  "maximum": 34.81056475000716
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 1425,
+                  "rms": 0.9787389372580245,
+                  "p50": 0.06331742741292302,
+                  "p95": 2.058175090051863,
+                  "maximum": 10.11193383207712
+                },
+                "vertical_error_mps": {
+                  "epochs": 1425,
+                  "rms": 2.0099695725745237,
+                  "p50": 0.08168834361913169,
+                  "p95": 4.18239049325587,
+                  "maximum": 33.78119423038674
+                },
+                "3d_error_mps": {
+                  "epochs": 1425,
+                  "rms": 2.2356000514359406,
+                  "p50": 0.12856100109002544,
+                  "p95": 4.767197444870897,
+                  "maximum": 34.81065209506304
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 1391,
+          "GPS_only": 7,
+          "mixed_only": 34,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1391,
+                    "rms": 1.0812625528059794,
+                    "p50": 0.07067762864549297,
+                    "p95": 2.0144674670879765,
+                    "maximum": 11.655451110108613
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1391,
+                    "rms": 3.396041327911594,
+                    "p50": 0.11321342757058167,
+                    "p95": 5.544847914841175,
+                    "maximum": 45.79508116860153
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1391,
+                    "rms": 3.5640181549739682,
+                    "p50": 0.1615214952451604,
+                    "p95": 6.0670627841015845,
+                    "maximum": 47.25504205710683
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 1391,
+                    "rms": 1.0826353564303404,
+                    "p50": 0.07139187005218192,
+                    "p95": 2.0104158517458934,
+                    "maximum": 11.643310826106248
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1391,
+                    "rms": 3.396154512466802,
+                    "p50": 0.11110044288926675,
+                    "p95": 5.541423415050122,
+                    "maximum": 45.80347636079232
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1391,
+                    "rms": 3.5645427178730333,
+                    "p50": 0.15791335206326648,
+                    "p95": 6.066194181140487,
+                    "maximum": 47.260185502460565
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1391,
+                    "rms": 0.8522854063088017,
+                    "p50": 0.06100376422900323,
+                    "p95": 1.8742525714565417,
+                    "maximum": 8.393563456693348
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1391,
+                    "rms": 1.9415092643899567,
+                    "p50": 0.07866764516813694,
+                    "p95": 3.9773851268354807,
+                    "maximum": 33.78347984907569
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1391,
+                    "rms": 2.120341632265657,
+                    "p50": 0.12187751190133247,
+                    "p95": 4.442210043428189,
+                    "maximum": 34.81056475000716
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 1391,
+                    "rms": 0.8530813416087314,
+                    "p50": 0.060099770186508604,
+                    "p95": 1.8768484985379448,
+                    "maximum": 8.403119400103927
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1391,
+                    "rms": 1.9414425838865679,
+                    "p50": 0.07921529850008738,
+                    "p95": 3.970916203576399,
+                    "maximum": 33.78119423038674
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1391,
+                    "rms": 2.120600641782678,
+                    "p50": 0.12227069573888706,
+                    "p95": 4.441042142797494,
+                    "maximum": 34.81065209506304
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "galileo_slips": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1415,
+            "INVALID_VELOCITY": 41
+          },
+          "velocity_failures": {
+            "InconsistentFit": 10,
+            "InsufficientObservations": 24,
+            "WeakGeometry": 7
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1415,
+            "rms": 2.6995212498781322,
+            "p50": 1.7857132002082252,
+            "p95": 5.178393748176211,
+            "maximum": 12.31854434605288
+          },
+          "speed_mps": {
+            "epochs": 1415,
+            "rms": 7.121134615095649,
+            "p50": 0.36199096542733716,
+            "p95": 11.49127929954406,
+            "maximum": 86.39376265995068
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1415,
+                  "rms": 1.8036012341175993,
+                  "p50": 0.0734281545571024,
+                  "p95": 2.191136213307877,
+                  "maximum": 31.470937772226883
+                },
+                "vertical_error_mps": {
+                  "epochs": 1415,
+                  "rms": 5.481588757641845,
+                  "p50": 0.11719359420416614,
+                  "p95": 5.688745664587562,
+                  "maximum": 82.52104698243862
+                },
+                "3d_error_mps": {
+                  "epochs": 1415,
+                  "rms": 5.770683903976718,
+                  "p50": 0.16840365958251416,
+                  "p95": 6.205722322398553,
+                  "maximum": 87.31014633856314
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 1415,
+                  "rms": 1.80470094907283,
+                  "p50": 0.07549566991143256,
+                  "p95": 2.189089418222823,
+                  "maximum": 31.483574411568597
+                },
+                "vertical_error_mps": {
+                  "epochs": 1415,
+                  "rms": 5.481413505426083,
+                  "p50": 0.11688633928775136,
+                  "p95": 5.686848820342209,
+                  "maximum": 82.48411866997887
+                },
+                "3d_error_mps": {
+                  "epochs": 1415,
+                  "rms": 5.770861247080182,
+                  "p50": 0.16757717805748884,
+                  "p95": 6.203216917061804,
+                  "maximum": 87.31011330928078
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1443,
+            "INVALID_VELOCITY": 13
+          },
+          "velocity_failures": {
+            "InconsistentFit": 12,
+            "WeakGeometry": 1
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1443,
+            "rms": 1.638766441616998,
+            "p50": 1.1281183432379096,
+            "p95": 2.875745033108225,
+            "maximum": 9.243737750006634
+          },
+          "speed_mps": {
+            "epochs": 1443,
+            "rms": 4.762532845967239,
+            "p50": 0.2578609664617556,
+            "p95": 10.950050745600386,
+            "maximum": 34.951161590219165
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 1443,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 7557,
+              "G:1C": 9045
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1443,
+                  "rms": 0.9868031561147572,
+                  "p50": 0.06725897754835868,
+                  "p95": 2.059023724423392,
+                  "maximum": 10.11305585676832
+                },
+                "vertical_error_mps": {
+                  "epochs": 1443,
+                  "rms": 2.0030903646634863,
+                  "p50": 0.08509980313608695,
+                  "p95": 4.146761649605716,
+                  "maximum": 33.78345256163604
+                },
+                "3d_error_mps": {
+                  "epochs": 1443,
+                  "rms": 2.2329692066676032,
+                  "p50": 0.13234960138709517,
+                  "p95": 4.768280909207718,
+                  "maximum": 34.810531742685946
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 1443,
+                  "rms": 0.9878303529522187,
+                  "p50": 0.06698037253387586,
+                  "p95": 2.059933203774846,
+                  "maximum": 10.110691576854466
+                },
+                "vertical_error_mps": {
+                  "epochs": 1443,
+                  "rms": 2.002995926399774,
+                  "p50": 0.08422715326006462,
+                  "p95": 4.142757145589369,
+                  "maximum": 33.781166942947095
+                },
+                "3d_error_mps": {
+                  "epochs": 1443,
+                  "rms": 2.2333386414486704,
+                  "p50": 0.13380036331896966,
+                  "p95": 4.7762591927063545,
+                  "maximum": 34.81061908220619
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 1408,
+          "GPS_only": 7,
+          "mixed_only": 35,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1408,
+                    "rms": 1.0852030050322274,
+                    "p50": 0.07279104129554338,
+                    "p95": 2.0482252653774347,
+                    "maximum": 11.65524404016768
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1408,
+                    "rms": 3.3830544257615296,
+                    "p50": 0.11590297832263315,
+                    "p95": 5.47493526018411,
+                    "maximum": 45.79072296640648
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1408,
+                    "rms": 3.552847141349547,
+                    "p50": 0.16721527884315224,
+                    "p95": 5.960016904108948,
+                    "maximum": 47.25076743738719
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 1408,
+                    "rms": 1.0863243075483562,
+                    "p50": 0.07392294907037027,
+                    "p95": 2.0171217485667263,
+                    "maximum": 11.643104766399821
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1408,
+                    "rms": 3.383199599528301,
+                    "p50": 0.1149173264301037,
+                    "p95": 5.482694572001419,
+                    "maximum": 45.79911815859725
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1408,
+                    "rms": 3.553328021928017,
+                    "p50": 0.16449968771639084,
+                    "p95": 5.977360136936694,
+                    "maximum": 47.25591087585251
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1408,
+                    "rms": 0.8646102965790161,
+                    "p50": 0.06317689352832953,
+                    "p95": 1.8758407860511466,
+                    "maximum": 8.393536395598298
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1408,
+                    "rms": 1.9352899530867023,
+                    "p50": 0.08052797585361324,
+                    "p95": 3.9152898020098936,
+                    "maximum": 33.78345256163604
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1408,
+                    "rms": 2.1196457646193583,
+                    "p50": 0.12440371119115379,
+                    "p95": 4.450495040140938,
+                    "maximum": 34.810531742685946
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 1408,
+                    "rms": 0.8652703144314846,
+                    "p50": 0.06186456091490276,
+                    "p95": 1.8787248108447183,
+                    "maximum": 8.403092339085445
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1408,
+                    "rms": 1.9352566292682236,
+                    "p50": 0.08092649131592655,
+                    "p95": 3.918184644985077,
+                    "maximum": 33.781166942947095
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1408,
+                    "rms": 2.1198846520891097,
+                    "p50": 0.12535295264355995,
+                    "p95": 4.447298826332027,
+                    "maximum": 34.81061908220619
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "nagoya-run3": {
+      "galileo": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 908,
+            "INVALID_VELOCITY": 32
+          },
+          "velocity_failures": {
+            "InsufficientObservations": 6,
+            "InconsistentFit": 5,
+            "WeakGeometry": 21
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 908,
+            "rms": 2.615862420951545,
+            "p50": 1.9301104887359626,
+            "p95": 4.380604605604201,
+            "maximum": 13.399835286011047
+          },
+          "speed_mps": {
+            "epochs": 908,
+            "rms": 5.257208327389337,
+            "p50": 1.994151434794723,
+            "p95": 11.06047042711242,
+            "maximum": 29.510477896247643
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 908,
+                  "rms": 1.2049835690851873,
+                  "p50": 0.16015053482009933,
+                  "p95": 1.9873049465274473,
+                  "maximum": 24.41850231521602
+                },
+                "vertical_error_mps": {
+                  "epochs": 908,
+                  "rms": 2.4562194016520125,
+                  "p50": 0.2578754032315329,
+                  "p95": 5.490822073633116,
+                  "maximum": 23.33297817685723
+                },
+                "3d_error_mps": {
+                  "epochs": 908,
+                  "rms": 2.735872648866728,
+                  "p50": 0.39802256169253614,
+                  "p95": 5.81341492858415,
+                  "maximum": 28.215623201798966
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 908,
+                  "rms": 1.2075985016019142,
+                  "p50": 0.15920100636817583,
+                  "p95": 1.9803385228143269,
+                  "maximum": 24.4212304921441
+                },
+                "vertical_error_mps": {
+                  "epochs": 908,
+                  "rms": 2.4566505897696005,
+                  "p50": 0.2601925767028325,
+                  "p95": 5.489582105144828,
+                  "maximum": 23.33925598895601
+                },
+                "3d_error_mps": {
+                  "epochs": 908,
+                  "rms": 2.737412329424728,
+                  "p50": 0.3993878242715124,
+                  "p95": 5.8299421581940685,
+                  "maximum": 28.21951265009903
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 935,
+            "INVALID_VELOCITY": 5
+          },
+          "velocity_failures": {
+            "InconsistentFit": 5
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 935,
+            "rms": 1.773514621845572,
+            "p50": 1.2679548032444297,
+            "p95": 2.542864385305156,
+            "maximum": 18.77744138039295
+          },
+          "speed_mps": {
+            "epochs": 935,
+            "rms": 4.923646821254521,
+            "p50": 1.5575710894561365,
+            "p95": 10.604823617658365,
+            "maximum": 17.766148865942306
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 935,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 3904,
+              "G:1C": 5958
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 935,
+                  "rms": 0.7820441672903875,
+                  "p50": 0.13449803672449198,
+                  "p95": 1.760550661432499,
+                  "maximum": 6.660929931517531
+                },
+                "vertical_error_mps": {
+                  "epochs": 935,
+                  "rms": 1.8128068982551582,
+                  "p50": 0.2061656781576154,
+                  "p95": 3.920535779491317,
+                  "maximum": 15.79206393119664
+                },
+                "3d_error_mps": {
+                  "epochs": 935,
+                  "rms": 1.9743003646746367,
+                  "p50": 0.32142387616656964,
+                  "p95": 4.278998012454071,
+                  "maximum": 15.825518493240333
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 935,
+                  "rms": 0.7863264910373611,
+                  "p50": 0.1419165390234931,
+                  "p95": 1.7534233048031214,
+                  "maximum": 6.660845534054344
+                },
+                "vertical_error_mps": {
+                  "epochs": 935,
+                  "rms": 1.8134246064797739,
+                  "p50": 0.2073566000410949,
+                  "p95": 3.912507095612891,
+                  "maximum": 15.795746652641515
+                },
+                "3d_error_mps": {
+                  "epochs": 935,
+                  "rms": 1.97656726520841,
+                  "p50": 0.31966241799128436,
+                  "p95": 4.278089737414038,
+                  "maximum": 15.833014768266985
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 907,
+          "GPS_only": 1,
+          "mixed_only": 28,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 907,
+                    "rms": 0.8922918038166612,
+                    "p50": 0.1590762538559473,
+                    "p95": 1.964877259371656,
+                    "maximum": 4.812217084298539
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 907,
+                    "rms": 2.4123255595093496,
+                    "p50": 0.25660340528136466,
+                    "p95": 5.478558185357851,
+                    "maximum": 23.33297817685723
+                  },
+                  "3d_error_mps": {
+                    "epochs": 907,
+                    "rms": 2.5720612878041003,
+                    "p50": 0.3974730211578446,
+                    "p95": 5.772053215451564,
+                    "maximum": 23.35663485837697
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 907,
+                    "rms": 0.8957418447393147,
+                    "p50": 0.15915049967235653,
+                    "p95": 1.9774098307935766,
+                    "maximum": 4.8089221972426754
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 907,
+                    "rms": 2.412745367656432,
+                    "p50": 0.2592320001881919,
+                    "p95": 5.4691919828744195,
+                    "maximum": 23.33925598895601
+                  },
+                  "3d_error_mps": {
+                    "epochs": 907,
+                    "rms": 2.5736537571251814,
+                    "p50": 0.398449104005504,
+                    "p95": 5.810972337436747,
+                    "maximum": 23.36372733539188
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 907,
+                    "rms": 0.7545973277429486,
+                    "p50": 0.14121399331227158,
+                    "p95": 1.7592002768496677,
+                    "maximum": 6.660929931517531
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 907,
+                    "rms": 1.72684963683922,
+                    "p50": 0.21295082922432584,
+                    "p95": 3.8480829450968206,
+                    "maximum": 15.79206393119664
+                  },
+                  "3d_error_mps": {
+                    "epochs": 907,
+                    "rms": 1.8845229622608861,
+                    "p50": 0.3280782588264021,
+                    "p95": 4.232204152043886,
+                    "maximum": 15.825518493240333
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 907,
+                    "rms": 0.7592982833150699,
+                    "p50": 0.14279920571018845,
+                    "p95": 1.7498059574004239,
+                    "maximum": 6.660845534054344
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 907,
+                    "rms": 1.7274208933833208,
+                    "p50": 0.21200981657344814,
+                    "p95": 3.840732603132917,
+                    "maximum": 15.795746652641515
+                  },
+                  "3d_error_mps": {
+                    "epochs": 907,
+                    "rms": 1.8869331800417426,
+                    "p50": 0.32653618649875726,
+                    "p95": 4.228427964448284,
+                    "maximum": 15.833014768266985
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "galileo_slips": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 924,
+            "INVALID_VELOCITY": 32
+          },
+          "velocity_failures": {
+            "InsufficientObservations": 6,
+            "InconsistentFit": 5,
+            "WeakGeometry": 21
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 924,
+            "rms": 2.628119687957229,
+            "p50": 1.9317253898964806,
+            "p95": 4.40274241789559,
+            "maximum": 13.399824680189615
+          },
+          "speed_mps": {
+            "epochs": 924,
+            "rms": 5.315588750280986,
+            "p50": 2.108622865508398,
+            "p95": 11.198963910791235,
+            "maximum": 29.508909190860958
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 924,
+                  "rms": 1.2100797666798322,
+                  "p50": 0.16634082914441134,
+                  "p95": 1.9981466639032976,
+                  "maximum": 24.416962803586003
+                },
+                "vertical_error_mps": {
+                  "epochs": 924,
+                  "rms": 2.519217212907995,
+                  "p50": 0.2694824693970671,
+                  "p95": 5.49420291344151,
+                  "maximum": 23.33297675564048
+                },
+                "3d_error_mps": {
+                  "epochs": 924,
+                  "rms": 2.7947716199252928,
+                  "p50": 0.4090413711296431,
+                  "p95": 5.824749229968154,
+                  "maximum": 28.21396881026671
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 924,
+                  "rms": 1.212522525148346,
+                  "p50": 0.1651862949062145,
+                  "p95": 1.9847632590611042,
+                  "maximum": 24.41969102858763
+                },
+                "vertical_error_mps": {
+                  "epochs": 924,
+                  "rms": 2.5197074999124585,
+                  "p50": 0.2661869636951516,
+                  "p95": 5.495172460127749,
+                  "maximum": 23.339254567739253
+                },
+                "3d_error_mps": {
+                  "epochs": 924,
+                  "rms": 2.7962719394056106,
+                  "p50": 0.4138507896798903,
+                  "p95": 5.832500242554525,
+                  "maximum": 28.217858309873726
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 950,
+            "INVALID_VELOCITY": 6
+          },
+          "velocity_failures": {
+            "InconsistentFit": 6
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 950,
+            "rms": 1.7725882015376622,
+            "p50": 1.268097760444628,
+            "p95": 2.5429076600726113,
+            "maximum": 18.77744776432456
+          },
+          "speed_mps": {
+            "epochs": 950,
+            "rms": 4.9357603679127715,
+            "p50": 1.7695097753392584,
+            "p95": 10.57549723728532,
+            "maximum": 17.76614829249427
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 950,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 3971,
+              "G:1C": 6056
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 950,
+                  "rms": 0.7921339222335344,
+                  "p50": 0.14179308802422935,
+                  "p95": 1.7812271812472609,
+                  "maximum": 6.660924758114803
+                },
+                "vertical_error_mps": {
+                  "epochs": 950,
+                  "rms": 1.8160885661629378,
+                  "p50": 0.21426460598377142,
+                  "p95": 3.9435217540677576,
+                  "maximum": 15.792063634190484
+                },
+                "3d_error_mps": {
+                  "epochs": 950,
+                  "rms": 1.9813262807778123,
+                  "p50": 0.3300698622841458,
+                  "p95": 4.280286109887267,
+                  "maximum": 15.82551820023449
+                }
+              },
+              "reference_is_IMU_nagoya": {
+                "horizontal_error_mps": {
+                  "epochs": 950,
+                  "rms": 0.7958981965564191,
+                  "p50": 0.14640795979871576,
+                  "p95": 1.771995147002269,
+                  "maximum": 6.660840402570653
+                },
+                "vertical_error_mps": {
+                  "epochs": 950,
+                  "rms": 1.8167127138221992,
+                  "p50": 0.21343420757271386,
+                  "p95": 3.938445771178369,
+                  "maximum": 15.795746355635359
+                },
+                "3d_error_mps": {
+                  "epochs": 950,
+                  "rms": 1.9834059150473915,
+                  "p50": 0.33336195580555494,
+                  "p95": 4.281683339754802,
+                  "maximum": 15.833014476229225
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 922,
+          "GPS_only": 2,
+          "mixed_only": 28,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 922,
+                    "rms": 0.8985761155022864,
+                    "p50": 0.16430921555899117,
+                    "p95": 1.9677613006410515,
+                    "maximum": 4.812157114277082
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 922,
+                    "rms": 2.4773526416079448,
+                    "p50": 0.26675373837826766,
+                    "p95": 5.479620786662861,
+                    "maximum": 23.33297675564048
+                  },
+                  "3d_error_mps": {
+                    "epochs": 922,
+                    "rms": 2.635282745026241,
+                    "p50": 0.40590124634488384,
+                    "p95": 5.781683912912921,
+                    "maximum": 23.356633425970987
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 922,
+                    "rms": 0.9017738404379546,
+                    "p50": 0.16467770405106813,
+                    "p95": 1.9794227237559208,
+                    "maximum": 4.808862527062781
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 922,
+                    "rms": 2.4778137510912055,
+                    "p50": 0.2639536565902353,
+                    "p95": 5.4710423422443695,
+                    "maximum": 23.339254567739253
+                  },
+                  "3d_error_mps": {
+                    "epochs": 922,
+                    "rms": 2.636808116718941,
+                    "p50": 0.41341339793790155,
+                    "p95": 5.820382157352388,
+                    "maximum": 23.363725903266353
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 922,
+                    "rms": 0.7658094780672369,
+                    "p50": 0.14471311607225196,
+                    "p95": 1.7675196902223176,
+                    "maximum": 6.660924758114803
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 922,
+                    "rms": 1.731825016337042,
+                    "p50": 0.2178256126434005,
+                    "p95": 3.8562451716378976,
+                    "maximum": 15.792063634190484
+                  },
+                  "3d_error_mps": {
+                    "epochs": 922,
+                    "rms": 1.8935897242825357,
+                    "p50": 0.3398449622894788,
+                    "p95": 4.238486572294466,
+                    "maximum": 15.82551820023449
+                  }
+                },
+                "reference_is_IMU_nagoya": {
+                  "horizontal_error_mps": {
+                    "epochs": 922,
+                    "rms": 0.7699438695942661,
+                    "p50": 0.1498916493563117,
+                    "p95": 1.7685972230950975,
+                    "maximum": 6.660840402570653
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 922,
+                    "rms": 1.7324040487154255,
+                    "p50": 0.21843709301848246,
+                    "p95": 3.848002703972661,
+                    "maximum": 15.795746355635359
+                  },
+                  "3d_error_mps": {
+                    "epochs": 922,
+                    "rms": 1.8957946487769688,
+                    "p50": 0.34983236438724424,
+                    "p95": 4.231565638576654,
+                    "maximum": 15.833014476229225
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tokyo-run1": {
+      "galileo": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1913,
+            "INVALID_VELOCITY": 104
+          },
+          "velocity_failures": {
+            "InsufficientObservations": 42,
+            "InconsistentFit": 4,
+            "WeakGeometry": 58
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1913,
+            "rms": 2.4139357552123073,
+            "p50": 1.3787672539260565,
+            "p95": 4.852251914117869,
+            "maximum": 19.642929580040036
+          },
+          "speed_mps": {
+            "epochs": 1913,
+            "rms": 6.469596032292064,
+            "p50": 2.954633373401736,
+            "p95": 12.140136399188666,
+            "maximum": 37.90123248069222
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1913,
+                  "rms": 1.3392218204379078,
+                  "p50": 0.168969307197321,
+                  "p95": 2.571436285212465,
+                  "maximum": 19.590866075976304
+                },
+                "vertical_error_mps": {
+                  "epochs": 1913,
+                  "rms": 2.021366816070851,
+                  "p50": 0.1715719141943028,
+                  "p95": 2.8653011315660972,
+                  "maximum": 35.697270979263294
+                },
+                "3d_error_mps": {
+                  "epochs": 1913,
+                  "rms": 2.4247554287905886,
+                  "p50": 0.2887106880840224,
+                  "p95": 3.9040925318592805,
+                  "maximum": 37.07859283629017
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1913,
+                  "rms": 1.3398171781444366,
+                  "p50": 0.17144126815102162,
+                  "p95": 2.5682666535331085,
+                  "maximum": 19.585688357352485
+                },
+                "vertical_error_mps": {
+                  "epochs": 1913,
+                  "rms": 2.021368289217824,
+                  "p50": 0.17164750127100678,
+                  "p95": 2.862079122082194,
+                  "maximum": 35.69814568430449
+                },
+                "3d_error_mps": {
+                  "epochs": 1913,
+                  "rms": 2.4250855307609904,
+                  "p50": 0.28569997855446827,
+                  "p95": 3.9069198762099546,
+                  "maximum": 37.0802492529739
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1913,
+                  "rms": 1.3411115467299703,
+                  "p50": 0.17467578754517,
+                  "p95": 2.564287462304138,
+                  "maximum": 19.57776320780083
+                },
+                "vertical_error_mps": {
+                  "epochs": 1913,
+                  "rms": 2.0214629036579774,
+                  "p50": 0.17176986227638996,
+                  "p95": 2.8608641588885146,
+                  "maximum": 35.70235640808778
+                },
+                "3d_error_mps": {
+                  "epochs": 1913,
+                  "rms": 2.4258797273644452,
+                  "p50": 0.29706404420374405,
+                  "p95": 3.9109914502681344,
+                  "maximum": 37.08529545139296
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 2013,
+            "INVALID_VELOCITY": 4
+          },
+          "velocity_failures": {
+            "WeakGeometry": 1,
+            "InconsistentFit": 3
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 2013,
+            "rms": 1.5308188264806941,
+            "p50": 1.100323277221453,
+            "p95": 2.613094822044321,
+            "maximum": 12.6505429351128
+          },
+          "speed_mps": {
+            "epochs": 2013,
+            "rms": 6.20024022409884,
+            "p50": 2.8511537219288487,
+            "p95": 12.069566356013489,
+            "maximum": 18.248648113207665
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 2013,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 9833,
+              "G:1C": 13529
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 2013,
+                  "rms": 1.1213474386071896,
+                  "p50": 0.154611266575409,
+                  "p95": 2.256406501549137,
+                  "maximum": 9.880199478477437
+                },
+                "vertical_error_mps": {
+                  "epochs": 2013,
+                  "rms": 1.3913176571508779,
+                  "p50": 0.16407167856743982,
+                  "p95": 2.411677769869071,
+                  "maximum": 14.512740619373872
+                },
+                "3d_error_mps": {
+                  "epochs": 2013,
+                  "rms": 1.7869484886729983,
+                  "p50": 0.2694290922131734,
+                  "p95": 3.3436043523219072,
+                  "maximum": 17.476850013490857
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2013,
+                  "rms": 1.1221760913830099,
+                  "p50": 0.15567889635944906,
+                  "p95": 2.2587018710641633,
+                  "maximum": 9.88118515116605
+                },
+                "vertical_error_mps": {
+                  "epochs": 2013,
+                  "rms": 1.391233090170164,
+                  "p50": 0.16427289569625222,
+                  "p95": 2.411343633076227,
+                  "maximum": 14.512196025542394
+                },
+                "3d_error_mps": {
+                  "epochs": 2013,
+                  "rms": 1.7874027781269874,
+                  "p50": 0.2695451788891232,
+                  "p95": 3.346422967915568,
+                  "maximum": 17.478341326790577
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2013,
+                  "rms": 1.1238447644080574,
+                  "p50": 0.1605516165631877,
+                  "p95": 2.265105049050467,
+                  "maximum": 9.882901598935067
+                },
+                "vertical_error_mps": {
+                  "epochs": 2013,
+                  "rms": 1.3911026991232098,
+                  "p50": 0.1633718259564486,
+                  "p95": 2.412663246876383,
+                  "maximum": 14.51723823510951
+                },
+                "3d_error_mps": {
+                  "epochs": 2013,
+                  "rms": 1.788349455222687,
+                  "p50": 0.27734667575358596,
+                  "p95": 3.362663802857175,
+                  "maximum": 17.481153616243645
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 1913,
+          "GPS_only": 0,
+          "mixed_only": 100,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.3392218204379078,
+                    "p50": 0.168969307197321,
+                    "p95": 2.571436285212465,
+                    "maximum": 19.590866075976304
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1913,
+                    "rms": 2.021366816070851,
+                    "p50": 0.1715719141943028,
+                    "p95": 2.8653011315660972,
+                    "maximum": 35.697270979263294
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1913,
+                    "rms": 2.4247554287905886,
+                    "p50": 0.2887106880840224,
+                    "p95": 3.9040925318592805,
+                    "maximum": 37.07859283629017
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.3398171781444366,
+                    "p50": 0.17144126815102162,
+                    "p95": 2.5682666535331085,
+                    "maximum": 19.585688357352485
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1913,
+                    "rms": 2.021368289217824,
+                    "p50": 0.17164750127100678,
+                    "p95": 2.862079122082194,
+                    "maximum": 35.69814568430449
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1913,
+                    "rms": 2.4250855307609904,
+                    "p50": 0.28569997855446827,
+                    "p95": 3.9069198762099546,
+                    "maximum": 37.0802492529739
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.3411115467299703,
+                    "p50": 0.17467578754517,
+                    "p95": 2.564287462304138,
+                    "maximum": 19.57776320780083
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1913,
+                    "rms": 2.0214629036579774,
+                    "p50": 0.17176986227638996,
+                    "p95": 2.8608641588885146,
+                    "maximum": 35.70235640808778
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1913,
+                    "rms": 2.4258797273644452,
+                    "p50": 0.29706404420374405,
+                    "p95": 3.9109914502681344,
+                    "maximum": 37.08529545139296
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.0317038752985914,
+                    "p50": 0.1525544654125663,
+                    "p95": 2.104353938631497,
+                    "maximum": 8.98780699037236
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.2168135342822963,
+                    "p50": 0.15718497995317907,
+                    "p95": 2.3375625016559907,
+                    "maximum": 14.512740619373872
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.5953206773306439,
+                    "p50": 0.26833005172124164,
+                    "p95": 3.151828070793275,
+                    "maximum": 16.627671542543577
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.032670022445382,
+                    "p50": 0.15468240993414217,
+                    "p95": 2.0937214887186255,
+                    "maximum": 8.988314907720408
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.2167700785083744,
+                    "p50": 0.15851698027091665,
+                    "p95": 2.3332095672159996,
+                    "maximum": 14.512196025542394
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.5959125286840194,
+                    "p50": 0.2686586393659718,
+                    "p95": 3.1495969604525427,
+                    "maximum": 16.62509946560484
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.034592129103593,
+                    "p50": 0.16020227082013969,
+                    "p95": 2.1076658870795364,
+                    "maximum": 8.989531918173636
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.2167673283403766,
+                    "p50": 0.16093198095833275,
+                    "p95": 2.329538901475011,
+                    "maximum": 14.51723823510951
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1913,
+                    "rms": 1.5971548468823191,
+                    "p50": 0.2713713151061951,
+                    "p95": 3.1465292097114896,
+                    "maximum": 16.62589150978778
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "galileo_slips": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1940,
+            "INVALID_VELOCITY": 108
+          },
+          "velocity_failures": {
+            "InsufficientObservations": 44,
+            "InconsistentFit": 5,
+            "WeakGeometry": 59
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1940,
+            "rms": 2.4050863665944973,
+            "p50": 1.3768769946828738,
+            "p95": 4.85182242698356,
+            "maximum": 19.642935531638788
+          },
+          "speed_mps": {
+            "epochs": 1940,
+            "rms": 6.495510087653599,
+            "p50": 3.0360202269789873,
+            "p95": 12.133617977610923,
+            "maximum": 37.90126532083387
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1940,
+                  "rms": 1.3366998554964369,
+                  "p50": 0.17277844890783736,
+                  "p95": 2.5793315037706743,
+                  "maximum": 19.590831492441517
+                },
+                "vertical_error_mps": {
+                  "epochs": 1940,
+                  "rms": 2.029379578121763,
+                  "p50": 0.17515647399608267,
+                  "p95": 2.8721510467069464,
+                  "maximum": 35.69731180503645
+                },
+                "3d_error_mps": {
+                  "epochs": 1940,
+                  "rms": 2.430051023287754,
+                  "p50": 0.3018457567825226,
+                  "p95": 3.920925501235894,
+                  "maximum": 37.07863635807653
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1940,
+                  "rms": 1.3372966818380831,
+                  "p50": 0.17370624681494645,
+                  "p95": 2.582384970356865,
+                  "maximum": 19.58565377205571
+                },
+                "vertical_error_mps": {
+                  "epochs": 1940,
+                  "rms": 2.029388065930925,
+                  "p50": 0.17447133590979821,
+                  "p95": 2.8691767023662895,
+                  "maximum": 35.69818651007765
+                },
+                "3d_error_mps": {
+                  "epochs": 1940,
+                  "rms": 2.4303864584460655,
+                  "p50": 0.29896195001764014,
+                  "p95": 3.923215516343776,
+                  "maximum": 37.0802927758993
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1940,
+                  "rms": 1.338583596996536,
+                  "p50": 0.17898241495947703,
+                  "p95": 2.585577926634969,
+                  "maximum": 19.577728621785745
+                },
+                "vertical_error_mps": {
+                  "epochs": 1940,
+                  "rms": 2.029484847828519,
+                  "p50": 0.17461148966039075,
+                  "p95": 2.8693987990720955,
+                  "maximum": 35.70239723386094
+                },
+                "3d_error_mps": {
+                  "epochs": 1940,
+                  "rms": 2.431175599111206,
+                  "p50": 0.30859426000904466,
+                  "p95": 3.925870662507388,
+                  "maximum": 37.08533897588265
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 2044,
+            "INVALID_VELOCITY": 4
+          },
+          "velocity_failures": {
+            "WeakGeometry": 1,
+            "InconsistentFit": 3
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 2044,
+            "rms": 1.5295827936045412,
+            "p50": 1.0999156030340083,
+            "p95": 2.6170929320824032,
+            "maximum": 12.650533536012981
+          },
+          "speed_mps": {
+            "epochs": 2044,
+            "rms": 6.226132798914379,
+            "p50": 2.9404937556326605,
+            "p95": 12.065869158098009,
+            "maximum": 18.248648113207718
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 2044,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 10002,
+              "G:1C": 13748
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 2044,
+                  "rms": 1.1330048452692454,
+                  "p50": 0.15722936539577947,
+                  "p95": 2.356687409932847,
+                  "maximum": 9.881062708390365
+                },
+                "vertical_error_mps": {
+                  "epochs": 2044,
+                  "rms": 1.4044270988677208,
+                  "p50": 0.16550062202192442,
+                  "p95": 2.461531929358719,
+                  "maximum": 14.512723857962568
+                },
+                "3d_error_mps": {
+                  "epochs": 2044,
+                  "rms": 1.8044709627582234,
+                  "p50": 0.27575718080726186,
+                  "p95": 3.372922858248183,
+                  "maximum": 17.478801725781306
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2044,
+                  "rms": 1.1338602649403078,
+                  "p50": 0.1594580670374941,
+                  "p95": 2.3604007597633156,
+                  "maximum": 9.882047936799378
+                },
+                "vertical_error_mps": {
+                  "epochs": 2044,
+                  "rms": 1.4043409012354104,
+                  "p50": 0.1662508227491104,
+                  "p95": 2.462373064734568,
+                  "maximum": 14.512179264131088
+                },
+                "3d_error_mps": {
+                  "epochs": 2044,
+                  "rms": 1.8049411257138528,
+                  "p50": 0.27720437307930773,
+                  "p95": 3.3850384168658287,
+                  "maximum": 17.48029278503947
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2044,
+                  "rms": 1.1353271124487092,
+                  "p50": 0.16530183339663151,
+                  "p95": 2.360218397413072,
+                  "maximum": 9.883763681824956
+                },
+                "vertical_error_mps": {
+                  "epochs": 2044,
+                  "rms": 1.4042247775343837,
+                  "p50": 0.1654443326346709,
+                  "p95": 2.4603648200213786,
+                  "maximum": 14.517221473698203
+                },
+                "3d_error_mps": {
+                  "epochs": 2044,
+                  "rms": 1.805772654046631,
+                  "p50": 0.2832957741770833,
+                  "p95": 3.3924632401834054,
+                  "maximum": 17.483104674650438
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 1940,
+          "GPS_only": 0,
+          "mixed_only": 104,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.3366998554964369,
+                    "p50": 0.17277844890783736,
+                    "p95": 2.5793315037706743,
+                    "maximum": 19.590831492441517
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1940,
+                    "rms": 2.029379578121763,
+                    "p50": 0.17515647399608267,
+                    "p95": 2.8721510467069464,
+                    "maximum": 35.69731180503645
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1940,
+                    "rms": 2.430051023287754,
+                    "p50": 0.3018457567825226,
+                    "p95": 3.920925501235894,
+                    "maximum": 37.07863635807653
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.3372966818380831,
+                    "p50": 0.17370624681494645,
+                    "p95": 2.582384970356865,
+                    "maximum": 19.58565377205571
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1940,
+                    "rms": 2.029388065930925,
+                    "p50": 0.17447133590979821,
+                    "p95": 2.8691767023662895,
+                    "maximum": 35.69818651007765
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1940,
+                    "rms": 2.4303864584460655,
+                    "p50": 0.29896195001764014,
+                    "p95": 3.923215516343776,
+                    "maximum": 37.0802927758993
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.338583596996536,
+                    "p50": 0.17898241495947703,
+                    "p95": 2.585577926634969,
+                    "maximum": 19.577728621785745
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1940,
+                    "rms": 2.029484847828519,
+                    "p50": 0.17461148966039075,
+                    "p95": 2.8693987990720955,
+                    "maximum": 35.70239723386094
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1940,
+                    "rms": 2.431175599111206,
+                    "p50": 0.30859426000904466,
+                    "p95": 3.925870662507388,
+                    "maximum": 37.08533897588265
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.033909130465104,
+                    "p50": 0.1569794443734255,
+                    "p95": 2.1371094245626514,
+                    "maximum": 8.987755673027442
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.220990906306191,
+                    "p50": 0.16437750520879366,
+                    "p95": 2.355961990194913,
+                    "maximum": 14.512723857962568
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.5999333996580987,
+                    "p50": 0.27397411551059103,
+                    "p95": 3.1807400477694867,
+                    "maximum": 16.627651234570997
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.0348605245009728,
+                    "p50": 0.15854937186149573,
+                    "p95": 2.159071270671899,
+                    "maximum": 8.988263567994487
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.2209542448067725,
+                    "p50": 0.1645655588259995,
+                    "p95": 2.3587509681271155,
+                    "maximum": 14.512179264131088
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.6005204069558452,
+                    "p50": 0.27434206217643853,
+                    "p95": 3.1739022384340236,
+                    "maximum": 16.625079157480986
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.0367425539938009,
+                    "p50": 0.1626390147252697,
+                    "p95": 2.1647478113536525,
+                    "maximum": 8.98948054748028
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.2209545579932963,
+                    "p50": 0.16435469450263135,
+                    "p95": 2.361767914995375,
+                    "maximum": 14.517221473698203
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1940,
+                    "rms": 1.6017381671004143,
+                    "p50": 0.28015057387948705,
+                    "p95": 3.1837705252122714,
+                    "maximum": 16.625871202318674
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tokyo-run2": {
+      "galileo": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1627,
+            "INVALID_VELOCITY": 13
+          },
+          "velocity_failures": {
+            "InsufficientObservations": 11,
+            "InconsistentFit": 1,
+            "WeakGeometry": 1
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1627,
+            "rms": 2.3959884450996887,
+            "p50": 1.2270110284784306,
+            "p95": 5.695319115735236,
+            "maximum": 24.193893378385475
+          },
+          "speed_mps": {
+            "epochs": 1627,
+            "rms": 5.876767603386239,
+            "p50": 2.637521879506979,
+            "p95": 11.865232937086965,
+            "maximum": 25.30130669601803
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1627,
+                  "rms": 1.1735662270295073,
+                  "p50": 0.12568436691373464,
+                  "p95": 2.0787789560128243,
+                  "maximum": 12.626513938960745
+                },
+                "vertical_error_mps": {
+                  "epochs": 1627,
+                  "rms": 1.4173600102675397,
+                  "p50": 0.1516352942432464,
+                  "p95": 2.5287585815965796,
+                  "maximum": 18.947116125554558
+                },
+                "3d_error_mps": {
+                  "epochs": 1627,
+                  "rms": 1.8401540935285483,
+                  "p50": 0.23965959702110776,
+                  "p95": 3.4894692105542795,
+                  "maximum": 22.76888367325064
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1627,
+                  "rms": 1.1755915921991344,
+                  "p50": 0.1252213611545538,
+                  "p95": 2.088394333900838,
+                  "maximum": 12.686812186810442
+                },
+                "vertical_error_mps": {
+                  "epochs": 1627,
+                  "rms": 1.4174021314641216,
+                  "p50": 0.15145509400156867,
+                  "p95": 2.528851161984767,
+                  "maximum": 18.946868146902524
+                },
+                "3d_error_mps": {
+                  "epochs": 1627,
+                  "rms": 1.8414788605705825,
+                  "p50": 0.23753303743191195,
+                  "p95": 3.4891168738222573,
+                  "maximum": 22.802171300986043
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1627,
+                  "rms": 1.1778853306945904,
+                  "p50": 0.1285216745064689,
+                  "p95": 2.1144114694516705,
+                  "maximum": 12.829076081933037
+                },
+                "vertical_error_mps": {
+                  "epochs": 1627,
+                  "rms": 1.4175347191275727,
+                  "p50": 0.15267434838129024,
+                  "p95": 2.529702156949093,
+                  "maximum": 18.949890294250928
+                },
+                "3d_error_mps": {
+                  "epochs": 1627,
+                  "rms": 1.843045992968594,
+                  "p50": 0.24242045501130183,
+                  "p95": 3.4891417762157415,
+                  "maximum": 22.884132827795153
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1640
+          },
+          "velocity_failures": {},
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1640,
+            "rms": 1.3331411549685463,
+            "p50": 0.901067508419811,
+            "p95": 2.6286386372511723,
+            "maximum": 7.849357223505599
+          },
+          "speed_mps": {
+            "epochs": 1640,
+            "rms": 5.713204720721985,
+            "p50": 2.593409476769895,
+            "p95": 11.408520178523451,
+            "maximum": 14.352622912900811
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 1640,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 11105,
+              "G:1C": 12274
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1640,
+                  "rms": 0.7578493749432673,
+                  "p50": 0.10783882853438323,
+                  "p95": 1.6533944648530001,
+                  "maximum": 6.743817019662058
+                },
+                "vertical_error_mps": {
+                  "epochs": 1640,
+                  "rms": 1.0274117332191717,
+                  "p50": 0.14142944356328635,
+                  "p95": 2.1912941691251904,
+                  "maximum": 7.767668517674256
+                },
+                "3d_error_mps": {
+                  "epochs": 1640,
+                  "rms": 1.276679499584106,
+                  "p50": 0.21219160045332758,
+                  "p95": 2.778025605869224,
+                  "maximum": 10.286677898872476
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1640,
+                  "rms": 0.7596353991128397,
+                  "p50": 0.10778877273532768,
+                  "p95": 1.673797412250268,
+                  "maximum": 6.745765128794174
+                },
+                "vertical_error_mps": {
+                  "epochs": 1640,
+                  "rms": 1.027543599127934,
+                  "p50": 0.1401430315256687,
+                  "p95": 2.190795221960192,
+                  "maximum": 7.769284235895205
+                },
+                "3d_error_mps": {
+                  "epochs": 1640,
+                  "rms": 1.277846543092758,
+                  "p50": 0.21329535578925302,
+                  "p95": 2.7787290838669043,
+                  "maximum": 10.288432853732408
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1640,
+                  "rms": 0.7598510256506452,
+                  "p50": 0.11427231135569824,
+                  "p95": 1.6898822294553042,
+                  "maximum": 6.747487831068724
+                },
+                "vertical_error_mps": {
+                  "epochs": 1640,
+                  "rms": 1.027558067750787,
+                  "p50": 0.14040059071385583,
+                  "p95": 2.1892052470015932,
+                  "maximum": 7.770030380356345
+                },
+                "3d_error_mps": {
+                  "epochs": 1640,
+                  "rms": 1.2779863707340813,
+                  "p50": 0.21878253132973158,
+                  "p95": 2.76766034283271,
+                  "maximum": 10.290867997505414
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 1627,
+          "GPS_only": 0,
+          "mixed_only": 13,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.1735662270295073,
+                    "p50": 0.12568436691373464,
+                    "p95": 2.0787789560128243,
+                    "maximum": 12.626513938960745
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.4173600102675397,
+                    "p50": 0.1516352942432464,
+                    "p95": 2.5287585815965796,
+                    "maximum": 18.947116125554558
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.8401540935285483,
+                    "p50": 0.23965959702110776,
+                    "p95": 3.4894692105542795,
+                    "maximum": 22.76888367325064
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.1755915921991344,
+                    "p50": 0.1252213611545538,
+                    "p95": 2.088394333900838,
+                    "maximum": 12.686812186810442
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.4174021314641216,
+                    "p50": 0.15145509400156867,
+                    "p95": 2.528851161984767,
+                    "maximum": 18.946868146902524
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.8414788605705825,
+                    "p50": 0.23753303743191195,
+                    "p95": 3.4891168738222573,
+                    "maximum": 22.802171300986043
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.1778853306945904,
+                    "p50": 0.1285216745064689,
+                    "p95": 2.1144114694516705,
+                    "maximum": 12.829076081933037
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.4175347191275727,
+                    "p50": 0.15267434838129024,
+                    "p95": 2.529702156949093,
+                    "maximum": 18.949890294250928
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.843045992968594,
+                    "p50": 0.24242045501130183,
+                    "p95": 3.4891417762157415,
+                    "maximum": 22.884132827795153
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1627,
+                    "rms": 0.7473511234686587,
+                    "p50": 0.10758856315525882,
+                    "p95": 1.6494608717205013,
+                    "maximum": 6.743817019662058
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.0252973902683524,
+                    "p50": 0.1391209414206052,
+                    "p95": 2.1726567852498824,
+                    "maximum": 7.767668517674256
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.2687665034359004,
+                    "p50": 0.21160383320908896,
+                    "p95": 2.7711317154228623,
+                    "maximum": 10.286677898872476
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1627,
+                    "rms": 0.7490782142900998,
+                    "p50": 0.10772733476744761,
+                    "p95": 1.670120703150457,
+                    "maximum": 6.745765128794174
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.0254336678282947,
+                    "p50": 0.1387581368004544,
+                    "p95": 2.173317692577698,
+                    "maximum": 7.769284235895205
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.269894632731328,
+                    "p50": 0.2129220778601229,
+                    "p95": 2.771487078173,
+                    "maximum": 10.288432853732408
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1627,
+                    "rms": 0.7495158889260353,
+                    "p50": 0.1139228293061965,
+                    "p95": 1.6792411386713155,
+                    "maximum": 6.747487831068724
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.0254577028667777,
+                    "p50": 0.13881598884717938,
+                    "p95": 2.17230804071311,
+                    "maximum": 7.770030380356345
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1627,
+                    "rms": 1.2701722592315552,
+                    "p50": 0.21745783986315245,
+                    "p95": 2.765752407675698,
+                    "maximum": 10.290867997505414
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "galileo_slips": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1648,
+            "INVALID_VELOCITY": 13
+          },
+          "velocity_failures": {
+            "InsufficientObservations": 11,
+            "InconsistentFit": 1,
+            "WeakGeometry": 1
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1648,
+            "rms": 2.3907690637379266,
+            "p50": 1.2266118764787421,
+            "p95": 5.690180921166255,
+            "maximum": 24.197801614614857
+          },
+          "speed_mps": {
+            "epochs": 1648,
+            "rms": 5.885903720711708,
+            "p50": 2.676447962253937,
+            "p95": 11.88507026141103,
+            "maximum": 25.301275224757614
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1648,
+                  "rms": 1.2312972366794106,
+                  "p50": 0.12741581964037602,
+                  "p95": 2.1094277365729917,
+                  "maximum": 15.220239756735001
+                },
+                "vertical_error_mps": {
+                  "epochs": 1648,
+                  "rms": 1.416573315216291,
+                  "p50": 0.15342392413508793,
+                  "p95": 2.5648977467067806,
+                  "maximum": 18.947050280594603
+                },
+                "3d_error_mps": {
+                  "epochs": 1648,
+                  "rms": 1.8769051234511631,
+                  "p50": 0.24435340656790772,
+                  "p95": 3.5640341552240096,
+                  "maximum": 22.76885638732289
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1648,
+                  "rms": 1.2333573007281025,
+                  "p50": 0.12714471565718533,
+                  "p95": 2.1168912495554757,
+                  "maximum": 15.218657776384147
+                },
+                "vertical_error_mps": {
+                  "epochs": 1648,
+                  "rms": 1.416614565268768,
+                  "p50": 0.15206732057432454,
+                  "p95": 2.567165343862574,
+                  "maximum": 18.946802301942565
+                },
+                "3d_error_mps": {
+                  "epochs": 1648,
+                  "rms": 1.8782883319104475,
+                  "p50": 0.2464696690304365,
+                  "p95": 3.564559682978322,
+                  "maximum": 22.802144281955137
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1648,
+                  "rms": 1.2356556471507956,
+                  "p50": 0.1318534931559029,
+                  "p95": 2.1357526558823006,
+                  "maximum": 15.216418416803858
+                },
+                "vertical_error_mps": {
+                  "epochs": 1648,
+                  "rms": 1.4167522673885815,
+                  "p50": 0.15358306488580242,
+                  "p95": 2.5679407307808537,
+                  "maximum": 18.94982444929097
+                },
+                "3d_error_mps": {
+                  "epochs": 1648,
+                  "rms": 1.8799020893350638,
+                  "p50": 0.24647578965468742,
+                  "p95": 3.56641275064967,
+                  "maximum": 22.884105876748045
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 1661
+          },
+          "velocity_failures": {},
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 1661,
+            "rms": 1.332950762199203,
+            "p50": 0.897168193525426,
+            "p95": 2.6328590502765734,
+            "maximum": 7.849355934521738
+          },
+          "speed_mps": {
+            "epochs": 1661,
+            "rms": 5.715014205712194,
+            "p50": 2.676790456667344,
+            "p95": 11.404174215860237,
+            "maximum": 14.352622917688153
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 1661,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 11261,
+              "G:1C": 12434
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 1661,
+                  "rms": 0.7589865154165103,
+                  "p50": 0.10953695908021145,
+                  "p95": 1.6593913525220656,
+                  "maximum": 6.743815030445817
+                },
+                "vertical_error_mps": {
+                  "epochs": 1661,
+                  "rms": 1.0383524843178233,
+                  "p50": 0.14470247426349442,
+                  "p95": 2.25437608643349,
+                  "maximum": 7.767667120288391
+                },
+                "3d_error_mps": {
+                  "epochs": 1661,
+                  "rms": 1.2861712219891615,
+                  "p50": 0.21480069412447678,
+                  "p95": 2.845322821863317,
+                  "maximum": 10.286675539574304
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1661,
+                  "rms": 0.7608296028689446,
+                  "p50": 0.10972220780190668,
+                  "p95": 1.6747913163030006,
+                  "maximum": 6.745763140056352
+                },
+                "vertical_error_mps": {
+                  "epochs": 1661,
+                  "rms": 1.0384792225500719,
+                  "p50": 0.144323462784702,
+                  "p95": 2.2534874038496833,
+                  "maximum": 7.769283909611032
+                },
+                "3d_error_mps": {
+                  "epochs": 1661,
+                  "rms": 1.2873619461013743,
+                  "p50": 0.2165127187093616,
+                  "p95": 2.837691116816853,
+                  "maximum": 10.28843049468777
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 1661,
+                  "rms": 0.7611014400711926,
+                  "p50": 0.11643580977945762,
+                  "p95": 1.7069078246913496,
+                  "maximum": 6.7474858419551245
+                },
+                "vertical_error_mps": {
+                  "epochs": 1661,
+                  "rms": 1.038503284430191,
+                  "p50": 0.14281189894919502,
+                  "p95": 2.2508183479785817,
+                  "maximum": 7.770028982970481
+                },
+                "3d_error_mps": {
+                  "epochs": 1661,
+                  "rms": 1.287542027993936,
+                  "p50": 0.22113484460477764,
+                  "p95": 2.8215734686520437,
+                  "maximum": 10.290865638204892
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 1648,
+          "GPS_only": 0,
+          "mixed_only": 13,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.2312972366794106,
+                    "p50": 0.12741581964037602,
+                    "p95": 2.1094277365729917,
+                    "maximum": 15.220239756735001
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.416573315216291,
+                    "p50": 0.15342392413508793,
+                    "p95": 2.5648977467067806,
+                    "maximum": 18.947050280594603
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.8769051234511631,
+                    "p50": 0.24435340656790772,
+                    "p95": 3.5640341552240096,
+                    "maximum": 22.76885638732289
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.2333573007281025,
+                    "p50": 0.12714471565718533,
+                    "p95": 2.1168912495554757,
+                    "maximum": 15.218657776384147
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.416614565268768,
+                    "p50": 0.15206732057432454,
+                    "p95": 2.567165343862574,
+                    "maximum": 18.946802301942565
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.8782883319104475,
+                    "p50": 0.2464696690304365,
+                    "p95": 3.564559682978322,
+                    "maximum": 22.802144281955137
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.2356556471507956,
+                    "p50": 0.1318534931559029,
+                    "p95": 2.1357526558823006,
+                    "maximum": 15.216418416803858
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.4167522673885815,
+                    "p50": 0.15358306488580242,
+                    "p95": 2.5679407307808537,
+                    "maximum": 18.94982444929097
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.8799020893350638,
+                    "p50": 0.24647578965468742,
+                    "p95": 3.56641275064967,
+                    "maximum": 22.884105876748045
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 1648,
+                    "rms": 0.7486474018126903,
+                    "p50": 0.10904238739221184,
+                    "p95": 1.6570917922882744,
+                    "maximum": 6.743815030445817
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.0363731321721645,
+                    "p50": 0.14303878683309812,
+                    "p95": 2.249943424169194,
+                    "maximum": 7.767667120288391
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.2784921592756189,
+                    "p50": 0.2142531212730301,
+                    "p95": 2.8349836513137903,
+                    "maximum": 10.286675539574304
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1648,
+                    "rms": 0.7504336167723273,
+                    "p50": 0.10920459276400986,
+                    "p95": 1.6744500890422243,
+                    "maximum": 6.745763140056352
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.0365041263960553,
+                    "p50": 0.14215464105229225,
+                    "p95": 2.2492028371076875,
+                    "maximum": 7.769283909611032
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.2796450356321654,
+                    "p50": 0.21465034503381047,
+                    "p95": 2.8333842844489414,
+                    "maximum": 10.28843049468777
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 1648,
+                    "rms": 0.7509254860935108,
+                    "p50": 0.11595052288218052,
+                    "p95": 1.70063533774714,
+                    "maximum": 6.7474858419551245
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.0365376257496446,
+                    "p50": 0.14137230882542426,
+                    "p95": 2.2477646287026536,
+                    "maximum": 7.770028982970481
+                  },
+                  "3d_error_mps": {
+                    "epochs": 1648,
+                    "rms": 1.279960677231721,
+                    "p50": 0.2200156503640394,
+                    "p95": 2.8066219579327667,
+                    "maximum": 10.290865638204892
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tokyo-run3": {
+      "galileo": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 2801,
+            "INVALID_VELOCITY": 30
+          },
+          "velocity_failures": {
+            "InconsistentFit": 7,
+            "InsufficientObservations": 23
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 2801,
+            "rms": 1.775709239586197,
+            "p50": 1.2478890066896515,
+            "p95": 2.8360510348844596,
+            "maximum": 13.614452135607062
+          },
+          "speed_mps": {
+            "epochs": 2801,
+            "rms": 7.533543940018063,
+            "p50": 2.680972935149717,
+            "p95": 14.656527212169014,
+            "maximum": 58.82926092576682
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 2801,
+                  "rms": 0.8222462465547604,
+                  "p50": 0.07331979155427545,
+                  "p95": 0.9371921186693478,
+                  "maximum": 29.338848495390394
+                },
+                "vertical_error_mps": {
+                  "epochs": 2801,
+                  "rms": 1.4460113022239003,
+                  "p50": 0.11810518202093931,
+                  "p95": 1.5756599680098171,
+                  "maximum": 54.19793529785292
+                },
+                "3d_error_mps": {
+                  "epochs": 2801,
+                  "rms": 1.6634414856353232,
+                  "p50": 0.16069052824381627,
+                  "p95": 1.9913979273070046,
+                  "maximum": 61.62941036214546
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2801,
+                  "rms": 0.8230321028896135,
+                  "p50": 0.07428217315269334,
+                  "p95": 0.9370253015058204,
+                  "maximum": 29.33393329859224
+                },
+                "vertical_error_mps": {
+                  "epochs": 2801,
+                  "rms": 1.4459631894175853,
+                  "p50": 0.11835928744989992,
+                  "p95": 1.5756503785207334,
+                  "maximum": 54.19564301135466
+                },
+                "3d_error_mps": {
+                  "epochs": 2801,
+                  "rms": 1.663788264034091,
+                  "p50": 0.16227151709946602,
+                  "p95": 1.9844325311998565,
+                  "maximum": 61.625054678924656
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2801,
+                  "rms": 0.8237588760163986,
+                  "p50": 0.07828738984284621,
+                  "p95": 0.9476792206973212,
+                  "maximum": 29.329455104770382
+                },
+                "vertical_error_mps": {
+                  "epochs": 2801,
+                  "rms": 1.4459000426989164,
+                  "p50": 0.1194099574103791,
+                  "p95": 1.5718134308776448,
+                  "maximum": 54.190344615195635
+                },
+                "3d_error_mps": {
+                  "epochs": 2801,
+                  "rms": 1.6640930320425382,
+                  "p50": 0.16677309349026986,
+                  "p95": 1.9806928461435234,
+                  "maximum": 61.61826341480587
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 2827,
+            "INVALID_VELOCITY": 4
+          },
+          "velocity_failures": {
+            "InconsistentFit": 4
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 2827,
+            "rms": 1.1562181070646926,
+            "p50": 0.92115057400804,
+            "p95": 1.7893693993380482,
+            "maximum": 6.309772591314368
+          },
+          "speed_mps": {
+            "epochs": 2827,
+            "rms": 7.407452158951961,
+            "p50": 2.668830866928131,
+            "p95": 14.603552451328598,
+            "maximum": 17.26979587833072
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 2827,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 19561,
+              "G:1C": 20196
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 2827,
+                  "rms": 0.46638250729216757,
+                  "p50": 0.07372071203519824,
+                  "p95": 0.8248407073583685,
+                  "maximum": 7.104024492736712
+                },
+                "vertical_error_mps": {
+                  "epochs": 2827,
+                  "rms": 0.6452427422501328,
+                  "p50": 0.10983176017121771,
+                  "p95": 1.1981209318603265,
+                  "maximum": 8.53580502750378
+                },
+                "3d_error_mps": {
+                  "epochs": 2827,
+                  "rms": 0.7961474986047499,
+                  "p50": 0.15359519107854858,
+                  "p95": 1.622229308881831,
+                  "maximum": 9.877519298207734
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2827,
+                  "rms": 0.46751649219412195,
+                  "p50": 0.07477486676621395,
+                  "p95": 0.820581032535363,
+                  "maximum": 7.10727980347563
+                },
+                "vertical_error_mps": {
+                  "epochs": 2827,
+                  "rms": 0.645267686170211,
+                  "p50": 0.1102528008711735,
+                  "p95": 1.1988220137878898,
+                  "maximum": 8.533962586195358
+                },
+                "3d_error_mps": {
+                  "epochs": 2827,
+                  "rms": 0.796832515205645,
+                  "p50": 0.1552937617534618,
+                  "p95": 1.6238848981538634,
+                  "maximum": 9.880132387118593
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2827,
+                  "rms": 0.4691382121788352,
+                  "p50": 0.07660288590571232,
+                  "p95": 0.8297228677677587,
+                  "maximum": 7.111079121246932
+                },
+                "vertical_error_mps": {
+                  "epochs": 2827,
+                  "rms": 0.6452303364099624,
+                  "p50": 0.11062704615321586,
+                  "p95": 1.1992452747820241,
+                  "maximum": 8.53316785099617
+                },
+                "3d_error_mps": {
+                  "epochs": 2827,
+                  "rms": 0.797754880367439,
+                  "p50": 0.1601606442627977,
+                  "p95": 1.619622232068549,
+                  "maximum": 9.880338180768748
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 2800,
+          "GPS_only": 1,
+          "mixed_only": 27,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.822247449362874,
+                    "p50": 0.07328998307399454,
+                    "p95": 0.9375837719031771,
+                    "maximum": 29.338848495390394
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2800,
+                    "rms": 1.4460461181143425,
+                    "p50": 0.11805204705451046,
+                    "p95": 1.5757705859109692,
+                    "maximum": 54.19793529785292
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2800,
+                    "rms": 1.663472345335897,
+                    "p50": 0.16065164109670402,
+                    "p95": 1.9914727796183178,
+                    "maximum": 61.62941036214546
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.8230358247536396,
+                    "p50": 0.07426841240861948,
+                    "p95": 0.9374195356431695,
+                    "maximum": 29.33393329859224
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2800,
+                    "rms": 1.4460001216723744,
+                    "p50": 0.11834303229838161,
+                    "p95": 1.5759392242975825,
+                    "maximum": 54.19564301135466
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2800,
+                    "rms": 1.6638222022513178,
+                    "p50": 0.1622500709717813,
+                    "p95": 1.984730749232486,
+                    "maximum": 61.625054678924656
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.8237650013441284,
+                    "p50": 0.078227189401705,
+                    "p95": 0.9477393327378505,
+                    "maximum": 29.329455104770382
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2800,
+                    "rms": 1.4459383239629946,
+                    "p50": 0.11895466760536531,
+                    "p95": 1.5720136569559566,
+                    "maximum": 54.190344615195635
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2800,
+                    "rms": 1.6641293261475822,
+                    "p50": 0.16668177478933255,
+                    "p95": 1.9808280401631149,
+                    "maximum": 61.61826341480587
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.4421924867158823,
+                    "p50": 0.07277103071055538,
+                    "p95": 0.7860636917585693,
+                    "maximum": 7.104024492736712
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.63138790043602,
+                    "p50": 0.10876699830399926,
+                    "p95": 1.1672615282030876,
+                    "maximum": 8.53580502750378
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.770833883612404,
+                    "p50": 0.1521054420490504,
+                    "p95": 1.5469289365240286,
+                    "maximum": 9.877519298207734
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.4435069619942775,
+                    "p50": 0.07398336514988088,
+                    "p95": 0.7928235139870657,
+                    "maximum": 7.10727980347563
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.6314017631005501,
+                    "p50": 0.10887487407061353,
+                    "p95": 1.1641731258383414,
+                    "maximum": 8.533962586195358
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.7716000335561661,
+                    "p50": 0.1531045420786432,
+                    "p95": 1.542047926615823,
+                    "maximum": 9.880132387118593
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.4453134447253112,
+                    "p50": 0.07562778559633025,
+                    "p95": 0.8025398919883143,
+                    "maximum": 7.111079121246932
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.6313733052002473,
+                    "p50": 0.10940813519300978,
+                    "p95": 1.1602295046154383,
+                    "maximum": 8.53316785099617
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2800,
+                    "rms": 0.7726165378585986,
+                    "p50": 0.1582089427962231,
+                    "p95": 1.5546589000013975,
+                    "maximum": 9.880338180768748
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "galileo_slips": {
+        "GPS": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 2837,
+            "INVALID_VELOCITY": 30
+          },
+          "velocity_failures": {
+            "InconsistentFit": 7,
+            "InsufficientObservations": 23
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 2837,
+            "rms": 1.7789987266990175,
+            "p50": 1.2481194916598692,
+            "p95": 2.884410101618868,
+            "maximum": 13.614452135398942
+          },
+          "speed_mps": {
+            "epochs": 2837,
+            "rms": 7.57194075499978,
+            "p50": 2.8600588235628828,
+            "p95": 14.696746473407941,
+            "maximum": 58.82926092575205
+          },
+          "all_51_columns_identical_to_prior_GPS_control": true,
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 2837,
+                  "rms": 0.8287275035659757,
+                  "p50": 0.07487132586304895,
+                  "p95": 0.9649422087940704,
+                  "maximum": 29.33884849538454
+                },
+                "vertical_error_mps": {
+                  "epochs": 2837,
+                  "rms": 1.4559894688236852,
+                  "p50": 0.1201014331805125,
+                  "p95": 1.654244724206948,
+                  "maximum": 54.19793529783918
+                },
+                "3d_error_mps": {
+                  "epochs": 2837,
+                  "rms": 1.6753192556919325,
+                  "p50": 0.16375468684062117,
+                  "p95": 2.05330602570403,
+                  "maximum": 61.62941036213059
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2837,
+                  "rms": 0.8294862704319852,
+                  "p50": 0.07559806305984935,
+                  "p95": 0.9624079313980385,
+                  "maximum": 29.333933298586373
+                },
+                "vertical_error_mps": {
+                  "epochs": 2837,
+                  "rms": 1.4559320465316976,
+                  "p50": 0.12087112224783592,
+                  "p95": 1.6531079254876948,
+                  "maximum": 54.195643011340934
+                },
+                "3d_error_mps": {
+                  "epochs": 2837,
+                  "rms": 1.6756448301931832,
+                  "p50": 0.16528994115394222,
+                  "p95": 2.049015116275802,
+                  "maximum": 61.625054678909784
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2837,
+                  "rms": 0.8301826917246247,
+                  "p50": 0.08007465454687496,
+                  "p95": 0.9672641007605257,
+                  "maximum": 29.32945510476452
+                },
+                "vertical_error_mps": {
+                  "epochs": 2837,
+                  "rms": 1.4558499846392141,
+                  "p50": 0.12165978945161657,
+                  "p95": 1.6560401662375075,
+                  "maximum": 54.1903446151819
+                },
+                "3d_error_mps": {
+                  "epochs": 2837,
+                  "rms": 1.6759183987930744,
+                  "p50": 0.16982272047985267,
+                  "p95": 2.051358923447065,
+                  "maximum": 61.618263414790995
+                }
+              }
+            }
+          }
+        },
+        "mixed": {
+          "all_previous_29_columns_identical": true,
+          "velocity_counts": {
+            "VELOCITY": 2863,
+            "INVALID_VELOCITY": 4
+          },
+          "velocity_failures": {
+            "InconsistentFit": 4
+          },
+          "maximum_axis_velocity_std_mps": {
+            "epochs": 2863,
+            "rms": 1.158424805221049,
+            "p50": 0.9222474541956484,
+            "p95": 1.792588272874386,
+            "maximum": 6.309772591316463
+          },
+          "speed_mps": {
+            "epochs": 2863,
+            "rms": 7.447073711382396,
+            "p50": 2.8318760830997722,
+            "p95": 14.619652167146056,
+            "maximum": 17.269943665651034
+          },
+          "mixed": {
+            "counts": {
+              "two_clock_epochs": 2863,
+              "single_clock_epochs": 0
+            },
+            "tracking_rows": {
+              "E:1C": 19820,
+              "G:1C": 20451
+            }
+          },
+          "reference_velocity_scores": {
+            "valid_velocities_without_reference": 0,
+            "hypotheses": {
+              "reference_is_antenna": {
+                "horizontal_error_mps": {
+                  "epochs": 2863,
+                  "rms": 0.4805871198543927,
+                  "p50": 0.07508754120914433,
+                  "p95": 0.8687435694186889,
+                  "maximum": 7.1061994674973326
+                },
+                "vertical_error_mps": {
+                  "epochs": 2863,
+                  "rms": 0.6567678992759857,
+                  "p50": 0.11134139381475744,
+                  "p95": 1.2376370058962889,
+                  "maximum": 8.536618923674812
+                },
+                "3d_error_mps": {
+                  "epochs": 2863,
+                  "rms": 0.8138231093360102,
+                  "p50": 0.15673859739654175,
+                  "p95": 1.6635815530268656,
+                  "maximum": 9.878050490782057
+                }
+              },
+              "reference_is_IMU_tokyo_top_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2863,
+                  "rms": 0.48162520169456213,
+                  "p50": 0.076295577501563,
+                  "p95": 0.8699974147280735,
+                  "maximum": 7.109454763630647
+                },
+                "vertical_error_mps": {
+                  "epochs": 2863,
+                  "rms": 0.6567782446796551,
+                  "p50": 0.11152710131248353,
+                  "p95": 1.2399179415563328,
+                  "maximum": 8.53477648236639
+                },
+                "3d_error_mps": {
+                  "epochs": 2863,
+                  "rms": 0.8144449015076567,
+                  "p50": 0.1594954346137797,
+                  "p95": 1.664030901879887,
+                  "maximum": 9.880664086422977
+                }
+              },
+              "reference_is_IMU_tokyo_city_README": {
+                "horizontal_error_mps": {
+                  "epochs": 2863,
+                  "rms": 0.48373529623729633,
+                  "p50": 0.07933770951101146,
+                  "p95": 0.873177968529101,
+                  "maximum": 7.113254062395576
+                },
+                "vertical_error_mps": {
+                  "epochs": 2863,
+                  "rms": 0.6567264546862498,
+                  "p50": 0.11200927257933346,
+                  "p95": 1.240615791457341,
+                  "maximum": 8.5339817471672
+                },
+                "3d_error_mps": {
+                  "epochs": 2863,
+                  "rms": 0.8156527895560438,
+                  "p50": 0.1623398635594826,
+                  "p95": 1.6573023709011134,
+                  "maximum": 9.880871239574091
+                }
+              }
+            }
+          }
+        },
+        "common_epochs": {
+          "common_velocity_epochs": 2836,
+          "GPS_only": 1,
+          "mixed_only": 27,
+          "common_reference_scores": {
+            "GPS": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.8287309582269835,
+                    "p50": 0.07473689493676833,
+                    "p95": 0.9650310453273482,
+                    "maximum": 29.33884849538454
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2836,
+                    "rms": 1.4560271134551304,
+                    "p50": 0.12008749941931575,
+                    "p95": 1.6545071874465933,
+                    "maximum": 54.19793529783918
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2836,
+                    "rms": 1.6753536809403242,
+                    "p50": 0.16365638533497548,
+                    "p95": 2.053756603570025,
+                    "maximum": 61.62941036213059
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.8294921833918465,
+                    "p50": 0.07558408625278279,
+                    "p95": 0.9625154338286523,
+                    "maximum": 29.333933298586373
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2836,
+                    "rms": 1.4559717633018987,
+                    "p50": 0.1208443066338049,
+                    "p95": 1.6531686990908594,
+                    "maximum": 54.195643011340934
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2836,
+                    "rms": 1.6756822663740916,
+                    "p50": 0.16517478341563202,
+                    "p95": 2.04944219746982,
+                    "maximum": 61.625054678909784
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.8301909488177571,
+                    "p50": 0.08001260128804796,
+                    "p95": 0.9673283282765819,
+                    "maximum": 29.32945510476452
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2836,
+                    "rms": 1.4558910180246063,
+                    "p50": 0.12161764727947694,
+                    "p95": 1.6562108007163645,
+                    "maximum": 54.1903446151819
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2836,
+                    "rms": 1.675958134281299,
+                    "p50": 0.1697798568494723,
+                    "p95": 2.051913340528249,
+                    "maximum": 61.618263414790995
+                  }
+                }
+              }
+            },
+            "mixed": {
+              "valid_velocities_without_reference": 0,
+              "hypotheses": {
+                "reference_is_antenna": {
+                  "horizontal_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.4575975984322385,
+                    "p50": 0.07428421051895866,
+                    "p95": 0.8218631482950196,
+                    "maximum": 7.1061994674973326
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.6434452937418172,
+                    "p50": 0.11032028271513741,
+                    "p95": 1.181119025104933,
+                    "maximum": 8.536618923674812
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.7895678616366332,
+                    "p50": 0.15527502306441135,
+                    "p95": 1.5939447297753302,
+                    "maximum": 9.878050490782057
+                  }
+                },
+                "reference_is_IMU_tokyo_top_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.45880014636055366,
+                    "p50": 0.07562514778778406,
+                    "p95": 0.8199720002537946,
+                    "maximum": 7.109454763630647
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.6434444366241435,
+                    "p50": 0.11045960241287531,
+                    "p95": 1.1810808854364723,
+                    "maximum": 8.53477648236639
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.7902647134492511,
+                    "p50": 0.1567383851409786,
+                    "p95": 1.5941661826453173,
+                    "maximum": 9.880664086422977
+                  }
+                },
+                "reference_is_IMU_tokyo_city_README": {
+                  "horizontal_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.46111262895754396,
+                    "p50": 0.0776905368334047,
+                    "p95": 0.8277138887818885,
+                    "maximum": 7.113254062395576
+                  },
+                  "vertical_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.6434008608279091,
+                    "p50": 0.11080850064153835,
+                    "p95": 1.1806744365523256,
+                    "maximum": 8.5339817471672
+                  },
+                  "3d_error_mps": {
+                    "epochs": 2836,
+                    "rms": 0.7915740801076245,
+                    "p50": 0.1611468316379971,
+                    "p95": 1.5930169721527045,
+                    "maximum": 9.880871239574091
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1521,3 +1521,14 @@ failures. The twelfth records the native numeric-zero sentinel; Rust deliberatel
 accepts measured zero and distinguishes missing data with `Option`.
 Generation commands, source/library hashes and exact regeneration are recorded in
 [`docs/comparison/2026-10-21-doppler-velocity`](../../docs/comparison/2026-10-21-doppler-velocity/README.md).
+# Multiple Doppler clocks (2026-10-21)
+
+`upstream_multiclock_velocity.csv` comes from `scripts/upstream_multiclock_velocity.cpp`.
+Sixteen cases use an independent Eigen QR/LDLT extension of the pinned Doppler
+measurement/weight/QC model with two or three receiver clocks. This is not a
+native upstream multi-clock solver API. Includes two sites, noise, GPS 3 plus
+Galileo 3, count/rank/geometry failures and an outlier. Full joint covariance,
+clock labels, velocity and residual/variance scaling are checked.
+Single-system parity still uses the actual native `solveVelocity` fixture above.
+See [`docs/comparison/2026-10-21-multiclock-velocity`](../../docs/comparison/2026-10-21-multiclock-velocity/README.md)
+for compile/run commands, hashes, exact regeneration and frozen PPC comparisons.

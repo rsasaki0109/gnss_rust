@@ -6,12 +6,13 @@
 
 
 **開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
-2026-10-21時点で337テストと標準チェックが通過しています。
+2026-10-21時点で343テストと標準チェックが通過しています。
 
 [PPCの元C++比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)では
 選択観測345,469行の一致を確認し、GPS/Galileo FLOATは検出併用で9,855点を出力。
-[移動局のDoppler診断](docs/comparison/2026-10-21-rover-velocity/README.md)では速度の大外れも残り、
-追加衛星系・時計・観測品質の検証を続けています。移動体FIX政策とPPP比較は未完了です。
+[移動局の別時計Doppler比較](docs/comparison/2026-10-21-multiclock-velocity/README.md)では
+速度出力が9,493→9,696点へ増え、最大参考誤差は87.31→34.81 m/s。大外れは残り、
+観測品質・移動履歴の検証を続けています。移動体FIX政策とPPP比較は未完了です。
 過去の実装・比較記録は[GOALS.md](GOALS.md)にまとめています。
 
 最終目標は **RTK・PPPが元のlibgnss++と同等の精度・解の状態・処理性能を持つこと**

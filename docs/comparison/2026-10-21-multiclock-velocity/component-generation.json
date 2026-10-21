@@ -1,0 +1,38 @@
+{
+  "reference_kind": "Independent Eigen extension of native observation/weight/QC model; not a native multi-clock solver entry point",
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "generator_sha256": "410e30a4bc8541fe609dd67d3e527f0b0d7b9ff60c9641e7545715e8b5e9ec09",
+  "helper_sha256": "a71e3b2d8e03662c873656790de44b1d35f7554042ca7b9176a9c65459db1c3f",
+  "libraries_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "command": [
+    "g++",
+    "-std=gnu++20",
+    "-O2",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "scripts/upstream_multiclock_velocity.cpp",
+    "-Wl,--start-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+    "-Wl,--end-group",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+    "-o",
+    "/tmp/upstream-multiclock-velocity-20261021"
+  ],
+  "compile_returncode": 0,
+  "compile_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "run_command": [
+    "/tmp/upstream-multiclock-velocity-20261021",
+    "/tmp/upstream-multiclock-velocity-regenerated.csv"
+  ],
+  "run_returncode": 0,
+  "fixture_sha256": "bf6013d97ec79eb00439f30a7e5569948419af8eabcbcb3460d001a5a7ca64bc",
+  "regenerated_bytes_identical": true,
+  "total_cases": 16
+}
