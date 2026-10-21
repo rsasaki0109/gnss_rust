@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_mixed",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3",
+    "-3817680.730073338",
+    "3562839.5233945786",
+    "3650159.241788432",
+    "/tmp/native-mixed-ppc-_sn4ad1c/nagoya-run3.spp.csv",
+    "/tmp/native-mixed-ppc-_sn4ad1c/nagoya-run3.spp.inputs.csv",
+    "spp"
+  ],
+  "returncode": 0,
+  "csv_sha256": "672a0fc08829f4830a73fd6895c5479910e0a665c5fa91367095bc43372daaff",
+  "csv_capture": "explicit native output file",
+  "stderr_sha256": "dc1d0ab160a1a9cfb0a9bdefdf12f31bd94d56f11fba2c6c67763a86ec7693aa"
+}

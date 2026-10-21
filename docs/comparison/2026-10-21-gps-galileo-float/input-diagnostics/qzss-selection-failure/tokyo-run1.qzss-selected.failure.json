@@ -1,0 +1,9 @@
+{
+  "command": [
+    "target/release/examples/ppc_signal_inventory",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1"
+  ],
+  "returncode": 1,
+  "source_sha256": "496ef7779bc7c1dee6a4a91cce304c8e31864359500e42cc7d0d0c4223803ae1",
+  "reason": "selected QZSS zero-orbit record rejected by strict reader; inventory will explicitly select GPS/Galileo instead"
+}

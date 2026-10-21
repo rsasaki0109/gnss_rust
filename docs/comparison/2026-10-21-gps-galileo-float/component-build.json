@@ -1,0 +1,55 @@
+{
+  "commands": [
+    [
+      "g++",
+      "-std=gnu++20",
+      "-O2",
+      "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+      "-I/workspace/.cloud-setup/eigen-3.4.0",
+      "scripts/upstream_multiclock_geometry.cpp",
+      "-o",
+      "/tmp/upstream-multiclock-geometry-20261021"
+    ],
+    [
+      "g++",
+      "-std=gnu++20",
+      "-O2",
+      "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+      "-I/workspace/.cloud-setup/reference/gnssplusplus-library/src/core",
+      "-I/workspace/.cloud-setup/eigen-3.4.0",
+      "scripts/upstream_rtk_mixed.cpp",
+      "-Wl,--start-group",
+      "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+      "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+      "-Wl,--end-group",
+      "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+      "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+      "-o",
+      "/tmp/upstream-rtk-mixed-20261021"
+    ],
+    [
+      "g++",
+      "-std=gnu++20",
+      "-O2",
+      "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+      "-I/workspace/.cloud-setup/reference/gnssplusplus-library/src/core",
+      "-I/workspace/.cloud-setup/eigen-3.4.0",
+      "scripts/upstream_rtk_mixed_startup.cpp",
+      "-Wl,--start-group",
+      "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a",
+      "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a",
+      "-Wl,--end-group",
+      "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a",
+      "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a",
+      "-o",
+      "/tmp/upstream-rtk-mixed-startup-20261021"
+    ]
+  ],
+  "returncodes": [
+    0,
+    0,
+    0
+  ],
+  "recorded_from_tool_results": true,
+  "upstream_source_patched": false
+}

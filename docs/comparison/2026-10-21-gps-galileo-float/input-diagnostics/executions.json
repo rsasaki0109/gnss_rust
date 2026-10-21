@@ -1,0 +1,77 @@
+{
+  "inventory": [
+    {
+      "case": "nagoya-run1",
+      "command": [
+        "target/release/examples/ppc_signal_inventory",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "1b85ca19a6f8ed63d9ff8b78a79267befe577fb84f7385c2eb90be3846121439",
+      "identical_to_preimplementation_inventory": true
+    },
+    {
+      "case": "nagoya-run2",
+      "command": [
+        "target/release/examples/ppc_signal_inventory",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "adcaf8b25b593bf554e6c145808ef821aeab9b048a1f009dfa28c9345ad373a2",
+      "identical_to_preimplementation_inventory": true
+    },
+    {
+      "case": "nagoya-run3",
+      "command": [
+        "target/release/examples/ppc_signal_inventory",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run3"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "2f12a6737b592177f79edd89d34ea50cfac34c1251cc76177cb7ef4ac4028add",
+      "identical_to_preimplementation_inventory": true
+    },
+    {
+      "case": "tokyo-run1",
+      "command": [
+        "target/release/examples/ppc_signal_inventory",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "862344ad31fd89c3b89e904a11bb422b5b49e4110cd4b872112099c895772f45",
+      "identical_to_preimplementation_inventory": true
+    },
+    {
+      "case": "tokyo-run2",
+      "command": [
+        "target/release/examples/ppc_signal_inventory",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "f07814dd0ffcdc207ca6dea1627623281973a124e8eb624a9053bfcb34bef5be",
+      "identical_to_preimplementation_inventory": true
+    },
+    {
+      "case": "tokyo-run3",
+      "command": [
+        "target/release/examples/ppc_signal_inventory",
+        "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "09918a2a186ccd1b0be4bc6361ae5d89339f771fe799afe5c76442cc87912fa9",
+      "identical_to_preimplementation_inventory": true
+    }
+  ],
+  "spp_probe": {
+    "command": [
+      "target/release/examples/ppc_spp_diagnostics",
+      "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run2",
+      "2323",
+      "556685"
+    ],
+    "returncode": 0,
+    "stdout_sha256": "2f5173420c37ec474a56def1ee25eec13fd47bb0f06e6c5cb2d4a569214c36e3",
+    "no_truth_input": true
+  },
+  "elevation_mask_not_applied_in_inventory": true,
+  "inventory_is_not_position_accuracy": true
+}

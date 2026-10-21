@@ -1,0 +1,48 @@
+{
+  "checks": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "returncode": 0,
+      "log": "fmt.helper-check.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "returncode": 0,
+      "log": "clippy.helper-check.log.gz",
+      "uncompressed_sha256": "d07b3b7f29c82d18eafa698159001124b90e7992639a05d713b21eca4c6e4de6"
+    },
+    {
+      "name": "ledger-release",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j2",
+        "--release",
+        "--example",
+        "ppc_mixed_input_ledger"
+      ],
+      "returncode": 0,
+      "log": "ledger-release.helper-check.log.gz",
+      "uncompressed_sha256": "9576f1f7e73fc2bb1ec2336aae60cb485c591eadc60a1b998573411c34057e08"
+    }
+  ]
+}

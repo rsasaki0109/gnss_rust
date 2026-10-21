@@ -1474,3 +1474,28 @@ The distinction is tested with an independent correlated-noise closed form.
 Compile the generator with the pinned reference include/Eigen paths and link
 the same static libraries listed in
 `docs/comparison/2026-10-21-prefit-epoch-gate/native-prefit-generation.json`.
+
+## GPS/Galileo independent clocks (2026-10-21)
+
+`scripts/upstream_rtk_mixed.cpp` uses pinned native broadcast, geometry and
+Saastamoinen functions to generate four `synthetic_rtk_mixed.*` files: eight
+satellites (four GPS/four Galileo), 32 moving epochs, navigation and known truth.
+SD receiver-clock ranges differ between the two systems by 10 microseconds.
+Galileo rover tracking is 1C, base is 1X with an added common 0.25 cycle.
+Within-system DD cancels these clock and common-phase differences; cross-system
+DD must not assume they are aligned. Full eight-satellite truth tolerance is
+the existing 3 mm for every epoch.
+
+`scripts/upstream_multiclock_geometry.cpp` generates 24 independent Eigen
+normal-inverse covariance cases with one/two/three constellation clocks at two
+sites. `upstream_multiclock_geometry.csv` must match the Rust QR geometry to
+relative 1e-10. No prior or covariance floor is used to hide rank deficiency.
+
+`scripts/upstream_rtk_mixed_startup.cpp` composes native RINEX/orbit/DD-R/Kalman
+components for three finite-prior startup cases in
+`upstream_rtk_mixed_startup.csv`. Compare positions to 1 micrometre and position
+covariances to relative 1e-10. Three GPS plus three Galileo have about 3.865 mm
+initial truth bias, and Galileo-only four satellites about 77.116 mm, also
+present in the native component reference. The reduced six-satellite moving
+scenario meets 3 mm truth tolerance after its initial epoch. These are component
+and synthetic tests, not whole RTKProcessor or PPC acceptance results.

@@ -1,0 +1,52 @@
+{
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "geometry_cases": 24,
+  "moving_epochs": 32,
+  "startup_cases": 3,
+  "records": [
+    {
+      "name": "geometry",
+      "command": [
+        "/tmp/upstream-multiclock-geometry-20261021"
+      ],
+      "returncode": 0,
+      "binary_sha256": "cfda504b04f15c8c47b8a1448f5a3658ca12fdadb956a74bd991b9de0c3df93b",
+      "fixtures_sha256": {
+        "upstream_multiclock_geometry.csv": "1782a546c4d7111687a8a0ddd950574c4a41cccaa0bb45fd58d42fe533dccbb3"
+      },
+      "stderr_log": "geometry.component-generation.stderr.log.gz",
+      "regenerated_bytes_identical": true
+    },
+    {
+      "name": "moving",
+      "command": [
+        "/tmp/upstream-rtk-mixed-20261021",
+        "/tmp/regenerate-mixed-components-20261021"
+      ],
+      "returncode": 0,
+      "binary_sha256": "c82b4572ecc44028be23c65125015132e0dab6fb0eaca6e343073d129e77d1ec",
+      "fixtures_sha256": {
+        "synthetic_rtk_mixed.nav": "b0f50e0daebd7976c53d7a52b6d61ada1c9c44a62999a2566edaa5a56403e570",
+        "synthetic_rtk_mixed_rover.obs": "0e6c027603dccff945beefbe5d674e2c04b8c06e565d2005d4740813c72dfe1b",
+        "synthetic_rtk_mixed_base.obs": "6b15d4b93b0d9b3e371fde39532c6392ddf5ec51f33379b2c7937448d1640c61",
+        "synthetic_rtk_mixed_truth.csv": "6651e859276c870e4861b59e509dcac4f48bb4311b8696a84984ae40a93f20c0"
+      },
+      "stderr_log": "moving.component-generation.stderr.log.gz",
+      "regenerated_bytes_identical": true
+    },
+    {
+      "name": "startup",
+      "command": [
+        "/tmp/upstream-rtk-mixed-startup-20261021",
+        "tests/fixtures"
+      ],
+      "returncode": 0,
+      "binary_sha256": "391bff1672a9991dc10131857cafba7073008dddb64d8d8d02e7df49baf40562",
+      "fixtures_sha256": {
+        "upstream_rtk_mixed_startup.csv": "55dc9d3feb888a05473c43637eab0fa20fd89bd7cc031cc4753a8e848c904d0c"
+      },
+      "stderr_log": "startup.component-generation.stderr.log.gz",
+      "regenerated_bytes_identical": true
+    }
+  ]
+}

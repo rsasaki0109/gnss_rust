@@ -1,0 +1,70 @@
+{
+  "solver_truth_input": false,
+  "PPC_performance_acceptance": false,
+  "policies": {
+    "previous": {
+      "command": [
+        "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_mixed",
+        "/tmp/native-ppc-mixed-smoke-20261021",
+        "-3947481.0649",
+        "3431492.9375",
+        "3637892.7203",
+        "/tmp/native-ppc-mixed-smoke-20261021/previous.csv",
+        "/tmp/native-ppc-mixed-smoke-20261021/previous.inputs.csv",
+        "previous"
+      ],
+      "returncode": 0,
+      "summary": {
+        "output_rows": 32,
+        "paired_epochs": 32,
+        "status_counts": {
+          "FLOAT": 11,
+          "FIX": 21
+        },
+        "rover_only": 0,
+        "base_only": 0,
+        "valid_RTK_positions": 32,
+        "valid_outputs_with_mismatched_time": 0,
+        "fallback_positions": 0,
+        "maximum_3d_truth_error_m": 0.0008649941356114359
+      },
+      "input_comparison": {
+        "rows": 512,
+        "normalized_sha256": "92cee5f5521bc56becf2cb24ed209315dc69a985955a8f56ce3041e2ed263e2c",
+        "all_decoded_values_tracking_and_resets_equal": true
+      }
+    },
+    "spp": {
+      "command": [
+        "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_mixed",
+        "/tmp/native-ppc-mixed-smoke-20261021",
+        "-3947481.0649",
+        "3431492.9375",
+        "3637892.7203",
+        "/tmp/native-ppc-mixed-smoke-20261021/spp.csv",
+        "/tmp/native-ppc-mixed-smoke-20261021/spp.inputs.csv",
+        "spp"
+      ],
+      "returncode": 0,
+      "summary": {
+        "output_rows": 32,
+        "paired_epochs": 32,
+        "status_counts": {
+          "FLOAT": 11,
+          "FIX": 21
+        },
+        "rover_only": 0,
+        "base_only": 0,
+        "valid_RTK_positions": 32,
+        "valid_outputs_with_mismatched_time": 0,
+        "fallback_positions": 0,
+        "maximum_3d_truth_error_m": 0.00010730838403105736
+      },
+      "input_comparison": {
+        "rows": 512,
+        "normalized_sha256": "92cee5f5521bc56becf2cb24ed209315dc69a985955a8f56ce3041e2ed263e2c",
+        "all_decoded_values_tracking_and_resets_equal": true
+      }
+    }
+  }
+}

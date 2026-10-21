@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/.cloud-setup/solver-reference-20261021/native_ppc_mixed",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2",
+    "-3961905.0275412495",
+    "3348993.752559677",
+    "3698211.783149875",
+    "/tmp/native-mixed-ppc-_sn4ad1c/tokyo-run2.spp.csv",
+    "/tmp/native-mixed-ppc-_sn4ad1c/tokyo-run2.spp.inputs.csv",
+    "spp"
+  ],
+  "returncode": 0,
+  "csv_sha256": "6120efef4f8794c414c151c8c2f614738542c5ffac794d54dc1cc30ad591f24b",
+  "csv_capture": "explicit native output file",
+  "stderr_sha256": "a1169a7ce2c7ec9e4755e4f3192c029bd21bfe2425f85ebdd8d5af6bd0649439"
+}

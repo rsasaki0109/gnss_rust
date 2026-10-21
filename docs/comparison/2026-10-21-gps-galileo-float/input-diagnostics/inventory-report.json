@@ -1,0 +1,95 @@
+{
+  "nagoya-run1": {
+    "pairs": 1521,
+    "gps_four_plus": 1253,
+    "gps_galileo_three_plus_DD": 1385,
+    "galileo_counts": {
+      "5": 318,
+      "6": 65,
+      "7": 30,
+      "4": 535,
+      "1": 43,
+      "0": 24,
+      "2": 156,
+      "3": 350
+    }
+  },
+  "nagoya-run2": {
+    "pairs": 1891,
+    "gps_four_plus": 1411,
+    "gps_galileo_three_plus_DD": 1784,
+    "galileo_counts": {
+      "8": 75,
+      "7": 54,
+      "6": 324,
+      "5": 312,
+      "4": 581,
+      "0": 9,
+      "3": 343,
+      "1": 32,
+      "2": 161
+    }
+  },
+  "nagoya-run3": {
+    "pairs": 1041,
+    "gps_four_plus": 702,
+    "gps_galileo_three_plus_DD": 989,
+    "galileo_counts": {
+      "4": 505,
+      "3": 389,
+      "2": 82,
+      "5": 60,
+      "1": 5
+    }
+  },
+  "tokyo-run1": {
+    "pairs": 2388,
+    "gps_four_plus": 1640,
+    "gps_galileo_three_plus_DD": 2113,
+    "galileo_counts": {
+      "7": 88,
+      "6": 256,
+      "5": 482,
+      "4": 763,
+      "1": 32,
+      "2": 307,
+      "3": 419,
+      "0": 41
+    }
+  },
+  "tokyo-run2": {
+    "pairs": 1831,
+    "gps_four_plus": 1488,
+    "gps_galileo_three_plus_DD": 1700,
+    "galileo_counts": {
+      "9": 154,
+      "8": 115,
+      "7": 293,
+      "6": 249,
+      "5": 211,
+      "4": 313,
+      "3": 311,
+      "0": 21,
+      "2": 120,
+      "10": 6,
+      "1": 38
+    }
+  },
+  "tokyo-run3": {
+    "pairs": 3061,
+    "gps_four_plus": 2430,
+    "gps_galileo_three_plus_DD": 2893,
+    "galileo_counts": {
+      "8": 258,
+      "7": 365,
+      "6": 614,
+      "5": 586,
+      "4": 496,
+      "3": 195,
+      "1": 33,
+      "2": 240,
+      "0": 10,
+      "9": 264
+    }
+  }
+}

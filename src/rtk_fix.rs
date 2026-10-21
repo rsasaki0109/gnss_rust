@@ -15,6 +15,7 @@ use std::{collections::BTreeMap, fmt};
 pub enum FixError {
     InvalidConfiguration,
     UnsupportedPositionMode,
+    UnsupportedConstellations,
     InvalidInteger,
     OutOfOrder,
     Filter(FilterError),
@@ -26,6 +27,9 @@ impl fmt::Display for FixError {
             Self::InvalidConfiguration => f.write_str("invalid integer validation configuration"),
             Self::UnsupportedPositionMode => {
                 f.write_str("initial FIX policy requires static position mode")
+            }
+            Self::UnsupportedConstellations => {
+                f.write_str("initial FIX validation requires GPS-only observations")
             }
             Self::InvalidInteger => {
                 f.write_str("integer candidate exceeds the exact arithmetic range")
@@ -341,6 +345,9 @@ pub fn validate_candidate(
     integers: &[i64],
     config: RtkFixConfig,
 ) -> Result<CandidateValidation, FixError> {
+    if float.fix_context.config.constellations != crate::rtk::RtkConstellations::Gps {
+        return Err(FixError::UnsupportedConstellations);
+    }
     validate_context(&float.fix_context, integers, config)
 }
 
@@ -482,6 +489,9 @@ pub fn audit_candidate_references(
     integers: &[i64],
     config: RtkFixConfig,
 ) -> Result<CandidateReferenceAudit, FixError> {
+    if float.fix_context.config.constellations != crate::rtk::RtkConstellations::Gps {
+        return Err(FixError::UnsupportedConstellations);
+    }
     config.validate()?;
     let source = &float.fix_context;
     let satellites = source.satellites();
@@ -618,6 +628,9 @@ impl RtkFixPolicy {
     }
     pub fn evaluate(&mut self, float: &RtkFloatSolution) -> Result<RtkFixAttempt, FixError> {
         let context = &float.fix_context;
+        if context.config.constellations != crate::rtk::RtkConstellations::Gps {
+            return Err(FixError::UnsupportedConstellations);
+        }
         if context.config.position_mode != crate::rtk::RtkPositionMode::Static {
             return Err(FixError::UnsupportedPositionMode);
         }

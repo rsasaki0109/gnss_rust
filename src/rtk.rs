@@ -1,4 +1,4 @@
-//! Initial static/kinematic-baseline GPS L1 C/A FLOAT filter.
+//! Initial static/kinematic GPS L1 C/A and optional Galileo E1 FLOAT filter.
 //!
 //! Ports DD signs, correlated noise, SD ambiguity states and ambiguity
 //! transformation from libgnss++ RTK measurement/filter components.
@@ -7,7 +7,9 @@
 
 use crate::coordinates::{ecef_to_enu, ecef_to_geodetic, geometric_distance};
 use crate::filter::{self, FilterError, GaussianState, Matrix};
-use crate::geometry::{DilutionOfPrecision, dilution_of_precision};
+use crate::geometry::{
+    DilutionOfPrecision, dilution_of_precision, dilution_of_precision_by_system,
+};
 use crate::lambda::{self, LambdaConfig, LambdaError, LambdaResult};
 use crate::models::saastamoinen;
 use crate::navigation::NavigationData;
@@ -31,8 +33,24 @@ pub enum RtkPositionMode {
     Kinematic,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RtkConstellations {
+    Gps,
+    /// GPS 1C plus Galileo E1 (1C preferred, otherwise 1X per receiver).
+    /// Each system has its own DD reference/receiver-clock datum. Mixed-system
+    /// integer validation is not implemented by the initial FIX policy.
+    GpsGalileo,
+}
+
+impl RtkConstellations {
+    fn includes(self, system: GnssSystem) -> bool {
+        system == GnssSystem::Gps || self == Self::GpsGalileo && system == GnssSystem::Galileo
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RtkFloatConfig {
+    pub constellations: RtkConstellations,
     pub position_mode: RtkPositionMode,
     /// Optional GPS 1C code-only position seed for each kinematic epoch.
     /// Its covariance is not fused. On SPP failure retain the previous RTK
@@ -68,6 +86,7 @@ pub struct RtkFloatConfig {
 impl Default for RtkFloatConfig {
     fn default() -> Self {
         Self {
+            constellations: RtkConstellations::Gps,
             position_mode: RtkPositionMode::Static,
             kinematic_spp_seed: None,
             slip_detection: None,
@@ -178,6 +197,7 @@ impl From<FilterError> for RtkError {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RtkRejection {
     UnsupportedSignal,
+    InsufficientSystemSatellites,
     MissingPair,
     MissingCodeOrPhase,
     HalfCycle,
@@ -307,6 +327,7 @@ pub struct RtkPrefitDiagnostic {
     pub reference_satellite: SatelliteId,
     /// Maps each phase/code screen row to its non-reference DD satellite.
     pub row_satellites: Vec<SatelliteId>,
+    pub row_reference_satellites: Vec<SatelliteId>,
     pub screen: PrefitResidualScreen,
     /// Evidence from this attempt, including a rejected update. These raw
     /// observations enter the continuity history only if the update succeeds.
@@ -336,6 +357,8 @@ pub struct RtkFloatSolution {
     pub position_seed: RtkSeedDiagnostic,
     pub slip_diagnostics: Vec<RtkSlipDiagnostic>,
     pub reference_satellite: SatelliteId,
+    /// One reference per participating system; the scalar above is the first.
+    pub reference_satellites: Vec<SatelliteId>,
     pub ambiguity_satellites: Vec<SatelliteId>,
     pub ambiguities: AmbiguityTransform,
     pub normalized_innovation_squared: f64,
@@ -350,6 +373,17 @@ pub struct RtkFloatSolution {
     pub(crate) fix_context: FixContext,
 }
 impl RtkFloatSolution {
+    pub fn tracking_pairs(&self) -> Vec<RtkTrackingPair> {
+        self.fix_context
+            .data
+            .iter()
+            .map(|d| RtkTrackingPair {
+                satellite: d.satellite,
+                rover_tracking_code: d.rover_tracking_code,
+                base_tracking_code: d.base_tracking_code,
+            })
+            .collect()
+    }
     pub fn used_satellites(&self) -> Vec<SatelliteId> {
         self.fix_context.satellites()
     }
@@ -363,6 +397,13 @@ impl RtkFloatSolution {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RtkTrackingPair {
+    pub satellite: SatelliteId,
+    pub rover_tracking_code: &'static str,
+    pub base_tracking_code: &'static str,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 struct SatelliteData {
     satellite: SatelliteId,
@@ -372,6 +413,8 @@ struct SatelliteData {
     phase_sd_cycles: f64,
     elevation: f64,
     loss_of_lock: bool,
+    rover_tracking_code: &'static str,
+    base_tracking_code: &'static str,
 }
 /// Immutable measurement snapshot for validating candidates against the same
 /// satellites, transmit times and observations as the FLOAT update.
@@ -393,6 +436,9 @@ pub(crate) struct FixedResiduals {
 }
 impl FixContext {
     pub(crate) fn with_reference(&self, reference: SatelliteId) -> Result<Self, RtkError> {
+        if self.config.constellations != RtkConstellations::Gps {
+            return Err(Error::UnsupportedConstellation.into());
+        }
         let index = self
             .data
             .iter()
@@ -418,6 +464,9 @@ impl FixContext {
         }
     }
     pub fn ambiguities(&self) -> Result<AmbiguityTransform, FilterError> {
+        if self.config.constellations != RtkConstellations::Gps {
+            return Err(FilterError::InvalidDimensions);
+        }
         let pairs: Vec<_> = (0..self.data.len())
             .filter(|&i| i != self.reference)
             .map(|i| (3 + self.reference, 3 + i))
@@ -429,6 +478,9 @@ impl FixContext {
         baseline: &[f64],
         integers: &[i64],
     ) -> Result<FixedResiduals, RtkError> {
+        if self.config.constellations != RtkConstellations::Gps {
+            return Err(Error::UnsupportedConstellation.into());
+        }
         if baseline.len() != 3 || integers.len() + 1 != self.data.len() {
             return Err(FilterError::InvalidDimensions.into());
         }
@@ -471,7 +523,7 @@ struct MeasurementSystem {
     noise: Matrix,
 }
 
-/// Static or epoch-wise kinematic baseline and one SD ambiguity per GPS 1C satellite. Satellite
+/// Static or epoch-wise kinematic baseline and one SD ambiguity per selected L1/E1 satellite. Satellite
 /// loss, LLI loss of lock, power failure, a long gap or explicit invalidation
 /// starts new ambiguity arcs. Optional code/phase and Doppler tests can also
 /// reset individual GPS 1C arcs; they do not identify every possible slip.
@@ -485,6 +537,7 @@ pub struct RtkFloatFilter {
     continuity_lost: bool,
     slip_history: BTreeMap<SatelliteId, SlipHistory>,
     last_prefit_diagnostic: Option<RtkPrefitDiagnostic>,
+    tracking_pairs: BTreeMap<SatelliteId, (&'static str, &'static str)>,
 }
 impl RtkFloatFilter {
     pub fn new(
@@ -508,6 +561,7 @@ impl RtkFloatFilter {
             continuity_lost: false,
             slip_history: BTreeMap::new(),
             last_prefit_diagnostic: None,
+            tracking_pairs: BTreeMap::new(),
         })
     }
     pub fn state(&self) -> Option<&GaussianState> {
@@ -534,8 +588,9 @@ impl RtkFloatFilter {
     pub fn observe_skipped_epoch(&mut self, epoch: &ObservationEpoch) -> bool {
         let broken = matches!(epoch.flag, 1 | 6)
             || epoch.observations.iter().any(|o| {
-                o.satellite.system() == GnssSystem::Gps
-                    && o.tracking_code == "1C"
+                self.config.constellations.includes(o.satellite.system())
+                    && (o.tracking_code == "1C"
+                        || o.satellite.system() == GnssSystem::Galileo && o.tracking_code == "1X")
                     && (o.loss_of_lock() || o.half_cycle_ambiguity())
             });
         if broken {
@@ -597,7 +652,7 @@ impl RtkFloatFilter {
         if let Some(config) = self.config.kinematic_spp_seed {
             // Match the RTK signal restriction even when the input epoch has
             // additional GPS tracking codes or QZSS code observations.
-            selected(rover)?;
+            selected(rover, RtkConstellations::Gps)?;
             let mut seed_epoch = rover.clone();
             seed_epoch
                 .observations
@@ -628,13 +683,28 @@ impl RtkFloatFilter {
         if data.len() < 4 {
             return Err(RtkError::InsufficientCommonSatellites);
         }
-        let reference = data.iter().enumerate().fold(0, |best, (i, d)| {
-            if d.elevation > data[best].elevation {
-                i
-            } else {
-                best
+        for d in &mut data {
+            if self
+                .tracking_pairs
+                .get(&d.satellite)
+                .is_some_and(|old| *old != (d.rover_tracking_code, d.base_tracking_code))
+            {
+                d.loss_of_lock = true;
             }
-        });
+        }
+        let mut by_system = BTreeMap::<GnssSystem, usize>::new();
+        for (i, d) in data.iter().enumerate() {
+            let best = by_system.entry(d.satellite.system()).or_insert(i);
+            if d.elevation > data[*best].elevation {
+                *best = i;
+            }
+        }
+        let references: Vec<_> = by_system.into_values().collect();
+        let reference = references[0];
+        let pairs = dd_pairs(&data, &references);
+        if pairs.len() < 3 {
+            return Err(RtkError::InsufficientCommonSatellites);
+        }
         let reset_all = self.continuity_lost
             || rover.flag == 1
             || base.flag == 1
@@ -645,13 +715,18 @@ impl RtkFloatFilter {
         let mut estimate = prior.mean.clone();
         let mut accepted = None;
         for iteration in 1..=self.config.max_iterations {
-            let system =
-                build_system(&data, reference, &estimate, self.base_position, self.config)?;
-            validate_geometry(&system.design[..data.len() - 1])?;
+            let system = build_system_with_references(
+                &data,
+                &references,
+                &estimate,
+                self.base_position,
+                self.config,
+            )?;
+            validate_geometry(&system.design[..pairs.len()])?;
             if iteration == 1
                 && let Some(threshold) = self.config.max_prefit_residual_m
             {
-                let count = data.len() - 1;
+                let count = pairs.len();
                 let screen = screen_prefit_residuals(
                     &system.residuals[..count],
                     &system.residuals[count..],
@@ -662,11 +737,10 @@ impl RtkFloatFilter {
                     time: rover.time,
                     position_seed,
                     reference_satellite: data[reference].satellite,
-                    row_satellites: data
+                    row_satellites: pairs.iter().map(|(_, sat)| data[*sat].satellite).collect(),
+                    row_reference_satellites: pairs
                         .iter()
-                        .enumerate()
-                        .filter(|(i, _)| *i != reference)
-                        .map(|(_, d)| d.satellite)
+                        .map(|(r, _)| data[*r].satellite)
                         .collect(),
                     screen,
                     slip_diagnostics: slip_diagnostics.clone(),
@@ -717,7 +791,12 @@ impl RtkFloatFilter {
         }
         let (update, iterations) = accepted.ok_or(RtkError::NonConvergent)?;
         let posterior = update.posterior;
-        let geometry = dilution_of_precision(
+        let geometry_function = if references.len() == 1 {
+            dilution_of_precision
+        } else {
+            dilution_of_precision_by_system
+        };
+        let geometry = geometry_function(
             add(self.base_position, &posterior.mean[..3]),
             &data
                 .iter()
@@ -731,24 +810,17 @@ impl RtkFloatFilter {
                 Err(error) => return Err((*error).into()),
             }
         }
-        let final_system = build_system(
+        let final_system = build_system_with_references(
             &data,
-            reference,
+            &references,
             &posterior.mean,
             self.base_position,
             self.config,
         )?;
-        let rows = data.len() - 1;
-        let ambiguity_satellites: Vec<_> = data
-            .iter()
-            .enumerate()
-            .filter(|(i, _)| *i != reference)
-            .map(|(_, d)| d.satellite)
-            .collect();
-        let differences: Vec<_> = (0..data.len())
-            .filter(|&i| i != reference)
-            .map(|i| (3 + reference, 3 + i))
-            .collect();
+        let rows = pairs.len();
+        let ambiguity_satellites: Vec<_> =
+            pairs.iter().map(|(_, sat)| data[*sat].satellite).collect();
+        let differences: Vec<_> = pairs.iter().map(|(r, sat)| (3 + r, 3 + sat)).collect();
         let ambiguities = ambiguity_transform(&posterior, 3, &differences)?;
         let result = RtkFloatSolution {
             position_seed,
@@ -764,6 +836,7 @@ impl RtkFloatFilter {
                 ..PositionSolution::default()
             },
             reference_satellite: data[reference].satellite,
+            reference_satellites: references.iter().map(|r| data[*r].satellite).collect(),
             ambiguity_satellites,
             ambiguities,
             normalized_innovation_squared: update.normalized_innovation_squared,
@@ -783,6 +856,11 @@ impl RtkFloatFilter {
                 reference,
             },
         };
+        self.tracking_pairs = result
+            .tracking_pairs()
+            .into_iter()
+            .map(|p| (p.satellite, (p.rover_tracking_code, p.base_tracking_code)))
+            .collect();
         self.posterior = Some(posterior);
         self.satellites = result.fix_context.satellites();
         self.last_time = Some(rover.time);
@@ -802,8 +880,8 @@ impl RtkFloatFilter {
         let Some(config) = self.config.slip_detection else {
             return Ok((Vec::new(), BTreeMap::new()));
         };
-        let r = selected(rover)?;
-        let b = selected(base)?;
+        let r = selected(rover, self.config.constellations)?;
+        let b = selected(base, self.config.constellations)?;
         let mut diagnostics = Vec::with_capacity(data.len());
         let mut next = BTreeMap::new();
         for d in data {
@@ -959,15 +1037,33 @@ fn elevation(sat: EcefCoord, receiver: EcefCoord) -> Result<f64, Error> {
     )?;
     Ok(enu.up.atan2(enu.east.hypot(enu.north)))
 }
-fn selected(epoch: &ObservationEpoch) -> Result<BTreeMap<SatelliteId, &Observation>, RtkError> {
+fn selected(
+    epoch: &ObservationEpoch,
+    constellations: RtkConstellations,
+) -> Result<BTreeMap<SatelliteId, &Observation>, RtkError> {
     let mut seen = std::collections::BTreeSet::new();
-    let mut out = BTreeMap::new();
+    let mut out = BTreeMap::<SatelliteId, &Observation>::new();
     for obs in &epoch.observations {
         if !seen.insert((obs.satellite, obs.tracking_code.as_str())) {
             return Err(RtkError::DuplicateObservation);
         }
-        if obs.satellite.system() == GnssSystem::Gps && obs.tracking_code == "1C" {
-            out.insert(obs.satellite, obs);
+        if constellations.includes(obs.satellite.system())
+            && (obs.tracking_code == "1C"
+                || obs.satellite.system() == GnssSystem::Galileo && obs.tracking_code == "1X")
+        {
+            let rank = |o: &Observation| {
+                (
+                    !o.pseudorange_m.is_some_and(|v| v.is_finite() && v > 0.0)
+                        || !o.carrier_phase_cycles.is_some_and(f64::is_finite),
+                    o.tracking_code.as_str() != "1C",
+                )
+            };
+            if out
+                .get(&obs.satellite)
+                .is_none_or(|old| rank(obs) < rank(old))
+            {
+                out.insert(obs.satellite, obs);
+            }
         }
     }
     Ok(out)
@@ -992,8 +1088,8 @@ fn prepare(
     base_position: EcefCoord,
     config: RtkFloatConfig,
 ) -> Result<(Vec<SatelliteData>, RejectedSatellites), RtkError> {
-    let r = selected(rover)?;
-    let b = selected(base)?;
+    let r = selected(rover, config.constellations)?;
+    let b = selected(base, config.constellations)?;
     let mut data = Vec::new();
     let mut rejected = Vec::new();
     let ids: std::collections::BTreeSet<_> = rover
@@ -1002,7 +1098,7 @@ fn prepare(
         .copied()
         .collect();
     for satellite in ids {
-        if satellite.system() != GnssSystem::Gps {
+        if !config.constellations.includes(satellite.system()) {
             rejected.push((satellite, RtkRejection::UnsupportedSignal));
             continue;
         }
@@ -1047,13 +1143,52 @@ fn prepare(
             phase_sd_cycles: ro.carrier_phase_cycles.unwrap() - ba.carrier_phase_cycles.unwrap(),
             elevation: el,
             loss_of_lock: ro.loss_of_lock() || ba.loss_of_lock(),
+            rover_tracking_code: if ro.tracking_code == "1C" { "1C" } else { "1X" },
+            base_tracking_code: if ba.tracking_code == "1C" { "1C" } else { "1X" },
         });
     }
+    let mut counts = BTreeMap::<GnssSystem, usize>::new();
+    for d in &data {
+        *counts.entry(d.satellite.system()).or_default() += 1;
+    }
+    data.retain(|d| {
+        if counts[&d.satellite.system()] >= 2 {
+            true
+        } else {
+            rejected.push((d.satellite, RtkRejection::InsufficientSystemSatellites));
+            false
+        }
+    });
     Ok((data, rejected))
 }
+
+fn dd_pairs(data: &[SatelliteData], references: &[usize]) -> Vec<(usize, usize)> {
+    references
+        .iter()
+        .flat_map(|&reference| {
+            data.iter()
+                .enumerate()
+                .filter(move |(i, d)| {
+                    *i != reference && d.satellite.system() == data[reference].satellite.system()
+                })
+                .map(move |(i, _)| (reference, i))
+        })
+        .collect()
+}
+
 fn build_system(
     data: &[SatelliteData],
     reference: usize,
+    state: &[f64],
+    base: EcefCoord,
+    config: RtkFloatConfig,
+) -> Result<MeasurementSystem, RtkError> {
+    build_system_with_references(data, &[reference], state, base, config)
+}
+
+fn build_system_with_references(
+    data: &[SatelliteData],
+    references: &[usize],
     state: &[f64],
     base: EcefCoord,
     config: RtkFloatConfig,
@@ -1089,12 +1224,12 @@ fn build_system(
         los.push(diff.map(|v| v / norm));
         elevations.push(el);
     }
-    let indices: Vec<_> = (0..data.len()).filter(|&i| i != reference).collect();
-    let count = indices.len();
+    let pairs = dd_pairs(data, references);
+    let count = pairs.len();
     let mut design = filter::zeros(2 * count, state.len());
     let mut residuals = vec![0.0; 2 * count];
     let mut noise = filter::zeros(2 * count, 2 * count);
-    for (row, &sat) in indices.iter().enumerate() {
+    for (row, &(reference, sat)) in pairs.iter().enumerate() {
         for j in 0..3 {
             design[row][j] = -los[reference][j] + los[sat][j];
             design[count + row][j] = design[row][j];
@@ -1116,17 +1251,26 @@ fn build_system(
             let sin = el.sin().max(0.1);
             2.0 * sigma * sigma * (1.0 + 1.0 / (sin * sin))
         };
-        let cov = double_difference_covariance(
-            variance(elevations[reference]),
-            &indices
+        let mut offset = 0;
+        for &reference in references {
+            let indices: Vec<_> = pairs
                 .iter()
-                .map(|&i| variance(elevations[i]))
-                .collect::<Vec<_>>(),
-        )?;
-        for i in 0..count {
-            for j in 0..count {
-                noise[block * count + i][block * count + j] = cov[i][j];
+                .filter(|(r, _)| *r == reference)
+                .map(|(_, sat)| *sat)
+                .collect();
+            let cov = double_difference_covariance(
+                variance(elevations[reference]),
+                &indices
+                    .iter()
+                    .map(|&i| variance(elevations[i]))
+                    .collect::<Vec<_>>(),
+            )?;
+            for i in 0..indices.len() {
+                for j in 0..indices.len() {
+                    noise[block * count + offset + i][block * count + offset + j] = cov[i][j];
+                }
             }
+            offset += indices.len();
         }
     }
     if !design

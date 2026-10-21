@@ -1,7 +1,10 @@
-//! GPS L1 FLOAT on common epochs; every unmatched/invalid epoch is reported.
+//! L1/E1 FLOAT on common epochs; every unmatched/invalid epoch is reported.
 use gnss_rust::epoch_match::{EpochMatch, EpochMatcher, EpochSide};
 use gnss_rust::rinex::{RinexObservationReader, read_navigation_for_systems};
-use gnss_rust::rtk::{RtkFloatConfig, RtkFloatFilter, RtkPositionMode, RtkPrefitDiagnostic};
+use gnss_rust::rtk::{
+    RtkConstellations, RtkFloatConfig, RtkFloatFilter, RtkPositionMode, RtkPrefitDiagnostic,
+    RtkSeedDiagnostic, RtkSlipDiagnostic,
+};
 use gnss_rust::rtk_slip::RtkSlipConfig;
 use gnss_rust::spp::SppConfig;
 use gnss_rust::{EcefCoord, GnssSystem};
@@ -11,6 +14,50 @@ use std::{
     io::{BufReader, BufWriter, Write},
     path::Path,
 };
+
+fn write_seed(row: &mut [String], offset: usize, seed: RtkSeedDiagnostic) {
+    row[offset] = format!("{:?}", seed.source);
+    for (i, v) in [seed.position.x, seed.position.y, seed.position.z]
+        .into_iter()
+        .enumerate()
+    {
+        row[offset + 1 + i] = format!("{v:.17e}");
+    }
+    if let Some(error) = seed.spp_failure {
+        row[offset + 4] = format!("{error:?}");
+    }
+}
+
+fn write_slips(row: &mut [String], offset: usize, evidence: &[RtkSlipDiagnostic]) {
+    for (i, value) in [
+        evidence
+            .iter()
+            .filter(|d| d.code.is_some_and(|t| t.detected))
+            .count(),
+        evidence
+            .iter()
+            .filter(|d| d.doppler.is_some_and(|t| t.detected))
+            .count(),
+        evidence.iter().filter(|d| d.code.is_some()).count(),
+        evidence.iter().filter(|d| d.doppler.is_some()).count(),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        row[offset + i] = value.to_string();
+    }
+    row[offset + 4] = evidence
+        .iter()
+        .filter(|d| d.code.is_some_and(|t| t.detected) || d.doppler.is_some_and(|t| t.detected))
+        .map(|d| d.satellite.to_string())
+        .collect::<Vec<_>>()
+        .join(";");
+    row[offset + 5] = evidence
+        .iter()
+        .filter_map(|d| d.doppler_error.map(|e| format!("{}:{e:?}", d.satellite)))
+        .collect::<Vec<_>>()
+        .join(";");
+}
 
 fn write_prefit(row: &mut [String], diagnostic: &RtkPrefitDiagnostic) {
     let screen = &diagnostic.screen;
@@ -27,7 +74,7 @@ fn write_prefit(row: &mut [String], diagnostic: &RtkPrefitDiagnostic) {
         rejected.extend(indices.iter().map(|i| {
             format!(
                 "{kind}:{}-{}",
-                diagnostic.reference_satellite, diagnostic.row_satellites[*i]
+                diagnostic.row_reference_satellites[*i], diagnostic.row_satellites[*i]
             )
         }));
     }
@@ -95,11 +142,31 @@ fn main() -> Result<(), Box<dyn Error>> {
             | "kinematic-slips-prefit3"
             | "kinematic-spp-slips-prefit3",
         ) => RtkPositionMode::Kinematic,
+        Some(
+            "kinematic-galileo"
+            | "kinematic-galileo-slips"
+            | "kinematic-galileo-spp"
+            | "kinematic-galileo-spp-slips"
+            | "kinematic-galileo-spp-slips-prefit3",
+        ) => RtkPositionMode::Kinematic,
         _ => return Err("unsupported positioning mode; see ppc_rtk_float usage".into()),
+    };
+    let mixed = args[1].to_str().is_some_and(|s| s.contains("galileo"));
+    let constellations = if mixed {
+        RtkConstellations::GpsGalileo
+    } else {
+        RtkConstellations::Gps
     };
     let use_spp_seed = matches!(
         args[1].to_str(),
-        Some("kinematic-spp" | "kinematic-spp-prefit3" | "kinematic-spp-slips-prefit3")
+        Some(
+            "kinematic-spp"
+                | "kinematic-spp-prefit3"
+                | "kinematic-spp-slips-prefit3"
+                | "kinematic-galileo-spp"
+                | "kinematic-galileo-spp-slips"
+                | "kinematic-galileo-spp-slips-prefit3"
+        )
     );
     let use_prefit = args[1].to_str().is_some_and(|s| s.ends_with("-prefit3"));
     let slip_detection = match args[1].to_str() {
@@ -111,9 +178,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             code_threshold_m: None,
             ..Default::default()
         }),
-        Some("kinematic-slips" | "kinematic-slips-prefit3" | "kinematic-spp-slips-prefit3") => {
-            Some(RtkSlipConfig::default())
-        }
+        Some(
+            "kinematic-slips"
+            | "kinematic-slips-prefit3"
+            | "kinematic-spp-slips-prefit3"
+            | "kinematic-galileo-slips"
+            | "kinematic-galileo-spp-slips"
+            | "kinematic-galileo-spp-slips-prefit3",
+        ) => Some(RtkSlipConfig::default()),
         _ => None,
     };
     let xyz: Vec<f64> = args[2]
@@ -134,12 +206,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         .approximate_position
         .ok_or("missing rover header position")?;
     let base = RinexObservationReader::new(open("base.obs")?)?;
-    let navigation = read_navigation_for_systems(open("base.nav")?, &[GnssSystem::Gps])?;
+    let systems = if mixed {
+        vec![GnssSystem::Gps, GnssSystem::Galileo]
+    } else {
+        vec![GnssSystem::Gps]
+    };
+    let navigation = read_navigation_for_systems(open("base.nav")?, &systems)?;
     let excluded = navigation.excluded_records.len();
     let mut filter = RtkFloatFilter::new(
         base_position,
         seed,
         RtkFloatConfig {
+            constellations,
             position_mode,
             kinematic_spp_seed: use_spp_seed.then(SppConfig::default),
             slip_detection,
@@ -154,7 +232,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?;
     let mut out = BufWriter::new(std::io::stdout().lock());
     let header = "kind,week,tow,side,rover_flag,base_flag,base_dt_s,status,x_m,y_m,z_m,satellites,reference,nis,code_rms_m,phase_rms_m,ambiguity_resets,reason,geometry_gdop,geometry_pdop,position_covariance_trace_m2,position_qxx_m2,position_qyy_m2,position_qzz_m2,used_satellites,geometry_error";
-    let suffix = if use_prefit {
+    let suffix = if use_prefit && mixed {
+        ",prefit_phase_max_m,prefit_code_max_m,prefit_threshold_m,prefit_rejected_phase_rows,prefit_rejected_code_rows,prefit_rejected_pairs,seed_source,seed_x_m,seed_y_m,seed_z_m,spp_failure,code_slips,doppler_slips,code_tests,doppler_tests,slip_satellites,doppler_errors,reference_satellites,tracking_pairs,geometry_clock_systems,dd_phase_rows"
+    } else if mixed {
+        ",seed_source,seed_x_m,seed_y_m,seed_z_m,spp_failure,code_slips,doppler_slips,code_tests,doppler_tests,slip_satellites,doppler_errors,reference_satellites,tracking_pairs,geometry_clock_systems,dd_phase_rows"
+    } else if use_prefit {
         ",prefit_phase_max_m,prefit_code_max_m,prefit_threshold_m,prefit_rejected_phase_rows,prefit_rejected_code_rows,prefit_rejected_pairs,seed_source,seed_x_m,seed_y_m,seed_z_m,spp_failure,code_slips,doppler_slips,code_tests,doppler_tests,slip_satellites,doppler_errors"
     } else if use_spp_seed {
         ",seed_source,seed_x_m,seed_y_m,seed_z_m,spp_failure"
@@ -174,7 +256,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         mut continuity,
     ) = (0, 0, 0, 0, 0, 0, 0);
     for event in EpochMatcher::new(rover, base) {
-        let columns = if use_prefit {
+        let columns = if mixed && use_prefit {
+            47
+        } else if mixed {
+            41
+        } else if use_prefit {
             43
         } else if use_spp_seed {
             31
@@ -225,7 +311,40 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     match filter.process_pair(&rover, &base, &navigation.navigation) {
                         Ok(result) => {
-                            if slip_detection.is_some() && !use_prefit {
+                            if mixed {
+                                if !use_prefit {
+                                    write_seed(&mut row, 26, result.position_seed);
+                                    write_slips(&mut row, 31, &result.slip_diagnostics);
+                                }
+                                let extra = if use_prefit { 43 } else { 37 };
+                                row[extra] = result
+                                    .reference_satellites
+                                    .iter()
+                                    .map(ToString::to_string)
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[extra + 1] = result
+                                    .tracking_pairs()
+                                    .iter()
+                                    .map(|p| {
+                                        format!(
+                                            "{}:{}:{}",
+                                            p.satellite,
+                                            p.rover_tracking_code,
+                                            p.base_tracking_code
+                                        )
+                                    })
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[extra + 2] = result
+                                    .reference_satellites
+                                    .iter()
+                                    .map(|s| s.system().rinex_prefix().to_string())
+                                    .collect::<Vec<_>>()
+                                    .join(";");
+                                row[extra + 3] = result.ambiguity_satellites.len().to_string();
+                            }
+                            if slip_detection.is_some() && !use_prefit && !mixed {
                                 let evidence = &result.slip_diagnostics;
                                 row[26] = evidence
                                     .iter()
@@ -264,7 +383,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                     .collect::<Vec<_>>()
                                     .join(";");
                             }
-                            if use_spp_seed && !use_prefit {
+                            if use_spp_seed && !use_prefit && !mixed {
                                 let seed = result.position_seed;
                                 row[26] = format!("{:?}", seed.source);
                                 for (i, v) in [seed.position.x, seed.position.y, seed.position.z]
@@ -349,6 +468,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     if use_prefit {
         eprintln!("max_prefit_residual_m=3 whole_epoch_gate=true no_matrix_mutation=true");
+    }
+    if mixed {
+        eprintln!(
+            "constellations=GPS,Galileo separate_references=true SPP_seed_GPS_only=true kinematic_FIX=false"
+        );
     }
     Ok(())
 }

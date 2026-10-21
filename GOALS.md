@@ -7,6 +7,15 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[GPS/Galileo FLOATと元C++比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)を追加。
+系ごとのDD参照・R・受信機時計を分け、追尾コード変更でアークを初期化する。
+全6走行でRust42/元C++12実行、345,469入力行の追尾コード・値・欠測・通知が一致。
+FLOATはGPS 8,258→GPS/Galileo 9,727、検出併用9,855。元C++既定SPPは10,585 RTK、うち144 FIX。
+Nagoya run2の最大誤差は約938→311 mだが、Tokyo run2/3などは悪化もあり既定GPSのみを維持。
+24複数時計幾何・32移動真値・3有限事前分布の初期ケースを独立生成して照合。
+Rust316・examples・fmt/clippy/release通過。移動/複数系FIX・PPPと速度/メモリ受け入れは未達。
+次は元C++のSD ambiguity共通オフセット整合と移動FIXを比較する。全体18/24（75%）を維持。
+
 [初期残差3 mの保留ゲート](docs/comparison/2026-10-21-prefit-epoch-gate/README.md)を選択式で評価。
 元C++の行分類10ケースを照合したが、相関Rを残すH/vのゼロ化は行わず全エポックを保留する。
 全6走行×6設定で、ゲートのみはFLOAT 268まで減少。SPP併用は4,705だが最大約1,573 mが残る。

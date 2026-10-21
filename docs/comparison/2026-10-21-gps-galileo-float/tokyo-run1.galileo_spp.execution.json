@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_float",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run1",
+    "kinematic-galileo-spp",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875"
+  ],
+  "returncode": 0,
+  "csv_sha256": "3ae147e8cde16e62ab64ba34c5cbf553f0f3f4b20d75cefab28be3acdea4866b",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "1c504590da9ae8562d39207ad03c2d1a5396c26c2e50febd2a398f6437567c23"
+}
