@@ -54,6 +54,7 @@ pub mod precise_transmit;
 pub mod rinex;
 pub mod rtk;
 pub mod rtk_fix;
+pub mod rtk_reference;
 pub mod spp;
 pub mod tides;
 pub mod time;

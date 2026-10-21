@@ -1,5 +1,9 @@
 # gnss-rust
 
+2026-10-21時点の作業コピーは ccc9b01 で、前回のCMC実装とPPC比較記録は復旧確認中です。
+今回の[基準衛星変更の診断](docs/comparison/2026-10-21-reference-basis/README.md)は
+C++22ケース・Rust250テストで検証した部品で、PPC性能改善の結果とは区別しています。
+
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。
 移植元は `develop` のコミット
 `72f3b7c2c4c088dc575286a6f0edf4e407bc499a` に固定しています。

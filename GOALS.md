@@ -1,4 +1,16 @@
-# 最終目標: libgnss++ と同等の RTK・PPP
+# 最終目標: PPC-Datasetでlibgnss++と実用上同程度のRTK・PPP性能
+
+## 2026-10-21の作業状態
+
+現環境とGitHub mainは ccc9b01。前回のCMC実装・全6比較記録が見当たらず、
+83%という前回報告をここでは再検証できない。最新保存先の確認待ち。
+現在のこのコピーのチェックリストは18/24（75%）。
+
+[基準衛星変更の診断](docs/comparison/2026-10-21-reference-basis/README.md)を追加。
+H/v/full Rを一緒に変換するとGaussian情報は保たれるが、単純RMS gateと独立DD Qは
+referenceに依存する反例を確認。C++22ケース、Rust250・fmt/clippy/release通過。
+新PPC／native whole実行なし。実用RTK・PPP受け入れは未達。
+ユーザーの目標は完全な内部同一性ではなく、PPCで概ね同程度の精度・継続率・速度・メモリ。
 
 この目標はRTK・PPP双方の受け入れ条件を満たすまで継続する。
 コア、RINEX、SPPの実装完了を最終目標の達成とは扱わない。

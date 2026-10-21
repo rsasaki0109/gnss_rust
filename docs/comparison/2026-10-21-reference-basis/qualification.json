@@ -1,0 +1,56 @@
+{
+  "rust": {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-j2"
+    ],
+    "returncode": 0
+  },
+  "examples": {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-j2",
+      "--examples"
+    ],
+    "returncode": 0
+  },
+  "fmt": {
+    "command": [
+      "cargo",
+      "fmt",
+      "--check"
+    ],
+    "returncode": 0
+  },
+  "clippy": {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-j2",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0
+  },
+  "release": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--offline",
+      "-j2",
+      "--release"
+    ],
+    "returncode": 0
+  }
+}

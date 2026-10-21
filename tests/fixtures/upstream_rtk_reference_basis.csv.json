@@ -1,0 +1,29 @@
+{
+  "upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "scope": "unchanged native measurement assembly and Kalman components with controlled synthetic SD inputs and one shared phase/code noise source",
+  "native_whole_solver_execution": false,
+  "PPC_execution": false,
+  "rows": 22,
+  "generator_sha256": "f1b6934242022ad77f6669bdc4c762cd361935f399ee1b8489a8458b6e720e87",
+  "upstream_sha256": {
+    "src/algorithms/rtk_measurement.cpp": "3d665976e6b59bae9dcc72fb806a063e7bbb2709a6ebaeadeb966a94133035dd",
+    "include/libgnss++/algorithms/rtk_measurement.hpp": "982dfed87b115576780b778e8da543ac020ca7886d0f38f492b73f309e63b294",
+    "include/libgnss++/algorithms/kalman.hpp": "b266fe2cb5cb8fcc22db77a984992e1cdecb9a19d4e355ca02d5f2386005eee1"
+  },
+  "fixture_sha256": "b24accecd0bb6831566cded47be13be467e269f4f0262f57b91062abdd27ed2b",
+  "compile_command": [
+    "c++",
+    "-std=c++17",
+    "-O2",
+    "-I/workspace/.cloud-setup/reference/gnssplusplus-library/include",
+    "-I/workspace/.cloud-setup/eigen-3.4.0",
+    "scripts/upstream_rtk_reference_basis.cpp",
+    "/workspace/.cloud-setup/reference/gnssplusplus-library/src/algorithms/rtk_measurement.cpp",
+    "-o",
+    "/tmp/upstream_rtk_reference_basis"
+  ],
+  "run_command": [
+    "/tmp/upstream_rtk_reference_basis",
+    "tests/fixtures/upstream_rtk_reference_basis.csv"
+  ]
+}

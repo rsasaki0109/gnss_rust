@@ -1,0 +1,40 @@
+{
+  "base_commit": "ccc9b01765f70ca802365ddc88ffd81a37452d7c",
+  "native_component_cases": 22,
+  "Rust_tests": 250,
+  "new_meaningful_tests": 7,
+  "example_tests": 0,
+  "new_PPC_execution": false,
+  "new_native_whole_solver_execution": false,
+  "performance_accepted": false,
+  "solver_defaults_changed": false,
+  "current_checklist": {
+    "checked": 18,
+    "total": 24,
+    "rounded_percent": 75
+  },
+  "historical_completion": {
+    "percent": 83,
+    "verified_in_current_environment": false
+  },
+  "recovery": {
+    "local_and_remote_main": "ccc9b01765f70ca802365ddc88ffd81a37452d7c",
+    "latest_CMC_source_present": false,
+    "latest_PPC_archive_present": false,
+    "alternate_remote_refs_found": false,
+    "git_recovery_blobs_found": 2,
+    "git_recovery_blobs_contain_latest_code": false,
+    "latest_backup_location": "unknown"
+  },
+  "scientific_sha256": {
+    "src/rtk_reference.rs": "22889bff9eb63aeafd0d352bc7aba833343439921eb7893d4c14933824737a30",
+    "src/lib.rs": "a6aef6eefffa97ea9adaea5f8f2f1ad25dc1d46a5ae5c42d1a0d81b5c0b2b668",
+    "src/rtk.rs": "8e1e37eb864fa99e5df3f92e05b6805e2a6f112da256e5da9eafd339d09863ef",
+    "src/rtk_fix.rs": "d5199466c91ef908f7509dad9bd8bff153bfdccc716d0103ebfc7af6993e7667",
+    "src/filter.rs": "31fe26a27f04a5138df4a6c92e2027d6d7f2c665929a40a9da7340669eb8a0bc",
+    "tests/rtk_reference.rs": "ae0fe88a45005ade1f0fa2460ed86e4c8ff34da16607e930d42737eda3cb0f11",
+    "scripts/upstream_rtk_reference_basis.cpp": "f1b6934242022ad77f6669bdc4c762cd361935f399ee1b8489a8458b6e720e87",
+    "tests/fixtures/upstream_rtk_reference_basis.csv": "b24accecd0bb6831566cded47be13be467e269f4f0262f57b91062abdd27ed2b",
+    "tests/fixtures/upstream_rtk_reference_basis.csv.json": "cd398b9bc36a408073f51f6f9eddc23a203b1ed412856951c59e811fbb9d3da0"
+  }
+}
