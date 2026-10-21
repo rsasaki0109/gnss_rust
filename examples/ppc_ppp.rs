@@ -5,7 +5,9 @@ use gnss_rust::bias::{BiasSignalRequest, OsbBinding, read_satellite_biases_with_
 use gnss_rust::dual_frequency::{
     DualFrequencyConfig, DualFrequencyNoise, PhaseBiasMode, SignalCorrections,
 };
-use gnss_rust::ppp::{PppConfig, PppEpoch, PppFilter, PppFilterSettings, PppPositionModel};
+use gnss_rust::ppp::{
+    PppClockModel, PppConfig, PppEpoch, PppFilter, PppFilterSettings, PppPositionModel,
+};
 use gnss_rust::precise::{
     ClockSource, OrbitReferencePoint, PreciseProducts, read_satellite_clocks, read_sp3,
 };
@@ -27,7 +29,11 @@ fn csv(value: &str) -> String {
     }
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args: Vec<_> = std::env::args().skip(1).collect();
+    let mut args: Vec<_> = std::env::args().skip(1).collect();
+    let epoch_clock = args.last().is_some_and(|s| s == "-epoch-clock");
+    if epoch_clock {
+        args.pop();
+    }
     if !matches!(args.len(), 8 | 9)
         || !matches!(args[6].as_str(), "1C2W" | "1C2L")
         || !matches!(args[7].as_str(), "calibrated" | "raw-float")
@@ -37,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "native-variances" | "climatology" | "native-head"
             ))
     {
-        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head]".into());
+        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock]".into());
     }
     let open = |name: &str| File::open(name).map(BufReader::new);
     let orbit = read_sp3(open(&args[1])?)?;
@@ -180,6 +186,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "initial_head_profile={} independent_RINEX_header_seed=true thresholds_changed=false ambiguity_prior_changed=false",
             args[8]
         );
+    }
+    if epoch_clock {
+        config.filter.clock_model = PppClockModel::IndependentEpoch;
+        eprintln!("clock_model=IndependentEpoch SPP_fused=false thresholds_changed=false");
     }
     eprintln!(
         "config={config:?} case={} pair={} phase={} RINEX_phase_shift_declarations={phase_shifts} excluded_receiver_clocks={} excluded_receiver_bias_rows={} byte_comment_lines={} receiver_calibration_known=false satellite_PCV_applied=false solid_earth_tide_applied=false truth_used_by_solver=false whole_native_PPP_executed=false practical_parity_accepted=false",

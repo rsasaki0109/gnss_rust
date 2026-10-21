@@ -92,6 +92,7 @@ impl PppPositionModel {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PppFilterSettings {
     pub position_model: PppPositionModel,
+    pub clock_model: PppClockModel,
     /// Strict calibrated phase remains the default. Explicit raw mode retains
     /// absent phase OSBs and absorbs constant biases only into FLOAT ambiguities.
     pub phase_bias_mode: PhaseBiasMode,
@@ -114,6 +115,7 @@ impl Default for PppFilterSettings {
     fn default() -> Self {
         Self {
             position_model: PppPositionModel::Static,
+            clock_model: PppClockModel::RandomWalk,
             phase_bias_mode: PhaseBiasMode::RequireSignalCorrections,
             initial_head_variance_m2: [1e6, 1e6, 1e6, 1e8, 100.0],
             head_process_noise_m2_per_s: [0.0, 0.0, 0.0, 100.0, 1e-8],
@@ -127,6 +129,17 @@ impl Default for PppFilterSettings {
             max_postfit_phase_m: 0.05,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum PppClockModel {
+    #[default]
+    RandomWalk,
+    /// Fresh independent clock at each measurement update, with the configured
+    /// initial clock variance. Centre this finite prior at the last committed
+    /// clock mean; discard its correlations, preserving the other marginal.
+    /// No SPP clock, Doppler or observed clock seed is fused. Clock Q is unused.
+    IndependentEpoch,
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct PppConfig {
@@ -440,6 +453,7 @@ pub struct PppAmbiguity {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PppSolution {
     pub position_model: PppPositionModel,
+    pub clock_model: PppClockModel,
     pub phase_bias_mode: PhaseBiasMode,
     /// XYZ state/report reference; model receiver_position_m is instantaneous.
     pub receiver_reference: ReceiverPositionReference,
@@ -653,6 +667,7 @@ impl PppFilter {
                     .sqrt();
                 let solution = PppSolution {
                     position_model: self.config.filter.position_model,
+                    clock_model: self.config.filter.clock_model,
                     phase_bias_mode: self.config.filter.phase_bias_mode,
                     receiver_reference: self.config.receiver_reference,
                     position,
@@ -714,7 +729,9 @@ impl PppFilter {
             if i >= head_len && source[i].is_none() {
                 covariance[i][i] = self.config.filter.initial_ambiguity_variance_m2;
             }
-            if matches!(self.config.filter.position_model, PppPositionModel::Static) {
+            if matches!(self.config.filter.position_model, PppPositionModel::Static)
+                && !(i == 3 && self.config.filter.clock_model == PppClockModel::IndependentEpoch)
+            {
                 covariance[i][i] += dt
                     * if i < 5 {
                         self.config.filter.head_process_noise_m2_per_s[i]
@@ -724,13 +741,23 @@ impl PppFilter {
             }
         }
         if let PppPositionModel::ConstantVelocity(c) = self.config.filter.position_model {
+            let mut head_noise = self.config.filter.head_process_noise_m2_per_s;
+            if self.config.filter.clock_model == PppClockModel::IndependentEpoch {
+                head_noise[3] = 0.0;
+            }
             predict_kinematic_state(
                 &mut mean,
                 &mut covariance,
                 dt,
                 c,
-                self.config.filter.head_process_noise_m2_per_s,
+                head_noise,
                 self.config.filter.ambiguity_process_noise_m2_per_s,
+            );
+        }
+        if self.config.filter.clock_model == PppClockModel::IndependentEpoch {
+            reset_epoch_clock_covariance(
+                &mut covariance,
+                self.config.filter.initial_head_variance_m2[3],
             );
         }
         if !mean
@@ -1084,6 +1111,16 @@ fn predict_kinematic_state(
     }
 }
 
+/// Pinned native reinitializeScalarState covariance operation, applied to
+/// the clock slot while retaining its last committed seed mean.
+fn reset_epoch_clock_covariance(covariance: &mut Matrix, variance: f64) {
+    for row in covariance.iter_mut() {
+        row[3] = 0.0;
+    }
+    covariance[3].fill(0.0);
+    covariance[3][3] = variance;
+}
+
 type Layout = BTreeMap<SatelliteId, (usize, PhaseArcId)>;
 type UpdateResult = (GaussianState, Layout, Vec<PppMeasurement>, usize, f64);
 struct WindupEpochContext {
@@ -1128,6 +1165,26 @@ fn ensure_geometry(rows: &[[f64; 5]]) -> Result<(), PppError> {
 #[cfg(test)]
 mod kinematic_prediction_tests {
     use super::*;
+    #[test]
+    fn clock_covariance_reset_matches_all_16_actual_native_scalar_reinitializations() {
+        let mut count = 0;
+        for line in include_str!("../tests/fixtures/upstream_ppp_epoch_clock.csv")
+            .lines()
+            .skip(1)
+        {
+            let data: Vec<f64> = line.split(',').map(|s| s.parse().unwrap()).collect();
+            let n = data[1] as usize;
+            assert_eq!(data.len(), 3 + 2 * n * n);
+            let mut covariance: Matrix = data[3..3 + n * n].chunks(n).map(|r| r.to_vec()).collect();
+            reset_epoch_clock_covariance(&mut covariance, data[2]);
+            for (a, b) in covariance.iter().flatten().zip(&data[3 + n * n..]) {
+                assert!((a - b).abs() < 1e-10);
+            }
+            crate::filter::cholesky(&covariance).unwrap();
+            count += 1;
+        }
+        assert_eq!(count, 16);
+    }
     #[test]
     fn full_covariance_prediction_matches_all_24_actual_native_ppp_calls() {
         let mut count = 0;

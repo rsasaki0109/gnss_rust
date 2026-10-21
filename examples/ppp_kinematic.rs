@@ -35,7 +35,7 @@ fn epochs(noisy: bool) -> Vec<gnss_rust::observation::ObservationEpoch> {
     .unwrap()
 }
 fn input_epochs(kind: &str) -> Vec<gnss_rust::observation::ObservationEpoch> {
-    let mut epochs = epochs(kind == "noisy");
+    let mut epochs = epochs(matches!(kind, "noisy" | "jumped-noisy"));
     let phase = matches!(kind, "unrounded-phase" | "unrounded-both");
     let code = matches!(kind, "unrounded-code" | "unrounded-both");
     if phase || code {
@@ -57,6 +57,29 @@ fn input_epochs(kind: &str) -> Vec<gnss_rust::observation::ObservationEpoch> {
                 }
                 if phase {
                     o.carrier_phase_cycles = Some(v[3 + 2 * j].parse().unwrap());
+                }
+            }
+        }
+    }
+    if matches!(kind, "jumped-clean" | "jumped-noisy") {
+        for (i, epoch) in epochs.iter_mut().enumerate() {
+            let offset = if i < 8 {
+                0.0
+            } else {
+                [30000.0, -20000.0, 50000.0, 0.0][(i - 8) % 4]
+            };
+            for observation in &mut epoch.observations {
+                if let Some(code) = &mut observation.pseudorange_m {
+                    *code += offset;
+                }
+                if let Some(phase) = &mut observation.carrier_phase_cycles {
+                    let hz = gnss_rust::dual_frequency::tracking_frequency_hz(
+                        observation.satellite,
+                        &observation.tracking_code,
+                        observation.glonass_channel,
+                    )
+                    .unwrap();
+                    *phase += offset * hz / gnss_rust::constants::SPEED_OF_LIGHT;
                 }
             }
         }
@@ -190,6 +213,10 @@ fn raw_code_biases(time: gnss_rust::GnssTime, dsb: bool) -> SignalCorrections {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     use std::io::Write;
     let mut args: Vec<_> = std::env::args().skip(1).collect();
+    let epoch_clock = args.last().is_some_and(|s| s == "-epoch-clock");
+    if epoch_clock {
+        args.pop();
+    }
     let phase_flag = if args
         .last()
         .is_some_and(|s| matches!(s.as_str(), "-phase-diagnostics" | "-raw-phase" | "-raw-dsb"))
@@ -207,15 +234,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         || !matches!(args[0].as_str(), "static" | "kinematic")
         || !matches!(
             args[1].as_str(),
-            "clean" | "noisy" | "unrounded-phase" | "unrounded-code" | "unrounded-both"
+            "clean"
+                | "noisy"
+                | "unrounded-phase"
+                | "unrounded-code"
+                | "unrounded-both"
+                | "jumped-clean"
+                | "jumped-noisy"
         )
     {
         return Err(
-            "usage: ppp_kinematic static|kinematic clean|noisy|unrounded-phase|unrounded-code|unrounded-both [INITIAL_VELOCITY_VARIANCE_M2_S2] [-phase-diagnostics|-raw-phase|-raw-dsb]"
+            "usage: ppp_kinematic static|kinematic clean|noisy|unrounded-phase|unrounded-code|unrounded-both|jumped-clean|jumped-noisy [INITIAL_VELOCITY_VARIANCE_M2_S2] [-phase-diagnostics|-raw-phase|-raw-dsb] [-epoch-clock]"
                 .into(),
         );
     }
     let mut c = config();
+    if epoch_clock {
+        c.filter.clock_model = PppClockModel::IndependentEpoch;
+    }
     if args[0] == "static" {
         c.filter.position_model = PppPositionModel::Static;
     }
@@ -325,6 +361,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         writeln!(out, "{}", row.join(","))?;
     }
     out.flush()?;
+    if epoch_clock {
+        eprintln!(
+            "clock_model=IndependentEpoch clock_prior_variance_m2=100000000 SPP_fused=false thresholds_changed=false"
+        );
+    }
     if diagnostic {
         eprintln!(
             "explicit_phase_bias_mode={} relative_code_gauge={} phase_OSB_zero_fallback=false FLOAT_only=true",

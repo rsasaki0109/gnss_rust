@@ -1,0 +1,21 @@
+{
+  "pinned_upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "prior_build_proof": "docs/comparison/2026-10-21-ppc-ppp-first/native-initial.json",
+  "prior_build_proof_sha256": "f39e9a063da4e0b3c8ede183b7a6a6573138f85114d2b4106c9e5b3fa3503d65",
+  "native_library_sha256": {
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_rtk_runtime.a": "fd7fa7d18315c6089da9d5179cbf03479625d73cac2a1e5f251e436b2c294609",
+    "/workspace/.cloud-setup/solver-reference-20261021/libgnss_lib.a": "e55f79d26fafcee37733a5b82e53a12bbdf36f62e89309c6b80362b9d112cc86",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/ginan-iers2010/libginan_iers2010.a": "7aa455b3727670adcdfc44b6dca8cd625169d6062a3c121e7c370486a462a0fb",
+    "/workspace/.cloud-setup/solver-reference-20261021/third_party/sofa/libsofa.a": "1efde805652931d822a8c45b563947433df6583aad46c90f94701be2a9c838c5"
+  },
+  "header_and_component_source_sha256": {
+    "include/libgnss++/algorithms/ppp.hpp": "a1bfec1fa81f295bb57224d329447104e0c4d04428545c6e4f33b12bde2cc986",
+    "include/libgnss++/algorithms/ppp_shared.hpp": "26e9e74114a954f1cc9c722afece5278d2aa1429d78e89112ef404f381655028",
+    "src/algorithms/ppp_state.cpp": "76e1ba458886d0d9cf12476e55e68837ac05dfc6507dbca873e2e25e2fe500ea"
+  },
+  "native_precise_clock_policy_ported": false,
+  "actual_generic_scalar_reset_only": true,
+  "whole_native_PPP_executed": false,
+  "upstream_source_patched": false
+}

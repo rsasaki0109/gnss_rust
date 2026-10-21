@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp_kinematic",
+    "kinematic",
+    "jumped-noisy"
+  ],
+  "returncode": 0,
+  "csv_sha256": "cbd2c97459a6a2988b709658c8a472aaa110852c984dc51a4ccb9a7a8badb30a",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "a919c6876066a4bbfc6aa0254a7177625e7d86607bf4eee3d3e39d402113f2b0"
+}

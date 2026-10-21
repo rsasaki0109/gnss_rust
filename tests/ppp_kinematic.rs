@@ -159,6 +159,136 @@ fn solution(result: PppEpoch) -> Box<PppSolution> {
         _ => panic!("expected solution"),
     }
 }
+
+fn inject_receiver_clock_metres(epoch: &mut gnss_rust::observation::ObservationEpoch, offset: f64) {
+    for observation in &mut epoch.observations {
+        if let Some(code) = &mut observation.pseudorange_m {
+            *code += offset;
+        }
+        if let Some(phase) = &mut observation.carrier_phase_cycles {
+            let hz = gnss_rust::dual_frequency::tracking_frequency_hz(
+                observation.satellite,
+                &observation.tracking_code,
+                observation.glonass_channel,
+            )
+            .unwrap();
+            *phase += offset * hz / gnss_rust::constants::SPEED_OF_LIGHT;
+        }
+    }
+}
+
+#[test]
+fn independent_epoch_clock_preserves_clean_noisy_accuracy_and_tracks_injected_common_jumps() {
+    let products = products();
+    let selections = selections();
+    let truth = truth();
+    assert_eq!(
+        PppFilterSettings::default().clock_model,
+        PppClockModel::RandomWalk
+    );
+    for noisy in [false, true] {
+        let mut cfg = config();
+        cfg.filter.clock_model = PppClockModel::IndependentEpoch;
+        let mut control = PppFilter::new(cfg.clone()).unwrap();
+        let mut jumped = PppFilter::new(cfg).unwrap();
+        let mut legacy = PppFilter::new(config()).unwrap();
+        let mut legacy_rejected = 0;
+        for (i, e) in epochs(noisy).iter().enumerate() {
+            let offset = if i < 8 {
+                0.0
+            } else {
+                [30000.0, -20000.0, 50000.0, 0.0][(i - 8) % 4]
+            };
+            let mut shifted = e.clone();
+            inject_receiver_clock_metres(&mut shifted, offset);
+            let a = solution(
+                control
+                    .process_epoch(e, &products, &biases(e.time), &selections)
+                    .unwrap(),
+            );
+            let b = solution(
+                jumped
+                    .process_epoch(&shifted, &products, &biases(e.time), &selections)
+                    .unwrap(),
+            );
+            assert_eq!(b.clock_model, PppClockModel::IndependentEpoch);
+            assert_eq!(b.position.status, SolutionStatus::PppFloat);
+            let aa = a.position.position_ecef.unwrap();
+            let bb = b.position.position_ecef.unwrap();
+            assert!(
+                (aa.x - bb.x).hypot(aa.y - bb.y).hypot(aa.z - bb.z) < 0.001,
+                "clock-injection equivalence, epoch {i}"
+            );
+            assert!(
+                ((b.position.receiver_clock_bias - a.position.receiver_clock_bias)
+                    * gnss_rust::constants::SPEED_OF_LIGHT
+                    - offset)
+                    .abs()
+                    < 0.001
+            );
+            assert!(distance(bb, &truth[i][3..6]) < if noisy { 1.0 } else { 0.01 });
+            if legacy
+                .process_epoch(&shifted, &products, &biases(e.time), &selections)
+                .is_err()
+            {
+                legacy_rejected += 1;
+            }
+        }
+        assert!(
+            legacy_rejected > 10,
+            "original random-walk gate must retain clock-jump failures"
+        );
+    }
+}
+
+#[test]
+fn independent_clock_rejection_and_event_preserve_committed_state_before_recovery() {
+    let mut cfg = config();
+    cfg.filter.clock_model = PppClockModel::IndependentEpoch;
+    let mut filter = PppFilter::new(cfg).unwrap();
+    let p = products();
+    let selection = selections();
+    let mut epochs = epochs(false);
+    for e in epochs.iter().take(6) {
+        filter
+            .process_epoch(e, &p, &biases(e.time), &selection)
+            .unwrap();
+    }
+    let state = filter.state().clone();
+    let time = filter.state_time();
+    *epochs[6].observations[0].pseudorange_m.as_mut().unwrap() += 1000.0;
+    assert!(
+        filter
+            .process_epoch(&epochs[6], &p, &biases(epochs[6].time), &selection)
+            .is_err()
+    );
+    assert_eq!(filter.state(), &state);
+    assert_eq!(filter.state_time(), time);
+    epochs[7].flag = 6;
+    assert!(matches!(
+        filter
+            .process_epoch(&epochs[7], &p, &biases(epochs[7].time), &selection)
+            .unwrap(),
+        PppEpoch::Event(_)
+    ));
+    assert_eq!(filter.state(), &state);
+    assert_eq!(filter.state_time(), time);
+    inject_receiver_clock_metres(&mut epochs[8], 30000.0);
+    let result = solution(
+        filter
+            .process_epoch(&epochs[8], &p, &biases(epochs[8].time), &selection)
+            .unwrap(),
+    );
+    assert_eq!(result.clock_model, PppClockModel::IndependentEpoch);
+    assert!(distance(result.position.position_ecef.unwrap(), &truth()[8][3..6]) < 0.01);
+    assert!(
+        result
+            .arc_commit
+            .accepted
+            .values()
+            .all(|a| a.accepted_epochs == 1)
+    );
+}
 fn distance(a: EcefCoord, t: &[f64]) -> f64 {
     (a.x - t[0]).hypot(a.y - t[1]).hypot(a.z - t[2])
 }

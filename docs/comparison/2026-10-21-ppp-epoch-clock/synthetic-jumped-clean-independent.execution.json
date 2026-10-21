@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp_kinematic",
+    "kinematic",
+    "jumped-clean",
+    "-epoch-clock"
+  ],
+  "returncode": 0,
+  "csv_sha256": "6d01730a3673eee7bb5fb0a772b3fd6584f82b7f59562f22a67080e4e175870f",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "ad98c6f1272ed1176015955110f670e74c6425ac4e44b1a53dcb75897bded149"
+}
