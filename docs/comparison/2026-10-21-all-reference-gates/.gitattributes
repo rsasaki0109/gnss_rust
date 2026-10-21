@@ -1,0 +1,3 @@
+# Fixed-width RINEX observation fields end with the LLI/SNR flag slots.
+phase-bias.obs whitespace=-blank-at-eol
+transient.obs whitespace=-blank-at-eol

@@ -246,3 +246,56 @@ fn cli_rtk_reports_only_validated_fixes_and_reasons_for_float() {
         assert!(String::from_utf8_lossy(&result.stderr).contains("valid FLOAT 5; valid FIX 27"));
     }
 }
+
+#[test]
+fn cli_all_reference_gates_report_all_statistics_and_preserve_normal_fixes() {
+    let command = rtk_command();
+    let mut args: Vec<_> = command.get_args().map(|v| v.to_os_string()).collect();
+    args[0] = "rtk".into();
+    let result = Command::new(command.get_program())
+        .args(args)
+        .arg("--all-reference-gates")
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    let output = String::from_utf8(result.stdout).unwrap();
+    let rows: Vec<_> = output.lines().collect();
+    assert_eq!(rows.len(), 33);
+    assert!(rows[0].ends_with("all_reference_code_phase_abs_max_m"));
+    for (i, row) in rows[1..].iter().enumerate() {
+        let columns: Vec<_> = row.split(',').collect();
+        assert_eq!(columns.len(), 23);
+        assert_eq!(columns[6], if i < 5 { "FLOAT" } else { "FIX" });
+        if i < 4 {
+            assert_eq!(columns[18], "0");
+            assert!(columns[19..].iter().all(|s| s.is_empty()));
+        } else {
+            assert_eq!(columns[18], "9");
+            for (field, limit) in columns[19..].iter().zip([0.01, 0.03, 1.0, 0.5]) {
+                let value: f64 = field.parse().unwrap();
+                assert!(value.is_finite() && (0.0..=limit).contains(&value));
+            }
+        }
+    }
+    assert!(String::from_utf8_lossy(&result.stderr).contains("valid FLOAT 5; valid FIX 27"));
+}
+
+#[test]
+fn cli_all_reference_option_requires_fix_mode_and_rejects_duplicates() {
+    for args in [
+        vec!["rtk-float", "--all-reference-gates"],
+        vec!["rtk", "--all-reference-gates", "--all-reference-gates"],
+        vec!["spp", "--all-reference-gates"],
+    ] {
+        let result = Command::new(env!("CARGO_BIN_EXE_gnss-rust"))
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(!result.status.success());
+        assert!(result.stdout.is_empty());
+    }
+}

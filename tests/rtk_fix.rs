@@ -5,7 +5,7 @@ use gnss_rust::observation::ObservationEpoch;
 use gnss_rust::rinex::{RinexObservationReader, read_navigation};
 use gnss_rust::rtk::{RtkFloatConfig, RtkFloatFilter};
 use gnss_rust::rtk_fix::{
-    CodePhaseObservation, FixDecision, FixError, RtkFixConfig, RtkFixPolicy,
+    CodePhaseObservation, FixDecision, FixError, ReferenceGateMode, RtkFixConfig, RtkFixPolicy,
     audit_candidate_references, code_phase_check, condition_head, validate_candidate,
 };
 use gnss_rust::{EcefCoord, SatelliteId, SolutionStatus};
@@ -358,6 +358,7 @@ fn same_physical_wrong_integer_is_rejected_under_every_reference() {
         .collect();
     integers[0] += 1;
     let audit = audit_candidate_references(&float, &integers, RtkFixConfig::default()).unwrap();
+    assert!(audit.conservative_rejection().is_some());
     for entry in &audit.references {
         assert!(entry.validation.rejection.is_some(), "{entry:?}");
         close(
@@ -420,6 +421,143 @@ fn fractional_carrier_bias_exposes_actual_reference_sensitive_local_gates() {
         "fixed 0.15-cycle fault did not expose a reference-dependent local rejection"
     );
     eprintln!("0.15-cycle G01 fault: reference-sensitive local rejection epochs {sensitive}/32");
+}
+
+#[test]
+fn all_reference_policy_preserves_clean_and_noisy_fix_results_and_float_state() {
+    for noisy in [false, true] {
+        let f = fixture(noisy);
+        let mut engine = filter(&f);
+        let mut control = RtkFixPolicy::new(RtkFixConfig::default()).unwrap();
+        let mut conservative = RtkFixPolicy::with_reference_gates(
+            RtkFixConfig::default(),
+            ReferenceGateMode::AllReferences,
+        )
+        .unwrap();
+        let mut fixed = 0;
+        for (rover, base) in f.rover.iter().zip(&f.base) {
+            let float = engine.process_pair(rover, base, &f.nav).unwrap();
+            let before = float.clone();
+            let state = engine.state().unwrap().clone();
+            let original = control.evaluate(&float).unwrap();
+            let mut result = conservative.evaluate(&float).unwrap();
+            if let Some(audit) = result.reference_audit.take() {
+                assert_eq!(audit.references.len(), 9);
+                assert_eq!(audit.conservative_rejection(), None);
+                assert!(
+                    audit
+                        .references
+                        .iter()
+                        .all(|r| r.validation.rejection.is_none())
+                );
+            } else {
+                assert_eq!(result.decision, FixDecision::InsufficientLock);
+            }
+            assert_eq!(result, original);
+            if let Some(solution) = result.fixed_solution {
+                fixed += 1;
+                let expected: Vec<_> = float
+                    .ambiguity_satellites
+                    .iter()
+                    .map(|s| f.sd[&float.reference_satellite] - f.sd[s])
+                    .collect();
+                assert_eq!(result.integers, expected);
+                assert!(distance(solution.position_ecef.unwrap(), f.truth) < 0.003);
+            }
+            assert_eq!(float, before);
+            assert_eq!(*engine.state().unwrap(), state);
+        }
+        assert_eq!(fixed, 27);
+    }
+}
+
+#[test]
+fn all_reference_policy_rejects_biased_epochs_even_when_original_local_gate_passes() {
+    let f = fixture(false);
+    let mut engine = filter(&f);
+    let mut original = RtkFixPolicy::new(RtkFixConfig::default()).unwrap();
+    let mut conservative = RtkFixPolicy::with_reference_gates(
+        RtkFixConfig::default(),
+        ReferenceGateMode::AllReferences,
+    )
+    .unwrap();
+    let mut original_passes = 0;
+    let mut biased_rejections = 0;
+    for i in 0..32 {
+        let mut rover = f.rover[i].clone();
+        if i >= 10 {
+            *rover
+                .observations
+                .iter_mut()
+                .find(|o| o.satellite.to_string() == "G01")
+                .unwrap()
+                .carrier_phase_cycles
+                .as_mut()
+                .unwrap() += 0.15;
+        }
+        let float = engine.process_pair(&rover, &f.base[i], &f.nav).unwrap();
+        let state = engine.state().unwrap().clone();
+        let selected = original.evaluate(&float).unwrap();
+        let result = conservative.evaluate(&float).unwrap();
+        if i >= 10 {
+            let mut audit = result.reference_audit.unwrap();
+            assert_eq!(
+                audit.conservative_rejection(),
+                Some(FixDecision::PhaseResiduals)
+            );
+            audit.references.reverse();
+            assert_eq!(
+                audit.conservative_rejection(),
+                Some(FixDecision::PhaseResiduals)
+            );
+            assert_eq!(result.decision, FixDecision::PhaseResiduals);
+            assert!(result.fixed_solution.is_none());
+            assert_eq!(result.confirmation_count, 0);
+            assert!(result.ratio.is_some_and(|r| r >= 3.0));
+            original_passes += usize::from(selected.validation.unwrap().rejection.is_none());
+            biased_rejections += 1;
+        }
+        assert_eq!(*engine.state().unwrap(), state);
+    }
+    assert_eq!(biased_rejections, 22);
+    assert_eq!(original_passes, 20);
+}
+
+#[test]
+fn all_reference_policy_reconfirms_after_fault_and_keeps_mode_after_reset() {
+    let f = fixture(false);
+    let mut engine = filter(&f);
+    let mut policy = RtkFixPolicy::with_reference_gates(
+        RtkFixConfig::default(),
+        ReferenceGateMode::AllReferences,
+    )
+    .unwrap();
+    for i in 0..16 {
+        let mut rover = f.rover[i].clone();
+        if i == 6 {
+            *rover.observations[0].carrier_phase_cycles.as_mut().unwrap() += 0.25;
+        }
+        if i == 10 {
+            policy.reset();
+        }
+        let float = engine.process_pair(&rover, &f.base[i], &f.nav).unwrap();
+        let attempt = policy.evaluate(&float).unwrap();
+        let expected = match i {
+            0..=3 | 10..=13 => FixDecision::InsufficientLock,
+            4 | 7 | 14 => FixDecision::Confirming,
+            6 => FixDecision::PhaseResiduals,
+            _ => FixDecision::Accepted,
+        };
+        assert_eq!(attempt.decision, expected, "epoch {i}: {attempt:?}");
+        assert_eq!(
+            attempt.fixed_solution.is_some(),
+            expected == FixDecision::Accepted
+        );
+        assert_eq!(
+            attempt.reference_audit.is_some(),
+            expected != FixDecision::InsufficientLock
+        );
+    }
 }
 
 #[test]

@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/gnss-rust",
+    "rtk",
+    "--rover",
+    "/workspace/gnss_rust/tests/fixtures/synthetic_rtk_rover_noisy.obs",
+    "--base",
+    "/workspace/gnss_rust/tests/fixtures/synthetic_rtk_base_noisy.obs",
+    "--nav",
+    "/workspace/gnss_rust/tests/fixtures/synthetic_rtk.nav",
+    "--base-position",
+    "-3947481.0649388283,3431492.9375319984,3637892.7203177349"
+  ],
+  "returncode": 0,
+  "stdout_sha256": "8efc42c30c6d938a91ae02e76848f4f10dca36b4736b0ab6e6807edc9b2bea03",
+  "stderr_sha256": "13aca0141bb359212b46b43f7db67c78283005007590eafc1b69bf6ba95bcb5f"
+}

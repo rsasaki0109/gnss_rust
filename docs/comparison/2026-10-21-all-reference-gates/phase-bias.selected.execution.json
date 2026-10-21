@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/gnss-rust",
+    "rtk",
+    "--rover",
+    "/workspace/gnss_rust/docs/comparison/2026-10-21-all-reference-gates/phase-bias.obs",
+    "--base",
+    "/workspace/gnss_rust/tests/fixtures/synthetic_rtk_base.obs",
+    "--nav",
+    "/workspace/gnss_rust/tests/fixtures/synthetic_rtk.nav",
+    "--base-position",
+    "-3947481.0649388283,3431492.9375319984,3637892.7203177349"
+  ],
+  "returncode": 0,
+  "stdout_sha256": "03c106ba561ef41b2714e4e8419b500de1b29f91c9b3615ae7e27358eefd16fe",
+  "stderr_sha256": "51ac364ad5b5f4c9f47eee860bd91a7b2d63a36de920bbc5a9fba4a5d104e01c"
+}

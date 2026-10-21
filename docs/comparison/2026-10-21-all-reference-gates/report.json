@@ -1,0 +1,185 @@
+{
+  "synthetic_only": true,
+  "performance_accepted": false,
+  "new_PPC_execution": false,
+  "new_native_whole_execution": false,
+  "cases": {
+    "clean": {
+      "epochs": 32,
+      "selected_fixed": 27,
+      "all_reference_fixed": 27,
+      "all_reference_audited_epochs": 28,
+      "all_reference_phase_rejections": 0,
+      "maximum_common_fixed_position_difference_m": 0.0,
+      "changed_epochs": []
+    },
+    "noisy": {
+      "epochs": 32,
+      "selected_fixed": 27,
+      "all_reference_fixed": 27,
+      "all_reference_audited_epochs": 28,
+      "all_reference_phase_rejections": 0,
+      "maximum_common_fixed_position_difference_m": 0.0,
+      "changed_epochs": []
+    },
+    "phase-bias": {
+      "epochs": 32,
+      "selected_fixed": 24,
+      "all_reference_fixed": 5,
+      "all_reference_audited_epochs": 28,
+      "all_reference_phase_rejections": 22,
+      "maximum_common_fixed_position_difference_m": 0.0,
+      "changed_epochs": [
+        {
+          "week": 2300,
+          "tow": "345900.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020404"
+        },
+        {
+          "week": 2300,
+          "tow": "345930.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020360"
+        },
+        {
+          "week": 2300,
+          "tow": "345960.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020379"
+        },
+        {
+          "week": 2300,
+          "tow": "345990.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020367"
+        },
+        {
+          "week": 2300,
+          "tow": "346020.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020365"
+        },
+        {
+          "week": 2300,
+          "tow": "346050.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020375"
+        },
+        {
+          "week": 2300,
+          "tow": "346080.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020368"
+        },
+        {
+          "week": 2300,
+          "tow": "346170.0000000",
+          "selected_decision": "confirming",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020389"
+        },
+        {
+          "week": 2300,
+          "tow": "346200.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020377"
+        },
+        {
+          "week": 2300,
+          "tow": "346230.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020385"
+        },
+        {
+          "week": 2300,
+          "tow": "346260.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020394"
+        },
+        {
+          "week": 2300,
+          "tow": "346290.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020409"
+        },
+        {
+          "week": 2300,
+          "tow": "346320.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020393"
+        },
+        {
+          "week": 2300,
+          "tow": "346350.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020413"
+        },
+        {
+          "week": 2300,
+          "tow": "346380.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020432"
+        },
+        {
+          "week": 2300,
+          "tow": "346410.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020427"
+        },
+        {
+          "week": 2300,
+          "tow": "346440.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020436"
+        },
+        {
+          "week": 2300,
+          "tow": "346470.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020433"
+        },
+        {
+          "week": 2300,
+          "tow": "346500.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020454"
+        },
+        {
+          "week": 2300,
+          "tow": "346530.0000000",
+          "selected_decision": "accepted",
+          "all_reference_decision": "phase_residuals",
+          "all_reference_phase_rms_max_m": "0.020452"
+        }
+      ]
+    },
+    "transient": {
+      "epochs": 32,
+      "selected_fixed": 25,
+      "all_reference_fixed": 25,
+      "all_reference_audited_epochs": 28,
+      "all_reference_phase_rejections": 1,
+      "maximum_common_fixed_position_difference_m": 0.0,
+      "changed_epochs": []
+    }
+  }
+}

@@ -1,6 +1,6 @@
 use gnss_rust::rinex::{RinexObservationReader, read_navigation};
 use gnss_rust::rtk::{RtkFloatConfig, RtkFloatFilter};
-use gnss_rust::rtk_fix::{RtkFixConfig, RtkFixPolicy};
+use gnss_rust::rtk_fix::{ReferenceGateMode, RtkFixConfig, RtkFixPolicy};
 use gnss_rust::spp::{SppConfig, solve_epoch};
 use gnss_rust::{EcefCoord, lambda::LambdaConfig};
 use std::{
@@ -11,7 +11,7 @@ use std::{
     path::PathBuf,
 };
 
-const HELP: &str = "gnss-rust spp --obs OBSERVATIONS --nav NAVIGATION [--output CSV] [--no-atmosphere]\ngnss-rust rtk-float --rover OBS --base OBS --nav NAV --base-position X,Y,Z [--rover-position X,Y,Z] [--output CSV]\ngnss-rust rtk --rover OBS --base OBS --nav NAV --base-position X,Y,Z [--rover-position X,Y,Z] [--output CSV]\n\nInitial SPP and experimental static-baseline GPS L1 C/A RTK from RINEX 3.\nrtk validates full-set integer candidates; rtk-float outputs only FLOAT.\nPPP is not implemented. Base coordinates must be surveyed ECEF metres.\nRTK pairs must have matching epoch sequences; no interpolation is performed.\n--no-atmosphere is for vacuum SPP inputs; normally leave models enabled.\n";
+const HELP: &str = "gnss-rust spp --obs OBSERVATIONS --nav NAVIGATION [--output CSV] [--no-atmosphere]\ngnss-rust rtk-float --rover OBS --base OBS --nav NAV --base-position X,Y,Z [--rover-position X,Y,Z] [--output CSV]\ngnss-rust rtk --rover OBS --base OBS --nav NAV --base-position X,Y,Z [--rover-position X,Y,Z] [--output CSV] [--all-reference-gates]\n\nInitial SPP and experimental static-baseline GPS L1 C/A RTK from RINEX 3.\nrtk validates full-set integer candidates; rtk-float outputs only FLOAT.\n--all-reference-gates requires every reference to pass the existing local FIX gates.\nPPP is not implemented. Base coordinates must be surveyed ECEF metres.\nRTK pairs must have matching epoch sequences; no interpolation is performed.\n--no-atmosphere is for vacuum SPP inputs; normally leave models enabled.\n";
 
 fn run() -> Result<(), Box<dyn Error>> {
     let mut args = env::args_os().skip(1);
@@ -138,6 +138,7 @@ fn run_rtk(
 ) -> Result<(), Box<dyn Error>> {
     let (mut rover_path, mut base_path, mut nav_path, mut output) = (None, None, None, None);
     let (mut base_position, mut rover_position) = (None, None);
+    let mut reference_gate_mode = ReferenceGateMode::Selected;
     let mut seen = std::collections::BTreeSet::new();
     while let Some(arg) = args.next() {
         if arg == "--help" || arg == "-h" {
@@ -146,6 +147,13 @@ fn run_rtk(
         }
         if !seen.insert(arg.clone()) {
             return Err(format!("duplicate option {}", arg.to_string_lossy()).into());
+        }
+        if arg == "--all-reference-gates" {
+            if !enable_fix {
+                return Err("--all-reference-gates requires the rtk command".into());
+            }
+            reference_gate_mode = ReferenceGateMode::AllReferences;
+            continue;
         }
         let value = args.next().ok_or("missing option value")?;
         if arg == "--base-position" {
@@ -181,7 +189,8 @@ fn run_rtk(
         .or(rover.header().approximate_position)
         .ok_or("--rover-position or a RINEX approximate rover position is required")?;
     let mut filter = RtkFloatFilter::new(base_position, seed, RtkFloatConfig::default())?;
-    let mut policy = RtkFixPolicy::new(RtkFixConfig::default())?;
+    let mut policy =
+        RtkFixPolicy::with_reference_gates(RtkFixConfig::default(), reference_gate_mode)?;
     let mut out: Box<dyn Write> = match output {
         Some(path) => Box::new(OpenOptions::new().write(true).create_new(true).open(path)?),
         None => Box::new(io::stdout().lock()),
@@ -200,6 +209,15 @@ fn run_rtk(
             out,
             ",fix_decision,candidate_pairs,confirmations,candidate_postfit_nis_per_row"
         )?;
+    }
+    if reference_gate_mode == ReferenceGateMode::AllReferences {
+        write!(
+            out,
+            ",audited_references,all_reference_phase_rms_max_m,all_reference_phase_abs_max_m,all_reference_code_rms_max_m,all_reference_code_phase_abs_max_m"
+        )?;
+        eprintln!(
+            "local FIX gates require every reference; search, ratio and history policy unchanged"
+        );
     }
     writeln!(out)?;
     let (mut processed, mut skipped, mut diagnostic_failures, mut fixed) = (0, 0, 0, 0);
@@ -312,6 +330,28 @@ fn run_rtk(
                 a.confirmation_count,
                 postfit
             )?;
+            if reference_gate_mode == ReferenceGateMode::AllReferences {
+                if let Some(audit) = &a.reference_audit {
+                    let mut maximum = [0.0_f64; 4];
+                    for entry in &audit.references {
+                        let v = &entry.validation;
+                        for (maximum, value) in maximum.iter_mut().zip([
+                            v.phase_residual_rms_m,
+                            v.phase_residual_max_abs_m,
+                            v.code_residual_rms_m,
+                            v.code_phase.max_abs_innovation_m,
+                        ]) {
+                            *maximum = maximum.max(value);
+                        }
+                    }
+                    write!(out, ",{}", audit.references.len())?;
+                    for value in maximum {
+                        write!(out, ",{value:.6}")?;
+                    }
+                } else {
+                    write!(out, ",0,,,,")?;
+                }
+            }
         }
         writeln!(out)?;
         processed += 1;

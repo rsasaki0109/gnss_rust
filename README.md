@@ -1,8 +1,8 @@
 # gnss-rust
 
-2026-10-21: [同じ整数候補の全基準衛星診断](docs/comparison/2026-10-21-fix-reference-audit/README.md)を追加。
-合成観測の固定位相偏りで、条件付き位置が一致しても局所FIX判定が変わることを確認しました。
-Rust254テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
+2026-10-21: [全基準衛星での保守的FIX検証](docs/comparison/2026-10-21-all-reference-gates/README.md)を追加。
+正常な合成2条件で各27 FIXを維持し、位相偏りのある22エポックを棄却しました。
+Rust260テストが通過。前回のCMC実装とPPC比較記録は復旧確認中で、
 PPCでの実用RTK・PPP同等性能は未達です。
 
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。
@@ -218,6 +218,15 @@ CSVの位置・コード/位相RMSは出力状態に対応します。`float_upd
 NISです。追加の`fix_decision`は棄却・確認・採用理由、`candidate_pairs`は探索した組数、
 `confirmations`は連続確認数、`candidate_postfit_nis_per_row`は候補の残差検証値です。
 ロック不足など探索前のエポックはratioと候補残差が空欄です。
+
+選択式の保守的な検証として、rtkコマンドに --all-reference-gates を追加できます。
+同じ候補を全基準衛星で検証し、すべてが既存の局所ゲートを通ったときだけ連続確認へ
+進めます。APIでは RtkFixPolicy::with_reference_gates と
+ReferenceGateMode::AllReferences を指定します。
+追加CSV列は検証した基準の数と、全基準での位相RMS・位相絶対値・コードRMS・
+コード位相不整合の最大値です。元の残差列は出力状態と元基準の値を引き続き表します。
+追加方式は演算量と棄却を増やし得ます。
+[合成4条件の比較記録](docs/comparison/2026-10-21-all-reference-gates/README.md)を保存しています。
 
 同じ32エポックの合成入力では、初めの5エポックがFLOAT、残る27エポックがFIXに
 なります。最大3次元FIX誤差は雑音なし約0.032 mm、雑音あり約0.86 mmでした。

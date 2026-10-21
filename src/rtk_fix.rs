@@ -439,6 +439,26 @@ impl CandidateReferenceAudit {
                 .any(|entry| entry.validation.rejection != first.validation.rejection)
         })
     }
+
+    /// Require every reference to pass the existing local gates. If several
+    /// gates reject, report the first in the same gate order as validate_candidate.
+    /// This intersection selects no favourable reference and is independent
+    /// of the order of the audited references. It is not a policy FIX decision.
+    pub fn conservative_rejection(&self) -> Option<FixDecision> {
+        self.references
+            .iter()
+            .filter_map(|entry| entry.validation.rejection)
+            .min_by_key(|reason| match reason {
+                FixDecision::BaselineTooLong => 0,
+                FixDecision::PositionCorrection => 1,
+                FixDecision::CovarianceTooLarge => 2,
+                FixDecision::PhaseResiduals => 3,
+                FixDecision::CodeResiduals => 4,
+                FixDecision::CodePhaseInconsistency => 5,
+                FixDecision::PostfitInnovation => 6,
+                _ => 7,
+            })
+    }
 }
 
 /// Re-express one supplied candidate under every reference in the immutable
@@ -529,9 +549,20 @@ pub struct RtkFixAttempt {
     pub ratio: Option<f64>,
     pub integers: Vec<i64>,
     pub validation: Option<CandidateValidation>,
+    /// Present in AllReferences mode once local validation succeeds numerically.
+    /// validation above remains the original-reference view; decision applies
+    /// the intersection of all references' local gates.
+    pub reference_audit: Option<CandidateReferenceAudit>,
     pub confirmation_count: usize,
     /// Present only after every policy and local validation check passes.
     pub fixed_solution: Option<PositionSolution>,
+}
+/// Scope of local candidate gates. Search, lock, ratio, confirmation and history
+/// remain separate. AllReferences can reject candidates that pass Selected.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReferenceGateMode {
+    Selected,
+    AllReferences,
 }
 struct Pending {
     key: Vec<(SatelliteId, i64)>,
@@ -543,6 +574,7 @@ struct Pending {
 /// every epoch; no fix-and-hold or conditional state feeds back to FLOAT.
 pub struct RtkFixPolicy {
     config: RtkFixConfig,
+    reference_gate_mode: ReferenceGateMode,
     locks: BTreeMap<SatelliteId, usize>,
     last_time: Option<GnssTime>,
     pending: Option<Pending>,
@@ -550,9 +582,19 @@ pub struct RtkFixPolicy {
 }
 impl RtkFixPolicy {
     pub fn new(config: RtkFixConfig) -> Result<Self, FixError> {
+        Self::with_reference_gates(config, ReferenceGateMode::Selected)
+    }
+    /// Opt in to conservative validation under every reference. AllReferences
+    /// performs additional conditioning and residual evaluations, with no
+    /// threshold changes, new searches or feedback into FLOAT.
+    pub fn with_reference_gates(
+        config: RtkFixConfig,
+        reference_gate_mode: ReferenceGateMode,
+    ) -> Result<Self, FixError> {
         config.validate()?;
         Ok(Self {
             config,
+            reference_gate_mode,
             locks: BTreeMap::new(),
             last_time: None,
             pending: None,
@@ -607,6 +649,7 @@ impl RtkFixPolicy {
             ratio: None,
             integers: Vec::new(),
             validation: None,
+            reference_audit: None,
             confirmation_count: 0,
             fixed_solution: None,
         };
@@ -640,11 +683,32 @@ impl RtkFixPolicy {
         {
             return Ok(self.reject(attempt, FixDecision::RatioRejected));
         }
-        let validation = match validate_candidate(float, &attempt.integers, self.config) {
+        let local_result = match self.reference_gate_mode {
+            ReferenceGateMode::Selected => {
+                validate_candidate(float, &attempt.integers, self.config)
+                    .map(|validation| (validation.rejection, validation))
+            }
+            ReferenceGateMode::AllReferences => {
+                audit_candidate_references(float, &attempt.integers, self.config).and_then(
+                    |audit| {
+                        let rejection = audit.conservative_rejection();
+                        let original = audit
+                            .references
+                            .iter()
+                            .find(|entry| entry.reference_satellite == audit.source_reference)
+                            .ok_or(FilterError::InvalidDimensions)?
+                            .validation
+                            .clone();
+                        attempt.reference_audit = Some(audit);
+                        Ok((rejection, original))
+                    },
+                )
+            }
+        };
+        let (rejection, validation) = match local_result {
             Ok(v) => v,
             Err(_) => return Ok(self.reject(attempt, FixDecision::ConditioningFailed)),
         };
-        let rejection = validation.rejection;
         let fixed_position = position(context.base_position, &validation.conditioned.state.mean);
         attempt.validation = Some(validation);
         if let Some(reason) = rejection {
@@ -705,5 +769,86 @@ impl RtkFixPolicy {
         attempt.decision = FixDecision::Accepted;
         self.anchor = Some((fixed_position, time));
         Ok(attempt)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::rinex::{RinexObservationReader, read_navigation};
+    use crate::rtk::{RtkFloatConfig, RtkFloatFilter};
+    use std::io::Cursor;
+
+    #[test]
+    fn all_reference_gates_survive_actual_snapshot_reference_changes() {
+        let coordinates: Vec<f64> = include_str!("../tests/fixtures/synthetic_rtk_truth.csv")
+            .lines()
+            .find(|line| !line.starts_with('#'))
+            .unwrap()
+            .split(',')
+            .map(|v| v.parse().unwrap())
+            .collect();
+        let coord = |i| EcefCoord::new(coordinates[i], coordinates[i + 1], coordinates[i + 2]);
+        let nav = read_navigation(Cursor::new(include_str!(
+            "../tests/fixtures/synthetic_rtk.nav"
+        )))
+        .unwrap();
+        for biased in [false, true] {
+            let rover = RinexObservationReader::new(Cursor::new(include_str!(
+                "../tests/fixtures/synthetic_rtk_rover.obs"
+            )))
+            .unwrap();
+            let base = RinexObservationReader::new(Cursor::new(include_str!(
+                "../tests/fixtures/synthetic_rtk_base.obs"
+            )))
+            .unwrap();
+            let mut engine =
+                RtkFloatFilter::new(coord(0), coord(6), RtkFloatConfig::default()).unwrap();
+            let mut last = None;
+            for (i, (rover, base)) in rover.zip(base).take(11).enumerate() {
+                let mut rover = rover.unwrap();
+                if biased && i == 10 {
+                    *rover.observations[0].carrier_phase_cycles.as_mut().unwrap() += 0.15;
+                }
+                last = Some(engine.process_pair(&rover, &base.unwrap(), &nav).unwrap());
+            }
+            let original = last.unwrap();
+            let candidates = original
+                .integer_candidates(LambdaConfig::default())
+                .unwrap();
+            for wrong in [false, true] {
+                let mut integers = candidates.candidates[0].ambiguities.clone();
+                if wrong {
+                    integers[0] += 1;
+                }
+                let audit =
+                    audit_candidate_references(&original, &integers, RtkFixConfig::default())
+                        .unwrap();
+                assert_eq!(audit.conservative_rejection().is_none(), !biased && !wrong);
+                for source in &audit.references {
+                    let mut rebased = original.clone();
+                    rebased.fix_context = original
+                        .fix_context
+                        .with_reference(source.reference_satellite)
+                        .unwrap();
+                    let next = audit_candidate_references(
+                        &rebased,
+                        &source.integers,
+                        RtkFixConfig::default(),
+                    )
+                    .unwrap();
+                    assert_eq!(next.source_reference, source.reference_satellite);
+                    assert_eq!(
+                        next.conservative_rejection(),
+                        audit.conservative_rejection()
+                    );
+                    for (actual, expected) in next.references.iter().zip(&audit.references) {
+                        assert_eq!(actual.reference_satellite, expected.reference_satellite);
+                        assert_eq!(actual.integers, expected.integers);
+                        assert_eq!(actual.validation, expected.validation);
+                    }
+                }
+            }
+        }
     }
 }

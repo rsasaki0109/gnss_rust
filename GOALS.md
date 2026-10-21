@@ -7,6 +7,13 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[全基準衛星での保守的FIX検証](docs/comparison/2026-10-21-all-reference-gates/README.md)を
+政策とCLIの選択式オプションへ接続。閾値を変えず同じ候補が全基準の局所検証を通ることを
+要求し、不採用後は連続確認をやり直す。正常2条件で各27/32 FIXを維持、位相偏りの
+22エポックを全棄却、一時異常後の復帰も従来と一致。release CLIの8実行・256行を保存。
+Rust260・fmt/clippy/release通過。候補探索の基準依存性、追加計算の処理性能、
+PPCの誤FIX率や継続率への影響は未評価であり、既定方式は変更していない。
+
 [同一整数候補の全基準衛星診断](docs/comparison/2026-10-21-fix-reference-audit/README.md)を
 実際のFLOAT観測と既存の局所FIX検証へ接続。候補の再探索や最良基準の選択は行わず、
 状態と政策履歴は不変。追加4テストを含むRust254・fmt/clippy/releaseが通過。

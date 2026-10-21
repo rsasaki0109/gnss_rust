@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/gnss-rust",
+    "rtk",
+    "--rover",
+    "/workspace/gnss_rust/docs/comparison/2026-10-21-all-reference-gates/transient.obs",
+    "--base",
+    "/workspace/gnss_rust/tests/fixtures/synthetic_rtk_base.obs",
+    "--nav",
+    "/workspace/gnss_rust/tests/fixtures/synthetic_rtk.nav",
+    "--base-position",
+    "-3947481.0649388283,3431492.9375319984,3637892.7203177349"
+  ],
+  "returncode": 0,
+  "stdout_sha256": "b137c5c8ea9b9ede3650d815977c0812e4d5d8f3dd3e156e6436a6853e3d45b3",
+  "stderr_sha256": "89905825a53b2d251b8d86f79a73afbe52f86c6595877c34442093475b5ffea9"
+}
