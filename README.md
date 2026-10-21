@@ -1,25 +1,18 @@
 # gnss-rust
 
-2026-10-21: [Doppler速度・時計ドリフト基盤](docs/comparison/2026-10-21-doppler-velocity/README.md)を追加。
-元C++11ケースを照合し、PPC固定基地局の全11,746点で速度を診断しました。
-Rust337テストと標準チェックが通過。移動局・FIX履歴への接続を続けています。
-
-[GPS/Galileoの整数候補検証](docs/comparison/2026-10-21-mixed-candidate-validation/README.md)に対応。
-系ごとの全基準組合せを監査し、PPC18対照・12候補診断を保存しました。
-Rust330テストと標準チェックが通過。移動体FIX政策・実用性能の受け入れは未完了です。
-
-[再捕捉時のSD ambiguity基準整合](docs/comparison/2026-10-21-ambiguity-gauge/README.md)を選択式で追加。
-元の実処理と部品を照合し、PPC84実行で有効・無効を比較しました。
-大きな外れの解消には至らず既定無効を維持。Rust324テストと標準チェックが通過。
-
-[GPS/Galileo FLOATを実装し元C++全RTKと比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)。
-全6走行で345,469入力行の一致を確認。FLOATは8,258→9,727、検出併用で9,855へ増えました。
-精度が悪化する走行もあり、追加系は選択式のままです。
-PPCでの実用RTK・PPP同等性能は未達で、移動/複数系FIXとPPPの比較を続けています。
-
 [libgnss++](https://github.com/rsasaki0109/gnssplusplus-library) のRust移植。
 移植元は `develop` のコミット
 `72f3b7c2c4c088dc575286a6f0edf4e407bc499a` に固定しています。
+
+
+**開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
+2026-10-21時点で337テストと標準チェックが通過しています。
+
+[PPCの元C++比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)では
+選択観測345,469行の一致を確認し、GPS/Galileo FLOATは検出併用で9,855点を出力。
+[移動局のDoppler診断](docs/comparison/2026-10-21-rover-velocity/README.md)では速度の大外れも残り、
+追加衛星系・時計・観測品質の検証を続けています。移動体FIX政策とPPP比較は未完了です。
+過去の実装・比較記録は[GOALS.md](GOALS.md)にまとめています。
 
 最終目標は **RTK・PPPが元のlibgnss++と同等の精度・解の状態・処理性能を持つこと**
 です。[GOALS.md](GOALS.md)に比較基準と未完了項目を記録しています。

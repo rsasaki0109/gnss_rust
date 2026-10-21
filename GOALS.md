@@ -7,6 +7,12 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[PPC移動局Doppler診断](docs/comparison/2026-10-21-rover-velocity/README.md)を追加。
+通常/検出併用12実行の既存29列は全て一致。GPS 1C速度はFLOAT 9,727/9,855点中9,493/9,616点。
+参考ENU速度と両レバーアーム仮定で評価し、最大約87.31 m/s外れがGPS 5衛星でも残った。
+FIX履歴には融合せず、次にGalileoと独立時計・観測品質を調べる。Rust337・標準チェック通過。
+全体18/24（75%）と、RTK/PPP性能受け入れ未達を維持。
+
 [単一系Doppler速度基盤](docs/comparison/2026-10-21-doppler-velocity/README.md)を追加。
 元solveVelocityの11ケースと一致し、ゼロ欠測印は明示的なOptionへ置き換えた。
 2回の送信時刻/時計・受信ECEFへの位置/速度回転、暦・仰角・残差/幾何QCとraw証拠を保持。

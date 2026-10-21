@@ -5,6 +5,7 @@ use gnss_rust::rinex::{RinexObservationReader, read_navigation_for_systems};
 use gnss_rust::rtk::{RtkConstellations, RtkFloatConfig, RtkFloatFilter, RtkPositionMode};
 use gnss_rust::rtk_fix::{RtkFixConfig, audit_candidate_system_references, validate_candidate};
 use gnss_rust::rtk_slip::RtkSlipConfig;
+use gnss_rust::velocity::{VelocityEpochConfig, VelocityEpochReport, solve_gps_l1_epoch};
 use gnss_rust::{EcefCoord, GnssSystem};
 use std::{
     error::Error,
@@ -13,15 +14,68 @@ use std::{
     path::Path,
 };
 
+fn write_velocity(row: &mut [String], report: Result<VelocityEpochReport, gnss_rust::Error>) {
+    let report = match report {
+        Ok(value) => value,
+        Err(error) => {
+            row[29] = "INVALID_EPOCH".into();
+            row[47] = format!("{error:?}");
+            return;
+        }
+    };
+    row[30] = report.prepared.len().to_string();
+    row[31] = report.rejected.len().to_string();
+    row[49] = report
+        .prepared
+        .iter()
+        .filter(|p| p.measurement.doppler_hz == 0.0)
+        .count()
+        .to_string();
+    row[50] = report
+        .prepared
+        .iter()
+        .filter(|p| p.used_missing_code_travel_time)
+        .count()
+        .to_string();
+    match report.solution {
+        Err(error) => {
+            row[29] = "INVALID_VELOCITY".into();
+            row[47] = format!("{error:?}");
+        }
+        Ok(solution) => {
+            row[29] = "VELOCITY".into();
+            for (i, v) in solution.velocity_mps.into_iter().enumerate() {
+                row[32 + i] = format!("{v:.17e}");
+            }
+            row[35] = format!("{:.17e}", solution.receiver_clock_drift_sps);
+            row[36] = format!("{:.17e}", solution.chi_square_per_dof);
+            row[37] = format!("{:.17e}", solution.residual_rms_mps);
+            for i in 0..3 {
+                for j in 0..3 {
+                    row[38 + 3 * i + j] = format!("{:.17e}", solution.covariance_m2s2[i][j]);
+                }
+            }
+            row[48] = solution
+                .satellites
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join(";");
+        }
+    }
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     if args.len() != 3 {
         return Err(
-            "usage: ppc_rtk_candidates CASE_DIRECTORY galileo|galileo-slips BASE_X,BASE_Y,BASE_Z"
+            "usage: ppc_rtk_candidates CASE_DIRECTORY galileo|galileo-slips BASE_X,BASE_Y,BASE_Z (append -velocity for GPS 1C Doppler diagnostics)"
                 .into(),
         );
     }
-    let slip_detection = match args[1].as_str() {
+    let use_velocity = args[1].ends_with("-velocity");
+    let mode = args[1].strip_suffix("-velocity").unwrap_or(&args[1]);
+    let slip_detection = match mode {
         "galileo" => None,
         "galileo-slips" => Some(RtkSlipConfig::default()),
         _ => return Err("unknown diagnostic mode".into()),
@@ -56,12 +110,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?;
     let config = RtkFixConfig::default();
     let mut out = BufWriter::new(std::io::stdout().lock());
+    let suffix = if use_velocity {
+        ",velocity_status,velocity_prepared_count,velocity_rejected_count,vx_mps,vy_mps,vz_mps,velocity_clock_drift_sps,velocity_chi_square_per_dof,velocity_residual_rms_mps,vqxx,vqxy,vqxz,vqyx,vqyy,vqyz,vqzx,vqzy,vqzz,velocity_reason,velocity_used_satellites,velocity_zero_rows,velocity_missing_code_rows"
+    } else {
+        ""
+    };
     writeln!(
         out,
-        "kind,week,tow,side,status,x_m,y_m,z_m,used_satellites,reference_satellites,ambiguity_pairs,ambiguity_resets,search_status,ratio,integers,local_status,local_rejection,conditioned_x_m,conditioned_y_m,conditioned_z_m,correction_m,phase_rms_m,code_rms_m,postfit_nis_per_row,max_position_std_m,audit_status,reference_sets,conservative_rejection,reason"
+        "kind,week,tow,side,status,x_m,y_m,z_m,used_satellites,reference_satellites,ambiguity_pairs,ambiguity_resets,search_status,ratio,integers,local_status,local_rejection,conditioned_x_m,conditioned_y_m,conditioned_z_m,correction_m,phase_rms_m,code_rms_m,postfit_nis_per_row,max_position_std_m,audit_status,reference_sets,conservative_rejection,reason{suffix}"
     )?;
     for event in EpochMatcher::new(rover, base) {
-        let mut row = vec![String::new(); 29];
+        let mut row = vec![String::new(); if use_velocity { 51 } else { 29 }];
         match event? {
             EpochMatch::Unmatched { side, epoch } => {
                 row[0] = "unmatched".into();
@@ -116,6 +175,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                             row[10] = float.ambiguity_satellites.len().to_string();
                             row[11] = float.reset_ambiguities.len().to_string();
                             let before = filter.state().cloned();
+                            if use_velocity {
+                                write_velocity(
+                                    &mut row,
+                                    solve_gps_l1_epoch(
+                                        &rover,
+                                        &navigation.navigation,
+                                        p,
+                                        VelocityEpochConfig::default(),
+                                    ),
+                                );
+                            }
                             match float.integer_candidates(LambdaConfig::default()) {
                                 Err(error) => {
                                     row[12] = format!("{error:?}");
@@ -216,5 +286,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     eprintln!(
         "candidate_diagnostics=true FIX_policy_evaluated=false no_lock_confirmation_or_motion_history=true no_feedback_to_FLOAT=true audit_only_if_ratio_and_local_gates_pass=true reference_used=false"
     );
+    if use_velocity {
+        eprintln!(
+            "velocity_diagnostics=GPS_1C_current_FLOAT_position no_velocity_feedback=true no_motion_gate_evaluated=true"
+        );
+    }
     Ok(())
 }
