@@ -1,0 +1,9 @@
+{
+  "base_commit": "646c7063d8a4405bce0f3abcfde06e11f15b1664",
+  "source_file": "src/velocity.rs",
+  "source_sha256": "dd12f792948c47dfedd87b54221dcc7e0abfbca5adc8d554b74a08a8b53449c9",
+  "new_file": "src/clock_fit.rs",
+  "new_sha256": "d72b7f1568096c71e37647124b3209b10a5d3893ef16a19c12129b9ab74979e2",
+  "body_unchanged_except_type_name_visibility_and_rustfmt_whitespace": true,
+  "numerical_operations_changed": false
+}

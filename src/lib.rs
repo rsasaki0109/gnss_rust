@@ -4,7 +4,8 @@
 //! time is represented as a full week number and seconds of week. GPS time
 //! does not include UTC leap seconds. This crate currently provides the core
 //! foundation, streaming RINEX 3 input, broadcast navigation and initial
-//! GPS/QZSS L1 SPP, LAMBDA integer ambiguity search, and an initial
+//! GPS/QZSS L1 SPP, an explicit GPS/Galileo independent-clock SPP,
+//! LAMBDA integer ambiguity search, and an initial
 //! GPS L1 C/A static/kinematic FLOAT filter with optional Galileo E1.
 //! Initial integer FIX supports GPS static snapshots and opt-in kinematic
 //! GPS/Galileo policies with explicit velocity-history evidence, including
@@ -39,6 +40,7 @@
 
 pub mod antenna;
 pub mod bias;
+mod clock_fit;
 pub mod constants;
 pub mod coordinates;
 pub mod dual_frequency;
@@ -65,6 +67,7 @@ pub mod rtk_quality;
 pub mod rtk_reference;
 pub mod rtk_slip;
 pub mod spp;
+pub mod spp_multiclock;
 pub mod tides;
 pub mod time;
 pub mod types;
@@ -90,6 +93,7 @@ pub enum Error {
     InvalidGlonassChannel,
     InvalidCalendar,
     UnsupportedConstellation,
+    UnsupportedReceiverClockOffset,
     InvalidEphemeris,
     MissingEphemeris,
     InsufficientObservations,
@@ -112,6 +116,9 @@ impl std::fmt::Display for Error {
             Self::InvalidGlonassChannel => "GLONASS channel must be in -7..=6",
             Self::InvalidCalendar => "invalid calendar date or time",
             Self::UnsupportedConstellation => "constellation is not supported by this operation",
+            Self::UnsupportedReceiverClockOffset => {
+                "nonzero receiver epoch clock offsets are not supported by this operation"
+            }
             Self::InvalidEphemeris => "invalid broadcast ephemeris",
             Self::MissingEphemeris => "no healthy ephemeris within the requested age limit",
             Self::InsufficientObservations => "at least four usable satellites are required",

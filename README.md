@@ -6,22 +6,17 @@
 
 
 **開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
-2026-10-21時点で362テストと標準チェックが通過しています。
+2026-10-21時点で371テストと標準チェックが通過しています。
 
-[PPCの元C++比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)では
-選択観測345,469行の一致を確認し、GPS/Galileo FLOATは検出併用で9,855点を出力。
-[移動局の別時計Doppler比較](docs/comparison/2026-10-21-multiclock-velocity/README.md)では
-速度出力が9,493→9,696点へ増え、最大参考誤差は87.31→34.81 m/s。大外れは残り、
-[位相/LLIの条件](docs/comparison/2026-10-21-carrier-lock-velocity/README.md)による品質と出力数の
-変化も検証しました。
-[移動GPS/Galileoの初期FIX政策](docs/comparison/2026-10-21-kinematic-fix/README.md)も追加し、
-速度による変位履歴を確認します。PPC72実行で既定条件のFIXは2点、感度分析でも最多6点で、
-元C++の144点と差が残ります。
-[ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)も選択式で追加し、
-PPC96実行で検証しました。スリップ検出併用の感度分析ではFIXが1→2点になりましたが、
-実用FIX性能・品質による部分集合探索・PPP比較は未達です。
-[元C++の分散選別](docs/comparison/2026-10-21-variance-subset-ar/README.md)も追加しましたが、
-PPC96実行ではFIX数・精度の改善はなく、部分集合の連続確認と品質処理が残ります。
+[GPS/Galileo別時計SPP](docs/comparison/2026-10-21-multiclock-spp/README.md)をRTKの種位置へ
+選択式で接続しました。PPC全6走行でFLOATは9,705→9,728点、スリップ検出併用で9,834→9,856点。
+初期位置の参考RMSは下がりましたが、条件によって大外れが悪化するため既定設定は維持しています。
+
+[移動FIX](docs/comparison/2026-10-21-kinematic-fix/README.md)、
+[ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)、
+[分散選別](docs/comparison/2026-10-21-variance-subset-ar/README.md)も実装済みです。
+実測FIXは最多6点で元C++の144点と差があり、観測品質・連続確認・PPP比較が残っています。
+[RTK入力比較](docs/comparison/2026-10-21-gps-galileo-float/README.md)では選択観測345,469行の一致を確認。
 過去の実装・比較記録は[GOALS.md](GOALS.md)にまとめています。
 
 最終目標は **RTK・PPPが元のlibgnss++と同等の精度・解の状態・処理性能を持つこと**

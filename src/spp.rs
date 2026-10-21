@@ -202,6 +202,17 @@ fn build_rows(
     clock_m: f64,
     config: SppConfig,
 ) -> Result<(Vec<Row>, RejectedObservations), Error> {
+    build_rows_by_clock(epoch, navigation, selected, position, |_| clock_m, config)
+}
+
+pub(crate) fn build_rows_by_clock(
+    epoch: &ObservationEpoch,
+    navigation: &NavigationData,
+    selected: &BTreeMap<SatelliteId, &Observation>,
+    position: EcefCoord,
+    clock_m: impl Fn(GnssSystem) -> f64,
+    config: SppConfig,
+) -> Result<(Vec<Row>, RejectedObservations), Error> {
     let geo = ecef_to_geodetic(position).ok();
     let ionosphere = navigation
         .gps_ionosphere
@@ -254,7 +265,7 @@ fn build_rows(
                 atmosphere += klobuchar(geo, azimuth, elevation, epoch.time.tow(), ionosphere)?;
             }
         }
-        let predicted = geometric_distance(sat_pos, position)? + clock_m
+        let predicted = geometric_distance(sat_pos, position)? + clock_m(satellite.system())
             - satellite_clock * c::SPEED_OF_LIGHT
             + eph.clock.tgd * c::SPEED_OF_LIGHT
             + atmosphere;

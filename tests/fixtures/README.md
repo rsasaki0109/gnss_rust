@@ -1560,3 +1560,18 @@ The component does not run LAMBDA or declare FIX. The optional policy uses
 only the one-shot prefilter; progressive candidate testing remains pending.
 Compilation and two exact fixture regenerations are retained in
 [`2026-10-21-variance-subset-ar`](../../docs/comparison/2026-10-21-variance-subset-ar/README.md).
+
+## Mixed-clock SPP physical checks (2026-10-21)
+
+The new `tests/spp_multiclock.rs` reuses the unchanged
+`synthetic_rtk_mixed_{rover.obs,base.obs,truth.csv}` and `.nav` fixtures from
+`scripts/upstream_rtk_mixed.cpp`. They encode native broadcast/Sagnac/troposphere
+physics and distinct GPS 2 microsecond / Galileo -3 microsecond rover clocks
+on 32 moving epochs. Position and clock checks preserve the existing 3 mm /
+1e-11 s tolerances. Tests also verify 3 GPS plus 3 Galileo, singleton clock
+information, exact old GPS output, rank failure, row provenance and RTK seed
+success/fallback. This is independent physical evidence, not a whole native
+SPP output comparison. The QR shared with Doppler remains covered by its
+existing eleven native and sixteen independent mixed-clock fixtures; its body
+transfer is recorded in
+[`2026-10-21-multiclock-spp`](../../docs/comparison/2026-10-21-multiclock-spp/README.md).

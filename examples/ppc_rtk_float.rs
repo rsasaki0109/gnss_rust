@@ -27,6 +27,19 @@ fn write_seed(row: &mut [String], offset: usize, seed: RtkSeedDiagnostic) {
         row[offset + 4] = format!("{error:?}");
     }
 }
+fn write_spp_scope(row: &mut [String], seed: RtkSeedDiagnostic) {
+    let i = row.len() - 4;
+    row[i] = seed
+        .spp_requested_constellations
+        .map_or_else(String::new, |c| format!("{c:?}"));
+    row[i + 1] = seed.spp_satellites.to_string();
+    row[i + 2] = seed
+        .spp_gps_clock_bias_s
+        .map_or_else(String::new, |v| format!("{v:.17e}"));
+    row[i + 3] = seed
+        .spp_galileo_clock_bias_s
+        .map_or_else(String::new, |v| format!("{v:.17e}"));
+}
 
 fn write_slips(row: &mut [String], offset: usize, evidence: &[RtkSlipDiagnostic]) {
     for (i, value) in [
@@ -129,6 +142,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     }
     let requested_mode = args[1].to_str().ok_or("non-UTF8 positioning mode")?;
+    let mixed_spp = requested_mode.ends_with("-ggspp");
+    let requested_mode = requested_mode
+        .strip_suffix("-ggspp")
+        .unwrap_or(requested_mode);
     let align_datums = requested_mode.ends_with("-align");
     let mode = requested_mode
         .strip_suffix("-align")
@@ -174,6 +191,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
     );
     let use_prefit = Some(mode).is_some_and(|s| s.ends_with("-prefit3"));
+    if mixed_spp && !use_spp_seed {
+        return Err("-ggspp requires an explicit -spp mode".into());
+    }
     let slip_detection = match Some(mode) {
         Some("kinematic-cmc") => Some(RtkSlipConfig {
             doppler_threshold_m: None,
@@ -211,7 +231,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .approximate_position
         .ok_or("missing rover header position")?;
     let base = RinexObservationReader::new(open("base.obs")?)?;
-    let systems = if mixed {
+    let systems = if mixed || mixed_spp {
         vec![GnssSystem::Gps, GnssSystem::Galileo]
     } else {
         vec![GnssSystem::Gps]
@@ -226,6 +246,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             position_mode,
             align_ambiguity_datums: align_datums,
             kinematic_spp_seed: use_spp_seed.then(SppConfig::default),
+            kinematic_spp_constellations: if mixed_spp {
+                RtkConstellations::GpsGalileo
+            } else {
+                RtkConstellations::Gps
+            },
             slip_detection,
             max_prefit_residual_m: use_prefit.then_some(3.0),
             max_geometry_gdop: if mode == "kinematic-gdop50" {
@@ -256,7 +281,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         ""
     };
-    writeln!(out, "{header}{suffix}{datum_suffix}")?;
+    let spp_suffix = if mixed_spp {
+        ",spp_scope,spp_satellites,spp_gps_clock_bias_s,spp_galileo_clock_bias_s"
+    } else {
+        ""
+    };
+    writeln!(out, "{header}{suffix}{datum_suffix}{spp_suffix}")?;
     let (
         mut pairs,
         mut floated,
@@ -280,7 +310,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         } else {
             26
         };
-        let columns = columns + if align_datums { 3 } else { 0 };
+        let columns = columns + if align_datums { 3 } else { 0 } + if mixed_spp { 4 } else { 0 };
         let mut row = vec![String::new(); columns];
         match event? {
             EpochMatch::Unmatched { side, epoch } => {
@@ -323,8 +353,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else {
                     match filter.process_pair(&rover, &base, &navigation.navigation) {
                         Ok(result) => {
+                            if mixed_spp {
+                                write_spp_scope(&mut row, result.position_seed);
+                            }
                             if align_datums {
-                                let last = columns - 3;
+                                let last = columns - if mixed_spp { 4 } else { 0 } - 3;
                                 row[last] = result
                                     .ambiguity_datum_alignment
                                     .iter()
@@ -488,6 +521,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                         .filter(|d| d.time == rover.time)
                 {
                     write_prefit(&mut row, diagnostic);
+                    if mixed_spp {
+                        write_spp_scope(&mut row, diagnostic.position_seed);
+                    }
                 }
             }
         }
@@ -505,7 +541,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     }
     if use_spp_seed {
-        eprintln!("kinematic_spp_seed=GPS_1C_only default_SppConfig no_SPP_covariance_fusion=true");
+        if mixed_spp {
+            eprintln!(
+                "kinematic_spp_seed=GPS_1C_Galileo_E1 independent_clocks=true legacy_primary_BGD=true default_SppConfig no_SPP_covariance_fusion=true"
+            );
+        } else {
+            eprintln!(
+                "kinematic_spp_seed=GPS_1C_only default_SppConfig no_SPP_covariance_fusion=true"
+            );
+        }
     }
     if let Some(config) = slip_detection {
         eprintln!(
@@ -517,7 +561,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     if mixed {
         eprintln!(
-            "constellations=GPS,Galileo separate_references=true SPP_seed_GPS_only=true kinematic_FIX=false"
+            "constellations=GPS,Galileo separate_references=true SPP_seed_GPS_only={} kinematic_FIX=false",
+            !mixed_spp
         );
     }
     Ok(())

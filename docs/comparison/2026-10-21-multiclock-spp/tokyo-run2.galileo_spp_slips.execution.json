@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_rtk_float",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run2",
+    "kinematic-galileo-spp-slips",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875"
+  ],
+  "returncode": 0,
+  "csv_sha256": "599198d1f81b265258a20763ca149ed450258746ed1edda00b9f1aeacabe8f77",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "89c9af17eae347a4b4b0ee78628f0799354c8d92a3434b8fc107b76e0debe19e"
+}

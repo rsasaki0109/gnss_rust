@@ -43,8 +43,8 @@ pub enum RtkPositionMode {
 pub enum RtkConstellations {
     Gps,
     /// GPS 1C plus Galileo E1 (1C preferred, otherwise 1X per receiver).
-    /// Each system has its own DD reference/receiver-clock datum. Mixed-system
-    /// integer validation is not implemented by the initial FIX policy.
+    /// Each system has its own DD reference/receiver-clock datum. Kinematic
+    /// mixed-system FIX is opt-in; the default FIX policy remains GPS static.
     GpsGalileo,
 }
 
@@ -62,11 +62,14 @@ pub struct RtkFloatConfig {
     /// code/phase offset before initializing new/reset arcs. No covariance is
     /// changed. False preserves the legacy ambiguity datum policy.
     pub align_ambiguity_datums: bool,
-    /// Optional GPS 1C code-only position seed for each kinematic epoch.
+    /// Optional code-only position seed for each kinematic epoch.
     /// Its covariance is not fused. On SPP failure retain the previous RTK
     /// position (or initial position), and report the error in the solution.
     /// Static mode requires None; None preserves the existing seed policy.
     pub kinematic_spp_seed: Option<SppConfig>,
+    /// Explicit SPP seed scope, independent of RTK phase selection. Default
+    /// GPS 1C preserves the previous path; mixed uses separate GPS/Galileo clocks.
+    pub kinematic_spp_constellations: RtkConstellations,
     /// Optional SD code/phase and Doppler continuity tests. Only accepted
     /// epochs enter their history; detected slips reset that satellite's SD
     /// ambiguity without discarding its current measurements.
@@ -100,6 +103,7 @@ impl Default for RtkFloatConfig {
             position_mode: RtkPositionMode::Static,
             align_ambiguity_datums: false,
             kinematic_spp_seed: None,
+            kinematic_spp_constellations: RtkConstellations::Gps,
             slip_detection: None,
             max_prefit_residual_m: None,
             max_geometry_gdop: None,
@@ -329,6 +333,10 @@ pub struct RtkSeedDiagnostic {
     /// Present only when an attempted SPP seed failed. The seed source then
     /// explains which fallback was used; no SPP output is labeled RTK.
     pub spp_failure: Option<Error>,
+    pub spp_requested_constellations: Option<RtkConstellations>,
+    pub spp_satellites: usize,
+    pub spp_gps_clock_bias_s: Option<f64>,
+    pub spp_galileo_clock_bias_s: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -780,19 +788,36 @@ impl RtkFloatFilter {
             },
             position: previous_position,
             spp_failure: None,
+            spp_requested_constellations: self
+                .config
+                .kinematic_spp_seed
+                .map(|_| self.config.kinematic_spp_constellations),
+            spp_satellites: 0,
+            spp_gps_clock_bias_s: None,
+            spp_galileo_clock_bias_s: None,
         };
         let mut spp_position = None;
         if let Some(config) = self.config.kinematic_spp_seed {
-            // Match the RTK signal restriction even when the input epoch has
-            // additional GPS tracking codes or QZSS code observations.
-            selected(rover, RtkConstellations::Gps)?;
             let mut seed_epoch = rover.clone();
-            seed_epoch
-                .observations
-                .retain(|o| o.satellite.system() == GnssSystem::Gps && o.tracking_code == "1C");
             seed_epoch.approximate_position = Some(previous_position);
-            match spp::solve_epoch(&seed_epoch, nav, config) {
-                Ok(solution) => {
+            let result = match self.config.kinematic_spp_constellations {
+                RtkConstellations::Gps => {
+                    selected(rover, RtkConstellations::Gps)?;
+                    seed_epoch.observations.retain(|o| {
+                        o.satellite.system() == GnssSystem::Gps && o.tracking_code == "1C"
+                    });
+                    spp::solve_epoch(&seed_epoch, nav, config).map(|s| {
+                        let clocks = vec![(GnssSystem::Gps, s.position.receiver_clock_bias)];
+                        (s, clocks)
+                    })
+                }
+                RtkConstellations::GpsGalileo => {
+                    crate::spp_multiclock::solve_gps_galileo_epoch(&seed_epoch, nav, config)
+                        .map(|s| (s.spp, s.clock_biases_s))
+                }
+            };
+            match result {
+                Ok((solution, clocks)) => {
                     // A successful SPP solve always returns a finite position.
                     let position = solution
                         .position
@@ -801,6 +826,15 @@ impl RtkFloatFilter {
                     spp_position = Some(position);
                     position_seed.source = RtkSeedSource::SinglePoint;
                     position_seed.position = position;
+                    position_seed.spp_satellites = solution.position.num_satellites;
+                    position_seed.spp_gps_clock_bias_s = clocks
+                        .iter()
+                        .find(|(s, _)| *s == GnssSystem::Gps)
+                        .map(|(_, v)| *v);
+                    position_seed.spp_galileo_clock_bias_s = clocks
+                        .iter()
+                        .find(|(s, _)| *s == GnssSystem::Galileo)
+                        .map(|(_, v)| *v);
                 }
                 Err(error) => position_seed.spp_failure = Some(error),
             }
