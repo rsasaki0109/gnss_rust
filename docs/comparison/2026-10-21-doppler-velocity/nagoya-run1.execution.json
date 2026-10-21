@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_base_velocity",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/nagoya/run1",
+    "-3817680.730073338,3562839.5233945786,3650159.241788432"
+  ],
+  "returncode": 0,
+  "csv_sha256": "9095127277ae9c2a1c279a4a64eacb407a31a771fbfb962b97e4f0bb63cbecf3",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "9251c07c5a8fae4c2230c502e239ac32ddd50c799b6254896827f5d0c4119206"
+}

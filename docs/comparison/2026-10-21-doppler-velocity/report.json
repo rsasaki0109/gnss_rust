@@ -1,0 +1,137 @@
+{
+  "practical_PPC_parity_accepted": false,
+  "cases": {
+    "nagoya-run1": {
+      "epochs": 1531,
+      "status_counts": {
+        "VELOCITY": 1531
+      },
+      "failures": {},
+      "prepared_measured_zero_rows": 0,
+      "missing_code_fallback_rows": 0,
+      "stationary_base_speed_mps": {
+        "epochs": 1531,
+        "rms": 0.018140416066570273,
+        "p50": 0.014263612905260011,
+        "p95": 0.03313722691304359,
+        "maximum": 0.05253154834561692
+      },
+      "mean_velocity_mps": {
+        "vx_mps": 0.0018554481454820472,
+        "vy_mps": -0.001537716709973284,
+        "vz_mps": -0.001489353291576372
+      },
+      "all_base_epoch_keys_identical_to_prior_ledger": true
+    },
+    "nagoya-run2": {
+      "epochs": 1891,
+      "status_counts": {
+        "VELOCITY": 1891
+      },
+      "failures": {},
+      "prepared_measured_zero_rows": 0,
+      "missing_code_fallback_rows": 0,
+      "stationary_base_speed_mps": {
+        "epochs": 1891,
+        "rms": 0.018428857538757098,
+        "p50": 0.014053503912588626,
+        "p95": 0.034387580270542145,
+        "maximum": 0.06213430180944853
+      },
+      "mean_velocity_mps": {
+        "vx_mps": 0.0020093112655581733,
+        "vy_mps": -0.0014481004223080292,
+        "vz_mps": -0.0018954032224878428
+      },
+      "all_base_epoch_keys_identical_to_prior_ledger": true
+    },
+    "nagoya-run3": {
+      "epochs": 1041,
+      "status_counts": {
+        "VELOCITY": 1041
+      },
+      "failures": {},
+      "prepared_measured_zero_rows": 0,
+      "missing_code_fallback_rows": 0,
+      "stationary_base_speed_mps": {
+        "epochs": 1041,
+        "rms": 0.017818270909951195,
+        "p50": 0.013900552084027766,
+        "p95": 0.03133668276346716,
+        "maximum": 0.09661510434717499
+      },
+      "mean_velocity_mps": {
+        "vx_mps": 0.00033458753927264874,
+        "vy_mps": -5.330682916562656e-07,
+        "vz_mps": 0.00046774969250259113
+      },
+      "all_base_epoch_keys_identical_to_prior_ledger": true
+    },
+    "tokyo-run1": {
+      "epochs": 2391,
+      "status_counts": {
+        "VELOCITY": 2391
+      },
+      "failures": {},
+      "prepared_measured_zero_rows": 0,
+      "missing_code_fallback_rows": 0,
+      "stationary_base_speed_mps": {
+        "epochs": 2391,
+        "rms": 0.05785611457225011,
+        "p50": 0.04699665167109891,
+        "p95": 0.1036327419477549,
+        "maximum": 0.17843329476736525
+      },
+      "mean_velocity_mps": {
+        "vx_mps": -0.001402187638782772,
+        "vy_mps": 0.0019563164964185795,
+        "vz_mps": 0.0011170795100895504
+      },
+      "all_base_epoch_keys_identical_to_prior_ledger": true
+    },
+    "tokyo-run2": {
+      "epochs": 1831,
+      "status_counts": {
+        "VELOCITY": 1831
+      },
+      "failures": {},
+      "prepared_measured_zero_rows": 0,
+      "missing_code_fallback_rows": 0,
+      "stationary_base_speed_mps": {
+        "epochs": 1831,
+        "rms": 0.05469865174189977,
+        "p50": 0.04499666522966499,
+        "p95": 0.09479991446955108,
+        "maximum": 0.1825172804269597
+      },
+      "mean_velocity_mps": {
+        "vx_mps": 0.000743026034240027,
+        "vy_mps": 0.0020185273440241655,
+        "vz_mps": -0.0009973971730254964
+      },
+      "all_base_epoch_keys_identical_to_prior_ledger": true
+    },
+    "tokyo-run3": {
+      "epochs": 3061,
+      "status_counts": {
+        "VELOCITY": 3061
+      },
+      "failures": {},
+      "prepared_measured_zero_rows": 0,
+      "missing_code_fallback_rows": 0,
+      "stationary_base_speed_mps": {
+        "epochs": 3061,
+        "rms": 0.07075634263748605,
+        "p50": 0.05433462889113039,
+        "p95": 0.12784824977654857,
+        "maximum": 0.2560329825438206
+      },
+      "mean_velocity_mps": {
+        "vx_mps": 0.0003107486036917512,
+        "vy_mps": 0.0018240982232728604,
+        "vz_mps": -0.00014560254375329317
+      },
+      "all_base_epoch_keys_identical_to_prior_ledger": true
+    }
+  }
+}

@@ -7,6 +7,13 @@
 現在のこのコピーのチェックリストは18/24（75%）。復旧先は引き続き確認待ちで、
 その後の開発は codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[単一系Doppler速度基盤](docs/comparison/2026-10-21-doppler-velocity/README.md)を追加。
+元solveVelocityの11ケースと一致し、ゼロ欠測印は明示的なOptionへ置き換えた。
+2回の送信時刻/時計・受信ECEFへの位置/速度回転、暦・仰角・残差/幾何QCとraw証拠を保持。
+PPC固定基地局の全11,746点で速度を出力し、静止仮定のRMSは約0.018～0.071 m/s。
+7追加を含むRust337・examples・fmt/clippy/release通過。移動局速度とFIX履歴への接続は未完。
+次は移動局でのDoppler評価と変位/履歴検証を進める。全体18/24（75%）を維持。
+
 [GPS/Galileoの整数候補検証](docs/comparison/2026-10-21-mixed-candidate-validation/README.md)へ拡張。
 系ごとの全基準組合せを監査し、同一候補の位置/共分散を保つ。既知32移動点・16基準組・
 両系の誤整数と境界を検証。6追加を含むRust330・examples・fmt/clippy/release通過。

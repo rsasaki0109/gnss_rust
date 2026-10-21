@@ -1,6 +1,10 @@
 # gnss-rust
 
-2026-10-21: [GPS/Galileoの整数候補検証](docs/comparison/2026-10-21-mixed-candidate-validation/README.md)に対応。
+2026-10-21: [Doppler速度・時計ドリフト基盤](docs/comparison/2026-10-21-doppler-velocity/README.md)を追加。
+元C++11ケースを照合し、PPC固定基地局の全11,746点で速度を診断しました。
+Rust337テストと標準チェックが通過。移動局・FIX履歴への接続を続けています。
+
+[GPS/Galileoの整数候補検証](docs/comparison/2026-10-21-mixed-candidate-validation/README.md)に対応。
 系ごとの全基準組合せを監査し、PPC18対照・12候補診断を保存しました。
 Rust330テストと標準チェックが通過。移動体FIX政策・実用性能の受け入れは未完了です。
 

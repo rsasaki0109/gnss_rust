@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppc_base_velocity",
+    "/workspace/.cloud-setup/datasets/PPC-Dataset/tokyo/run3",
+    "-3961905.0275412495,3348993.752559677,3698211.783149875"
+  ],
+  "returncode": 0,
+  "csv_sha256": "0b1aecdf78fe93cdb5a6f16d75f69d7b2933d61f4404506d59564e9a09ed71e1",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "8f5eff173a137be4d86fb5ef50a34e6657787ad877f10011453c4fe2a80bda14"
+}

@@ -66,6 +66,7 @@ pub mod spp;
 pub mod tides;
 pub mod time;
 pub mod types;
+pub mod velocity;
 pub mod windup;
 
 pub use time::GnssTime;
