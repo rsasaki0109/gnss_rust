@@ -1,0 +1,13 @@
+{
+  "passed_tests_including_doctests": 451,
+  "commands": [
+    "cargo test --locked --offline -j2",
+    "cargo fmt --check",
+    "cargo clippy --locked --offline -j2 --all-targets -- -D warnings",
+    "cargo build --locked --offline --release"
+  ],
+  "source_sha256": {
+    "src/ppp.rs": "33a54bcf240779144922002dbba761a3c2b5e4003f8b0cd37107732f08460a37"
+  },
+  "scope": "IF initialization and initial SPP clock mean; not full native processing parity"
+}

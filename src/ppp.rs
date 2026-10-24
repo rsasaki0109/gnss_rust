@@ -161,10 +161,11 @@ pub struct PppFilterSettings {
     pub initial_head_variance_m2: [f64; 5],
     /// Additive random-walk variance per second for the same five states.
     pub head_process_noise_m2_per_s: [f64; 5],
-    /// Independent zero-mean prior for each new/reset IF ambiguity; no reuse
-    /// of this epoch's measurements as an independent ambiguity prior.
+    /// Variance for IndependentZeroMean. ReferencePrecise uses native 25 m²
+    /// and the data-dependent phase-minus-model initialization instead.
     pub initial_ambiguity_variance_m2: f64,
     pub ambiguity_process_noise_m2_per_s: f64,
+    pub ambiguity_initialization: PppAmbiguityInitialization,
     pub elevation_mask_rad: f64,
     pub max_iterations: usize,
     pub convergence_m: f64,
@@ -185,6 +186,7 @@ impl Default for PppFilterSettings {
             head_process_noise_m2_per_s: [0.0, 0.0, 0.0, 100.0, 1e-8],
             initial_ambiguity_variance_m2: 1e14,
             ambiguity_process_noise_m2_per_s: 1e-8,
+            ambiguity_initialization: PppAmbiguityInitialization::IndependentZeroMean,
             elevation_mask_rad: 10_f64.to_radians(),
             max_iterations: 8,
             convergence_m: 1e-4,
@@ -196,13 +198,39 @@ impl Default for PppFilterSettings {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum PppAmbiguityInitialization {
+    #[default]
+    IndependentZeroMean,
+    /// Pinned precise IF initializeAmbiguityState: L_IF - model, variance 25 m².
+    ReferencePrecise,
+}
+#[derive(Debug, Clone, PartialEq)]
+pub struct PppAmbiguitySeed {
+    pub satellite: SatelliteId,
+    pub arc_id: PhaseArcId,
+    pub corrected_phase_if_m: f64,
+    pub predicted_range_m: f64,
+    pub mean_m: f64,
+    pub variance_m2: f64,
+    pub committed: bool,
+}
+fn reference_precise_if_prior(phase_m: f64, prediction_m: f64) -> Result<(f64, f64), PppError> {
+    let mean = phase_m - prediction_m;
+    if !phase_m.is_finite() || !prediction_m.is_finite() || !mean.is_finite() {
+        return Err(Error::NonFinite.into());
+    }
+    Ok((mean, 25.0))
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PppClockModel {
     #[default]
     RandomWalk,
     /// Fresh independent clock at each measurement update, with the configured
     /// initial clock variance. Centre this finite prior at the last committed
     /// clock mean; discard its correlations, preserving the other marginal.
-    /// No SPP clock, Doppler or observed clock seed is fused. Clock Q is unused.
+    /// No per-epoch observed clock measurement is fused. Optional native SPP
+    /// clock initialization only chooses the initial mean. Clock Q is unused.
     IndependentEpoch,
 }
 
@@ -221,6 +249,8 @@ pub enum PppRejectedUpdatePolicy {
 pub struct PppMotionSeedPolicy {
     pub recovery: crate::ppp_motion::PvaRecoveryConfig,
     pub initialize_from_seed: bool,
+    /// Native initializeFilter uses SPP clock as the initial mean (not a clock measurement).
+    pub initialize_clock_from_seed: bool,
     pub require_seed: bool,
     pub update_velocity: bool,
     /// Total 3-D NIS; None matches the native ungated velocity update.
@@ -231,6 +261,7 @@ impl Default for PppMotionSeedPolicy {
         Self {
             recovery: Default::default(),
             initialize_from_seed: true,
+            initialize_clock_from_seed: false,
             require_seed: true,
             update_velocity: true,
             velocity_nis_gate: None,
@@ -268,6 +299,7 @@ pub enum PppMotionSeedError {
     Disabled,
     InvalidSolution,
     InvalidPosition,
+    InvalidClock,
     TimeMismatch,
     FrameMismatch,
     ReceiverReferenceMismatch,
@@ -286,6 +318,7 @@ pub struct PppMotionSeedDiagnostic {
     pub seed_time: GnssTime,
     pub provenance: String,
     pub initialized: bool,
+    pub initial_clock_seed_s: Option<f64>,
     pub restarted: bool,
     pub variance_trigger: bool,
     pub normalized_position_disagreement: Option<f64>,
@@ -656,6 +689,7 @@ pub struct PppSolution {
     pub acceleration_covariance_m2_s4: Option<[[f64; 3]; 3]>,
     pub motion_seed: Option<PppMotionSeedDiagnostic>,
     pub residual_screening: Vec<PppResidualScreeningDiagnostic>,
+    pub ambiguity_seeds: Vec<PppAmbiguitySeed>,
     pub ambiguities: Vec<PppAmbiguity>,
     pub measurements: Vec<PppMeasurement>,
     pub arc_decisions: BTreeMap<SatelliteId, PhaseArcDecision>,
@@ -688,6 +722,7 @@ pub struct PppFilter {
     last_retained_phase_arcs: BTreeSet<SatelliteId>,
     last_motion_seed: Option<PppMotionSeedDiagnostic>,
     last_residual_screening: Vec<PppResidualScreeningDiagnostic>,
+    last_ambiguity_seeds: Vec<PppAmbiguitySeed>,
     windup: BTreeMap<SatelliteId, PppWindupState>,
 }
 impl PppFilter {
@@ -728,6 +763,7 @@ impl PppFilter {
             last_retained_phase_arcs: BTreeSet::new(),
             last_motion_seed: None,
             last_residual_screening: Vec::new(),
+            last_ambiguity_seeds: Vec::new(),
             windup: BTreeMap::new(),
         })
     }
@@ -749,6 +785,10 @@ impl PppFilter {
     pub fn last_retained_phase_arcs(&self) -> &BTreeSet<SatelliteId> {
         &self.last_retained_phase_arcs
     }
+    /// Proposed reference IF initializations; committed is false on failed epochs.
+    pub fn last_ambiguity_seeds(&self) -> &[PppAmbiguitySeed] {
+        &self.last_ambiguity_seeds
+    }
     pub fn last_residual_screening(&self) -> &[PppResidualScreeningDiagnostic] {
         &self.last_residual_screening
     }
@@ -764,6 +804,7 @@ impl PppFilter {
         self.last_retained_phase_arcs.clear();
         self.last_motion_seed = None;
         self.last_residual_screening.clear();
+        self.last_ambiguity_seeds.clear();
         Ok(())
     }
 
@@ -784,7 +825,8 @@ impl PppFilter {
 
     /// Explicit SPP/Doppler motion seed. A same-epoch restart is a heuristic
     /// data-dependent prior, not an independent code-measurement factor.
-    /// Seed receiver clock and clock drift are never imported. The legitimate
+    /// Clock drift is never imported. The optional reference clock initialization
+    /// uses SPP only as an initial mean, not as a clock measurement. Legitimate
     /// full-state correlations of a velocity measurement remain active.
     pub fn process_epoch_with_seed(
         &mut self,
@@ -839,6 +881,7 @@ impl PppFilter {
                 self.last_retained_phase_arcs.clear();
                 self.last_motion_seed = None;
                 self.last_residual_screening.clear();
+                self.last_ambiguity_seeds.clear();
                 return Err(error.into());
             }
         };
@@ -846,6 +889,7 @@ impl PppFilter {
         self.last_retained_phase_arcs.clear();
         self.last_motion_seed = None;
         self.last_residual_screening.clear();
+        self.last_ambiguity_seeds.clear();
         if epoch.flag == 6 {
             self.windup.clear();
             return Ok(PppEpoch::Event(self.arcs.finish_epoch(&BTreeSet::new())?));
@@ -865,6 +909,9 @@ impl PppFilter {
             Ok((posterior, layout, measurements, iterations, nis)) => {
                 let eligible = layout.keys().copied().collect();
                 let commit = self.arcs.finish_epoch(&eligible)?;
+                for seed in &mut self.last_ambiguity_seeds {
+                    seed.committed = true;
+                }
                 if let Some(d) = &mut self.last_motion_seed {
                     d.committed = true;
                 }
@@ -958,6 +1005,7 @@ impl PppFilter {
                     }),
                     motion_seed: self.last_motion_seed.clone(),
                     residual_screening: self.last_residual_screening.clone(),
+                    ambiguity_seeds: self.last_ambiguity_seeds.clone(),
                     ambiguities,
                     measurements,
                     arc_decisions: decisions,
@@ -1027,6 +1075,17 @@ impl PppFilter {
         if seed.solution.time.difference_seconds(time).abs() > 1e-7 {
             return Err(PppMotionSeedError::TimeMismatch);
         }
+        if self.state_time.is_none()
+            && self
+                .config
+                .filter
+                .motion_seed_policy
+                .is_some_and(|p| p.initialize_from_seed && p.initialize_clock_from_seed)
+            && (!seed.solution.receiver_clock_bias.is_finite()
+                || !(seed.solution.receiver_clock_bias * c::SPEED_OF_LIGHT).is_finite())
+        {
+            return Err(PppMotionSeedError::InvalidClock);
+        }
         if seed.coordinate_system != self.config.expected_coordinate_system {
             return Err(PppMotionSeedError::FrameMismatch);
         }
@@ -1055,6 +1114,7 @@ impl PppFilter {
             seed_time: seed.solution.time,
             provenance: seed.provenance.clone(),
             initialized: false,
+            initial_clock_seed_s: None,
             restarted: false,
             variance_trigger: false,
             normalized_position_disagreement: None,
@@ -1096,6 +1156,10 @@ impl PppFilter {
                     prior.covariance[i].fill(0.0);
                     prior.covariance[i][i] = variance[j];
                 }
+            }
+            if policy.initialize_clock_from_seed {
+                prior.mean[3] = seed.solution.receiver_clock_bias * c::SPEED_OF_LIGHT;
+                diagnostic.initial_clock_seed_s = Some(seed.solution.receiver_clock_bias);
             }
             diagnostic.initialized = true;
         } else {
@@ -1170,7 +1234,12 @@ impl PppFilter {
                 }
             }
             if i >= head_len && source[i].is_none() {
-                covariance[i][i] = self.config.filter.initial_ambiguity_variance_m2;
+                covariance[i][i] = match self.config.filter.ambiguity_initialization {
+                    PppAmbiguityInitialization::IndependentZeroMean => {
+                        self.config.filter.initial_ambiguity_variance_m2
+                    }
+                    PppAmbiguityInitialization::ReferencePrecise => 25.0,
+                };
             }
             if matches!(self.config.filter.position_model, PppPositionModel::Static)
                 && !(i == 3 && self.config.filter.clock_model == PppClockModel::IndependentEpoch)
@@ -1327,6 +1396,47 @@ impl PppFilter {
             let mut prior = self.predicted_prior(epoch.time, &layout)?;
             self.apply_motion_seed(&mut prior, seed)?;
             let windup_context = self.prepare_windup(epoch.time, products, &layout, &prior.mean)?;
+            self.last_ambiguity_seeds.clear();
+            if self.config.filter.ambiguity_initialization
+                == PppAmbiguityInitialization::ReferencePrecise
+            {
+                let initialization = self.measurement_system(
+                    epoch.time,
+                    products,
+                    &observations,
+                    &layout,
+                    &prior.mean,
+                    windup_context.as_ref(),
+                )?;
+                for m in initialization.measurements {
+                    let Some(&(index, id)) = layout.get(&m.satellite) else {
+                        continue;
+                    };
+                    if self
+                        .layout
+                        .get(&m.satellite)
+                        .is_some_and(|(_, old)| *old == id)
+                    {
+                        continue;
+                    }
+                    let corrected_phase = m.observation.phase.as_ref().unwrap().phase_if_m
+                        + m.receiver_antenna.as_ref().map_or(0.0, |a| a.if_add_m)
+                        + m.windup.as_ref().map_or(0.0, |w| w.phase_if_add_m);
+                    let (mean, variance) =
+                        reference_precise_if_prior(corrected_phase, m.model.code_prediction_m)?;
+                    prior.mean[index] = mean;
+                    prior.covariance[index][index] = variance;
+                    self.last_ambiguity_seeds.push(PppAmbiguitySeed {
+                        satellite: m.satellite,
+                        arc_id: id,
+                        corrected_phase_if_m: corrected_phase,
+                        predicted_range_m: m.model.code_prediction_m,
+                        mean_m: mean,
+                        variance_m2: variance,
+                        committed: false,
+                    });
+                }
+            }
             let mut iterate = prior.mean.clone();
             for iteration in 1..=self.config.filter.max_iterations {
                 let system = self.measurement_system(
@@ -1904,5 +2014,34 @@ mod kinematic_prediction_tests {
             count += 1;
         }
         assert_eq!(count, 24);
+    }
+}
+
+#[cfg(test)]
+mod reference_if_prior_tests {
+    use super::*;
+    #[test]
+    fn initialization_matches_32_actual_pinned_cpp_calls() {
+        let mut count = 0;
+        for line in include_str!("../tests/fixtures/upstream_ppp_if_ambiguity_prior.csv")
+            .lines()
+            .skip(1)
+        {
+            let v: Vec<f64> = line.split(',').map(|v| v.parse().unwrap()).collect();
+            let (mean, variance) = reference_precise_if_prior(v[1], v[2]).unwrap();
+            assert_eq!(mean, v[3]);
+            assert_eq!(variance, v[4]);
+            count += 1;
+        }
+        assert_eq!(count, 32);
+    }
+    #[test]
+    fn invalid_phase_prediction_and_overflow_are_rejected() {
+        for (phase, prediction) in [(f64::NAN, 1.0), (1.0, f64::INFINITY), (f64::MAX, -f64::MAX)] {
+            assert_eq!(
+                reference_precise_if_prior(phase, prediction),
+                Err(PppError::Gnss(Error::NonFinite))
+            );
+        }
     }
 }

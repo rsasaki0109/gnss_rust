@@ -1647,3 +1647,143 @@ fn screened_retry_does_not_fuse_the_velocity_seed_more_than_once() {
     }
     assert!(r.motion_seed.unwrap().committed);
 }
+
+#[test]
+fn reference_if_initialization_is_used_once_per_new_or_reset_arc() {
+    let p = products();
+    let s = selections();
+    let mut ee = acceleration_epochs(false);
+    let mut c = acceleration_config();
+    assert_eq!(
+        c.filter.ambiguity_initialization,
+        PppAmbiguityInitialization::IndependentZeroMean
+    );
+    c.filter.ambiguity_initialization = PppAmbiguityInitialization::ReferencePrecise;
+    c.filter.motion_seed_policy = Some(PppMotionSeedPolicy {
+        initialize_clock_from_seed: true,
+        ..Default::default()
+    });
+    let mut f = PppFilter::new(c).unwrap();
+    let r = solution(
+        f.process_epoch_with_seed(
+            &ee[0],
+            &p,
+            &biases(ee[0].time),
+            &s,
+            Some(&code_motion_seed(&ee[0])),
+        )
+        .unwrap(),
+    );
+    assert_eq!(r.ambiguity_seeds.len(), 9);
+    for seed in &r.ambiguity_seeds {
+        assert_eq!(
+            seed.mean_m,
+            seed.corrected_phase_if_m - seed.predicted_range_m
+        );
+        assert_eq!(seed.variance_m2, 25.0);
+        assert!(seed.committed);
+    }
+    assert_eq!(f.last_ambiguity_seeds(), r.ambiguity_seeds);
+    assert_eq!(
+        r.motion_seed.as_ref().unwrap().initial_clock_seed_s,
+        Some(code_motion_seed(&ee[0]).solution.receiver_clock_bias)
+    );
+    let r = solution(
+        f.process_epoch_with_seed(
+            &ee[1],
+            &p,
+            &biases(ee[1].time),
+            &s,
+            Some(&code_motion_seed(&ee[1])),
+        )
+        .unwrap(),
+    );
+    assert!(r.ambiguity_seeds.is_empty());
+    assert_eq!(r.motion_seed.as_ref().unwrap().initial_clock_seed_s, None);
+    let reset: SatelliteId = "G09".parse().unwrap();
+    for o in ee[2]
+        .observations
+        .iter_mut()
+        .filter(|o| o.satellite == reset)
+    {
+        o.lli = Some(1);
+    }
+    let r = solution(
+        f.process_epoch_with_seed(
+            &ee[2],
+            &p,
+            &biases(ee[2].time),
+            &s,
+            Some(&code_motion_seed(&ee[2])),
+        )
+        .unwrap(),
+    );
+    assert_eq!(r.ambiguity_seeds.len(), 1);
+    assert_eq!(r.ambiguity_seeds[0].satellite, reset);
+    assert_eq!(r.arc_commit.accepted[&reset].accepted_epochs, 1);
+}
+#[test]
+fn failed_reference_ambiguity_initialization_epoch_never_commits_the_proposed_state() {
+    let p = products();
+    let s = selections();
+    let mut ee = acceleration_epochs(false);
+    let mut c = acceleration_config();
+    c.filter.ambiguity_initialization = PppAmbiguityInitialization::ReferencePrecise;
+    c.filter.motion_seed_policy = Some(PppMotionSeedPolicy {
+        initialize_clock_from_seed: true,
+        ..Default::default()
+    });
+    let mut f = PppFilter::new(c).unwrap();
+    f.process_epoch_with_seed(
+        &ee[0],
+        &p,
+        &biases(ee[0].time),
+        &s,
+        Some(&code_motion_seed(&ee[0])),
+    )
+    .unwrap();
+    let old = f.state().clone();
+    let time = f.state_time();
+    let reset: SatelliteId = "G09".parse().unwrap();
+    for o in ee[1]
+        .observations
+        .iter_mut()
+        .filter(|o| o.satellite == reset)
+    {
+        o.lli = Some(1);
+    }
+    let seed = code_motion_seed(&ee[1]);
+    inject_receiver_clock_metres(&mut ee[1], 1e7);
+    assert!(
+        f.process_epoch_with_seed(&ee[1], &p, &biases(ee[1].time), &s, Some(&seed))
+            .is_err()
+    );
+    assert_eq!(f.state(), &old);
+    assert_eq!(f.state_time(), time);
+    assert!(!f.last_ambiguity_seeds().is_empty());
+    assert!(f.last_ambiguity_seeds().iter().all(|seed| !seed.committed));
+}
+
+#[test]
+fn explicit_reference_initial_clock_rejects_nonfinite_seed_before_mutating_state() {
+    let e = &acceleration_epochs(false)[0];
+    let p = products();
+    let s = selections();
+    for clock in [f64::NAN, f64::INFINITY, f64::MAX] {
+        let mut c = acceleration_config();
+        c.filter.motion_seed_policy = Some(PppMotionSeedPolicy {
+            initialize_clock_from_seed: true,
+            ..Default::default()
+        });
+        let mut f = PppFilter::new(c).unwrap();
+        let old = f.state().clone();
+        let mut seed = code_motion_seed(e);
+        seed.solution.receiver_clock_bias = clock;
+        assert_eq!(
+            f.process_epoch_with_seed(e, &p, &biases(e.time), &s, Some(&seed)),
+            Err(PppError::MotionSeed(PppMotionSeedError::InvalidClock))
+        );
+        assert_eq!(f.state(), &old);
+        assert_eq!(f.state_time(), None);
+    }
+}

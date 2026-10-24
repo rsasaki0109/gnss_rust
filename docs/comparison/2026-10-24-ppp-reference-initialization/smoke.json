@@ -1,0 +1,21 @@
+{
+  "epochs": 5201,
+  "statuses": {
+    "INVALID": 5201
+  },
+  "errors": {
+    "initial PPP: PostfitRejected": 2264,
+    "initial PPP: InsufficientPhase { available: 3 }": 587,
+    "initial PPP: InsufficientPhase { available: 0 }": 14,
+    "initial PPP: InsufficientPhase { available: 2 }": 312,
+    "initial PPP: InsufficientPhase { available: 1 }": 45,
+    "initial PPP: InsufficientCode { available: 4 }": 736,
+    "initial PPP: Filter(InnovationRejected)": 428,
+    "initial PPP: InsufficientCode { available: 3 }": 376,
+    "initial PPP: NonPhysicalState": 353,
+    "initial PPP: InsufficientCode { available: 2 }": 74,
+    "initial PPP: MissingMotionSeed": 12
+  },
+  "accuracy_acceptance": false,
+  "whole_native_process_parity": false
+}

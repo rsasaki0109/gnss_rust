@@ -1757,3 +1757,19 @@ initial-prior parameter study borrows only the numerical uncertainties; it
 does not relabel CODE ionosphere-free PPP as broadcast or MADOCA processing.
 See [the contract](../../docs/ppp-ztd-prior.md) and
 [the comparison](../../docs/comparison/2026-10-21-ppp-ztd-prior/README.md).
+
+## Precise IF ambiguity initialization (2026-10-24)
+
+`upstream_ppp_if_ambiguity_prior.csv` comes from 32 direct calls to the pinned
+`PPPProcessor::initializeAmbiguityState`, with precise products enabled.
+The native source is unchanged. It covers receiver-position fallback,
+estimated versus modeled troposphere, clock/phase variation, and configured
+ambiguity variances which the precise path overrides with 25 m².
+Rust checks the exported corrected phase minus exported prediction and the
+actual initialized mean/variance exactly. This checks the initialization kernel;
+it does not independently recheck transmit-time geometry or whole PPP.
+
+Reproduce with `python3 scripts/build_ppp_if_ambiguity_fixtures.py --output-dir NEW_DIR`.
+The two identical native generations, commands, compiler, source/library/header
+hashes and logs are retained in
+`docs/comparison/2026-10-24-ppp-reference-initialization/native-generator.json`.

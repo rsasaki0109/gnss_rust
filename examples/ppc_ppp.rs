@@ -10,8 +10,8 @@ use gnss_rust::dual_frequency::{
     DualFrequencyConfig, DualFrequencyNoise, PhaseBiasMode, SignalCorrections,
 };
 use gnss_rust::ppp::{
-    PppClockModel, PppConfig, PppEpoch, PppFilter, PppFilterSettings, PppMotionSeedPolicy,
-    PppPositionModel, PppRejectedUpdatePolicy,
+    PppAmbiguityInitialization, PppClockModel, PppConfig, PppEpoch, PppFilter, PppFilterSettings,
+    PppMotionSeedPolicy, PppPositionModel, PppRejectedUpdatePolicy,
 };
 use gnss_rust::precise::{
     ClockSource, OrbitReferencePoint, PreciseProducts, read_satellite_clocks, read_sp3,
@@ -43,6 +43,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if retain_arcs {
         args.pop();
     }
+    let native_if_prior = args.last().is_some_and(|s| s == "-native-if-prior");
+    if native_if_prior {
+        args.pop();
+    }
     let native_screen = args.last().is_some_and(|s| s == "-native-screen");
     if native_screen {
         args.pop();
@@ -66,6 +70,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if epoch_clock {
         args.pop();
     }
+    if native_if_prior
+        && !seed_profile
+            .as_ref()
+            .is_some_and(|(mode, _)| mode != "-seed-shadow")
+    {
+        return Err(
+            "-native-if-prior requires an explicit -seed-position or -seed-doppler SPP source"
+                .into(),
+        );
+    }
     if (seed_profile.is_some() && !pva)
         || !matches!(args.len(), 8 | 9)
         || !matches!(args[6].as_str(), "1C2W" | "1C2L")
@@ -76,7 +90,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "native-variances" | "climatology" | "native-head"
             ))
     {
-        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-seed-shadow|-seed-position|-seed-doppler BASE_NAV] [-ztd-sigma SIGMA_M] [-native-screen] [-retain-arcs] [-timing]".into());
+        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-seed-shadow|-seed-position|-seed-doppler BASE_NAV] [-ztd-sigma SIGMA_M] [-native-screen] [-native-if-prior] [-retain-arcs] [-timing]".into());
     }
     let open = |name: &str| File::open(name).map(BufReader::new);
     let orbit = read_sp3(open(&args[1])?)?;
@@ -226,7 +240,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     if epoch_clock {
         config.filter.clock_model = PppClockModel::IndependentEpoch;
-        eprintln!("clock_model=IndependentEpoch SPP_clock_imported=false thresholds_changed=false");
+        eprintln!(
+            "clock_model=IndependentEpoch per_epoch_clock_measurement_fused=false thresholds_changed=false"
+        );
     }
     if retain_arcs {
         config.filter.rejected_update_policy = PppRejectedUpdatePolicy::RetainContinuousArcs;
@@ -235,6 +251,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
     ppp_ztd_prior::apply(&mut config, ztd_sigma);
+    if native_if_prior {
+        config.filter.ambiguity_initialization = PppAmbiguityInitialization::ReferencePrecise;
+    }
     eprintln!(
         "config={config:?} case={} pair={} phase={} RINEX_phase_shift_declarations={phase_shifts} excluded_receiver_clocks={} excluded_receiver_bias_rows={} byte_comment_lines={} receiver_calibration_known=false satellite_PCV_applied=false solid_earth_tide_applied=false truth_used_by_solver=false whole_native_PPP_executed=false practical_parity_accepted=false",
         args[5],
@@ -255,12 +274,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if mode != "-seed-shadow" {
             config.filter.motion_seed_policy = Some(PppMotionSeedPolicy {
                 update_velocity: mode == "-seed-doppler",
+                initialize_clock_from_seed: native_if_prior,
                 ..Default::default()
             });
         }
         eprintln!(
-            "seed_mode={mode} broadcast_navigation={path} same_epoch_data_dependent_prior=true position_factor_independent=false broadcast_WGS84_IGS20_compatibility_is_caller_assertion=true seed_clock_imported=false Doppler_clock_imported=false SPP_fallback_reported_separately=true seed_policy={:?}",
+            "seed_mode={mode} broadcast_navigation={path} same_epoch_data_dependent_prior=true position_factor_independent=false broadcast_WGS84_IGS20_compatibility_is_caller_assertion=true initial_clock_from_seed={native_if_prior} per_epoch_clock_measurement_fused=false Doppler_clock_imported=false SPP_fallback_reported_separately=true seed_policy={:?}",
             config.filter.motion_seed_policy
+        );
+    }
+    if native_if_prior {
+        eprintln!(
+            "ambiguity_initialization=ReferencePrecise initial_mean=corrected_L_IF_minus_prediction variance_m2=25 initial_clock_from_SPP=true source=ppp_state.cpp:initializeAmbiguityState"
         );
     }
     if native_screen {
@@ -273,7 +298,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut out = BufWriter::new(std::io::stdout().lock());
     writeln!(
         out,
-        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}{}{}{}",
+        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}{}{}{}{}",
         if timing {
             ",filter_ms,epoch_stage_ms"
         } else {
@@ -296,6 +321,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         if native_screen {
             ",screen_attempts,screened_satellites,screen_diagnostics"
+        } else {
+            ""
+        },
+        if native_if_prior {
+            ",ambiguity_seeds,ambiguity_seed_diagnostics"
         } else {
             ""
         }
@@ -471,6 +501,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .join(";"),
                 format!("{d:?}"),
             ]);
+        }
+        if native_if_prior {
+            let seeds = filter.last_ambiguity_seeds();
+            row.extend([seeds.len().to_string(), format!("{seeds:?}")]);
         }
         writeln!(
             out,
