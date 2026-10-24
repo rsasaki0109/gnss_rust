@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp_kinematic",
+    "pva",
+    "car-unrounded",
+    "-ztd-sigma",
+    "0.12"
+  ],
+  "returncode": 0,
+  "csv_sha256": "9f407b985622166b04b8658e0e0b67d7a06b3c273d46eab71144250e01ea9938",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "5a0a1d17ddd5267dfec66bc330b60a07636ca25b22ab828e39fef865f60a2271"
+}

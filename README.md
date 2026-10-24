@@ -58,6 +58,11 @@ PPPに約127 m、SPPに1 km超の外れが残り、実用同等性能は未達�
 PPC全6走行24条件ではPPP解が増えましたが、約212 mの新たな外れと精度悪化も確認しました。
 既定は除外なしを維持し、次は観測の冗長性とZTD/高さの結合を改善します。
 
+[ZTD初期不確かさ](docs/comparison/2026-10-21-ppp-ztd-prior/README.md)も3設定で比較しました。
+PPC全6走行36条件と独立car9条件を保存し、旧12実測対照・3合成対照はCSV一致。
+初期事前を強くすると雑音あり誤差は減りますが、平均がずれたclean条件を悪化させるため、既定は維持しています。
+大外れは残り、次はコード観測の冗長性とGalileoのPPP接続を進めます。
+
 [移動FIX](docs/comparison/2026-10-21-kinematic-fix/README.md)、
 [ロック選別の部分AR](docs/comparison/2026-10-21-locked-subset-ar/README.md)、
 [分散選別](docs/comparison/2026-10-21-variance-subset-ar/README.md)も実装済みです。

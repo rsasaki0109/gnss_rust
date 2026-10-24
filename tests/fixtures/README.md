@@ -1748,3 +1748,12 @@ Decisions match exactly; kernel and independent Gaussian reconstructions retain
 the original relative 1e-10 bound after compensated residual refinement.
 See [the contract](../../docs/ppp-standardized-screening.md) and
 [the PPC comparison](../../docs/comparison/2026-10-21-ppp-standardized-screening/README.md).
+
+`upstream_ppp_ztd_prior.csv` calls pinned native `initialTroposphereVariance`
+for 12 parameter combinations, regenerated twice by
+`python3 -B scripts/build_ppp_ztd_prior_fixtures.py --output-dir NEW_DIRECTORY`.
+Returned uncertainties are variances in m², not standard deviations. The
+initial-prior parameter study borrows only the numerical uncertainties; it
+does not relabel CODE ionosphere-free PPP as broadcast or MADOCA processing.
+See [the contract](../../docs/ppp-ztd-prior.md) and
+[the comparison](../../docs/comparison/2026-10-21-ppp-ztd-prior/README.md).

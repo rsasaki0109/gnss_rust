@@ -1,0 +1,43 @@
+{
+  "predeclared_inputs_sha256": "cfef5a197df7011a808c16ce322d6c97cc941c48d8c030ef8a11544d2f8a0a75",
+  "passed_tests": 446,
+  "library_processing_unchanged": true,
+  "checks": [
+    {
+      "name": "tests",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo test --locked --offline -j2",
+      "returncode": 0,
+      "log": "qualification-tests.log.gz",
+      "uncompressed_sha256": "9f1252fd6ee30aff771b89dda9027cf9197a449959701ed26d32f3d5c51522e1"
+    },
+    {
+      "name": "fmt",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo fmt --check",
+      "returncode": 0,
+      "log": "qualification-fmt.log.gz",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo clippy --locked --offline -j2 --all-targets -- -D warnings",
+      "returncode": 0,
+      "log": "qualification-clippy.log.gz",
+      "uncompressed_sha256": "c3c44ad8c996788d85241acb7deae31bfcfc88facde2413608322cf60d9297ca"
+    },
+    {
+      "name": "release",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo build --locked --offline -j2 --release",
+      "returncode": 0,
+      "log": "qualification-release.log.gz",
+      "uncompressed_sha256": "6bfa9e18ffdef821c711a542cfebd7db0982665615563e5a191285e489609c6f"
+    },
+    {
+      "name": "examples",
+      "command": "source /workspace/.cloud-setup/activate.sh && cargo build --locked --offline -j2 --release --example ppc_ppp --example ppp_kinematic",
+      "returncode": 0,
+      "log": "qualification-examples.log.gz",
+      "uncompressed_sha256": "afa6750390a116c79c8969c8a4e0c0a8fbc3b3bac467fc62c181da8c091588cc"
+    }
+  ],
+  "qualification_may_overlap_descriptive_measurements": true
+}

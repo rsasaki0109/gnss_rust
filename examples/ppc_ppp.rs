@@ -2,6 +2,8 @@
 //! Optional explicit broadcast SPP/Doppler seeds; no reference.csv/IMU/truth input.
 #[path = "support/ppp_seed.rs"]
 mod ppp_seed;
+#[path = "support/ppp_ztd_prior.rs"]
+mod ppp_ztd_prior;
 use gnss_rust::antenna::{SatelliteAntennaBinding, SatelliteAntennaModel, read_antex};
 use gnss_rust::bias::{BiasSignalRequest, OsbBinding, read_satellite_biases_with_byte_comments};
 use gnss_rust::dual_frequency::{
@@ -45,6 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if native_screen {
         args.pop();
     }
+    let ztd_sigma = ppp_ztd_prior::take_sigma_flag(&mut args)?;
     let seed_profile = if args.len() >= 2
         && matches!(
             args[args.len() - 2].as_str(),
@@ -73,7 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "native-variances" | "climatology" | "native-head"
             ))
     {
-        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-seed-shadow|-seed-position|-seed-doppler BASE_NAV] [-native-screen] [-retain-arcs] [-timing]".into());
+        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-seed-shadow|-seed-position|-seed-doppler BASE_NAV] [-ztd-sigma SIGMA_M] [-native-screen] [-retain-arcs] [-timing]".into());
     }
     let open = |name: &str| File::open(name).map(BufReader::new);
     let orbit = read_sp3(open(&args[1])?)?;
@@ -231,6 +234,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "rejected_update_policy=RetainContinuousArcs rejected_measurements_accepted=false thresholds_changed=false"
         );
     }
+    ppp_ztd_prior::apply(&mut config, ztd_sigma);
     eprintln!(
         "config={config:?} case={} pair={} phase={} RINEX_phase_shift_declarations={phase_shifts} excluded_receiver_clocks={} excluded_receiver_bias_rows={} byte_comment_lines={} receiver_calibration_known=false satellite_PCV_applied=false solid_earth_tide_applied=false truth_used_by_solver=false whole_native_PPP_executed=false practical_parity_accepted=false",
         args[5],

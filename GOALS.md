@@ -7,6 +7,18 @@
 現在のこのコピーのチェックリストは18/24（75%）。旧83%の資料は再検証できないため、
 以後の開発と比較記録を codex/rtk-reference-basis-audit ブランチへ保存している。
 
+[ZTD初期不確かさの比較](docs/comparison/2026-10-21-ppp-ztd-prior/README.md)を追加。ライブラリ本体は不変、446テストと標準チェック通過。
+初期ZTD分散1項目だけを25 / 0.36 / 0.0144 m²で比較。平均・推定状態・Q・測定雑音/全ゲート・PVA/独立時計/種位置/アーク/校正は不変、衛星除外はoff。
+元initialTroposphereVarianceを12実呼出し×2生成で確認。broadcast/MADOCA処理系の実行とは扱わず不確かさの値だけ借用。
+明示CLI flagの0/負/非有限/overflow/分散underflowを両exampleで12件検証。
+独立加減速car9条件64点ずつ成功、旧3対照CSVはバイト一致。初期ZTD平均2.3/真値2.4 mは変更しない。
+σ0.12で雑音ありRMS0.2675→0.1716 mだが、clean/unroundedはRMS約0.1043 m・最大0.2618 m、旧1 cm目標の失敗を保持。σ0.6もclean/unroundedで失敗。
+PPC全6走行36条件351,804行、旧12対照72列はバイト一致。全23種データ・初期平均/Q・他4つのhead分散も一致検査。
+PPPは1C2W 12,634→13,110/13,157、1C2L 9,013→9,475/9,445（σ0.6/0.12）。Nagoya run2 1C2W RMS11.982→17.040/16.803 mなど悪化も保持。
+両原点/腕・共通/新規/脱落・270最悪点と凍結native36比較を保存。初期分散だけの調整では大外れは解消せず、既定不変。
+次は5本のコードだけでXYZ/時計/ZTDを採用する条件と、Galileo追加による実際の観測冗長性を進める。
+実用RTK/PPP受け入れ未達、全体18/24（75%）を維持。
+
 [共分散で標準化した残差による衛星除外](docs/comparison/2026-10-21-ppp-standardized-screening/README.md)を選択式で追加。
 元worstStandardizedResidualRowを明示逆行列/production LDLT各64、合計128実呼出し/回で2回生成バイト一致。
 独立Gaussian再構成128件も既存1e-10内・除外行完全一致。最初の微小逆行列非対称とcase36数値差は失敗証拠を保持。

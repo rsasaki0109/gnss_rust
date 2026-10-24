@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/workspace/gnss_rust/target/release/examples/ppp_kinematic",
+    "pva",
+    "car-clean",
+    "-ztd-sigma",
+    "0.6"
+  ],
+  "returncode": 0,
+  "csv_sha256": "67995d025cd83a3622afd32a132b7e2b29a86060596684504701d6a5744a865e",
+  "csv_capture": "process stdout",
+  "stderr_sha256": "c8b01c9d43885bc3c8e346ab9d981819285030b9d4031308207a22fccee26452"
+}

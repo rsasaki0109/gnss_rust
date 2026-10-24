@@ -1,4 +1,6 @@
 //! Calibrated synthetic moving IF PPP; no real-data performance claim.
+#[path = "support/ppp_ztd_prior.rs"]
+mod ppp_ztd_prior;
 use gnss_rust::SatelliteId;
 use gnss_rust::bias::{BiasSignalRequest, OsbBinding, read_bias_sinex};
 use gnss_rust::dual_frequency::{
@@ -228,6 +230,7 @@ fn raw_code_biases(time: gnss_rust::GnssTime, dsb: bool) -> SignalCorrections {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     use std::io::Write;
     let mut args: Vec<_> = std::env::args().skip(1).collect();
+    let ztd_sigma = ppp_ztd_prior::take_sigma_flag(&mut args)?;
     let epoch_clock = args.last().is_some_and(|s| s == "-epoch-clock");
     if epoch_clock {
         args.pop();
@@ -262,7 +265,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
     {
         return Err(
-            "usage: ppp_kinematic static|kinematic|pva clean|noisy|unrounded-phase|unrounded-code|unrounded-both|jumped-clean|jumped-noisy|car-clean|car-noisy|car-unrounded [INITIAL_VELOCITY_VARIANCE_M2_S2] [-phase-diagnostics|-raw-phase|-raw-dsb] [-epoch-clock]"
+            "usage: ppp_kinematic static|kinematic|pva clean|noisy|unrounded-phase|unrounded-code|unrounded-both|jumped-clean|jumped-noisy|car-clean|car-noisy|car-unrounded [INITIAL_VELOCITY_VARIANCE_M2_S2] [-phase-diagnostics|-raw-phase|-raw-dsb] [-epoch-clock] [-ztd-sigma SIGMA_M]"
                 .into(),
         );
     }
@@ -294,6 +297,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if raw_phase {
         c.filter.phase_bias_mode = PhaseBiasMode::UncalibratedFloat;
     }
+    ppp_ztd_prior::apply(&mut c, ztd_sigma);
     let mut filter = PppFilter::new(c)?;
     let products = products();
     let mut selections = selections();

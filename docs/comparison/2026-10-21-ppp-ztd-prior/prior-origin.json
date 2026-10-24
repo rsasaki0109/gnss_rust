@@ -1,0 +1,11 @@
+{
+  "pinned_upstream_commit": "72f3b7c2c4c088dc575286a6f0edf4e407bc499a",
+  "source_archive_sha256": "ca261009b2a0eaac7abaa4fcb4fea99c4073e85e40e022bc3fb87e6fe654c01d",
+  "headers_sha256": {
+    "/workspace/.cloud-setup/reference/gnssplusplus-library/include/libgnss++/algorithms/ppp_shared.hpp": "26e9e74114a954f1cc9c722afece5278d2aa1429d78e89112ef404f381655028",
+    "/workspace/.cloud-setup/reference/gnssplusplus-library/src/algorithms/ppp_internal.hpp": "6f94ce026663fd246fa42309548c6e7747cf59763e5e61dacc4b2d39f16eb832"
+  },
+  "configured_broadcast_variance_source": "double initial_troposphere_variance = 0.36;",
+  "only_prior_values_borrowed": true,
+  "native_broadcast_or_MADOCA_whole_solver_executed": false
+}
