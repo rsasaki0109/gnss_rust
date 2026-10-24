@@ -215,7 +215,7 @@ fn complete_native_legacy_tide_injection_recovers_nominal_marker_and_continuous_
                     .fold(0.0, f64::max);
                 eprintln!(
                     "legacy tide noisy={noisy} max_position={max_error:.9} final_position={final_error:.9} max_ambiguity={max_ambiguity:.9} phase_rms={:.9}",
-                    result.phase_rms_m
+                    result.phase_rms_m.unwrap()
                 );
                 // Rounded carriers (1e-4 cycles) amplify the early height/ZTD
                 // transient. This 5 mm synthetic regression bound includes
@@ -632,7 +632,7 @@ fn native_satellite_receiver_and_windup_injection_recovers_marker_and_continuous
                     .fold(0.0, f64::max);
                 eprintln!(
                     "satellite antenna noisy={noisy} max_position={max_position:.9} final_position={final_position:.9} max_ambiguity={max_ambiguity:.9} phase_rms={:.9}",
-                    r.phase_rms_m
+                    r.phase_rms_m.unwrap()
                 );
                 assert!(max_position < if noisy { 1.0 } else { 0.003 });
                 assert!(final_position < if noisy { 0.01 } else { 0.001 });
@@ -955,7 +955,7 @@ fn native_receiver_injection_recovers_marker_without_resetting_smooth_phase_arcs
                     .fold(0.0, f64::max);
                 eprintln!(
                     "receiver antenna noisy={noisy} max_position={maximum:.9} final_position={final_error:.9} max_ambiguity={max_ambiguity:.9} phase_rms={:.9}",
-                    result.phase_rms_m
+                    result.phase_rms_m.unwrap()
                 );
                 assert!(maximum < if noisy { 1.0 } else { 0.003 });
                 assert!(final_error < if noisy { 0.01 } else { 0.001 });
@@ -1336,7 +1336,7 @@ fn native_windup_injected_phase_traces_recover_truth_and_keep_smooth_arcs() {
                 assert!(max_ambiguity < if noisy { 0.01 } else { 0.001 });
                 eprintln!(
                     "windup noisy={noisy} max_position={maximum:.9} final_position={final_error:.9} max_ambiguity={max_ambiguity:.9} phase_rms={:.9}",
-                    result.phase_rms_m
+                    result.phase_rms_m.unwrap()
                 );
                 assert!(f.windup_state("G09".parse().unwrap()).is_none());
             }
@@ -1965,7 +1965,9 @@ fn native_generated_static_noiseless_and_noisy_phase_epochs_recover_truth() {
             .fold(0.0, f64::max);
         eprintln!(
             "noisy={noisy} max_pos={max_position:.9} final_pos={final_position:.9} clock_m={final_clock:.9} zenith={:.9} amb={max_ambiguity:.9} code_rms={:.9} phase_rms={:.9}",
-            result.zenith_delay_m, result.code_rms_m, result.phase_rms_m
+            result.zenith_delay_m,
+            result.code_rms_m,
+            result.phase_rms_m.unwrap()
         );
         let final_bound = if noisy { 0.01 } else { 0.001 };
         assert!(max_position < if noisy { 1.0 } else { 0.002 });
@@ -1973,7 +1975,7 @@ fn native_generated_static_noiseless_and_noisy_phase_epochs_recover_truth() {
         assert!(final_clock.abs() < final_bound);
         assert!((result.zenith_delay_m - 2.4).abs() < final_bound);
         assert!(max_ambiguity < final_bound);
-        assert!(result.phase_rms_m < if noisy { 0.005 } else { 0.0001 });
+        assert!(result.phase_rms_m.unwrap() < if noisy { 0.005 } else { 0.0001 });
         assert!(result.code_rms_m < if noisy { 0.2 } else { 0.0001 });
     }
 }

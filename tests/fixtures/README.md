@@ -1773,3 +1773,23 @@ Reproduce with `python3 scripts/build_ppp_if_ambiguity_fixtures.py --output-dir 
 The two identical native generations, commands, compiler, source/library/header
 hashes and logs are retained in
 `docs/comparison/2026-10-24-ppp-reference-initialization/native-generator.json`.
+
+## Ordinary precise IF single update (2026-10-24)
+
+`upstream_ppp_reference_update.csv` contains 32 component cases. Each generation
+calls the unchanged pinned `PPPProcessor::formMeasurementEquations` 64 times
+(prefit gates on/off), uses the actual native standardized-residual helper, and
+copies the LDLT/gain/Joseph expressions from `updateFilter`. It does not call
+`updateFilter` or `processEpoch`. Two generations are byte-identical.
+
+Each record exports the full prior, native H/r/diagonal R, row satellites/types,
+prefit and retained-row masks, screened satellites, posterior and NIS.
+Coverage includes four satellites, code-only startup locks, phase/code prefit
+exclusions, multiple screenings and exhaustion. Rust compares masks/decisions
+exactly and every state/covariance/NIS within the existing relative 1e-10 bound.
+
+Reproduce with `python3 scripts/build_ppp_reference_update_fixtures.py --output-dir NEW_DIR`.
+Commands, library/header/source hashes and both runs are recorded at
+`docs/comparison/2026-10-24-ppp-reference-update/native-generator.json`.
+The initial adapter's u8-as-character PRN output and failed parse are retained
+there; only the adapter was corrected to print integer PRNs.

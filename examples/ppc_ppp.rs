@@ -11,7 +11,7 @@ use gnss_rust::dual_frequency::{
 };
 use gnss_rust::ppp::{
     PppAmbiguityInitialization, PppClockModel, PppConfig, PppEpoch, PppFilter, PppFilterSettings,
-    PppMotionSeedPolicy, PppPositionModel, PppRejectedUpdatePolicy,
+    PppMeasurementUpdate, PppMotionSeedPolicy, PppPositionModel, PppRejectedUpdatePolicy,
 };
 use gnss_rust::precise::{
     ClockSource, OrbitReferencePoint, PreciseProducts, read_satellite_clocks, read_sp3,
@@ -43,14 +43,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if retain_arcs {
         args.pop();
     }
-    let native_if_prior = args.last().is_some_and(|s| s == "-native-if-prior");
-    if native_if_prior {
+    let native_update = args.last().is_some_and(|s| s == "-native-update");
+    if native_update {
         args.pop();
     }
-    let native_screen = args.last().is_some_and(|s| s == "-native-screen");
-    if native_screen {
+    let explicit_if_prior = args.last().is_some_and(|s| s == "-native-if-prior");
+    if explicit_if_prior {
         args.pop();
     }
+    let native_if_prior = native_update || explicit_if_prior;
+    let explicit_screen = args.last().is_some_and(|s| s == "-native-screen");
+    if explicit_screen {
+        args.pop();
+    }
+    let native_screen = native_update || explicit_screen;
     let ztd_sigma = ppp_ztd_prior::take_sigma_flag(&mut args)?;
     let seed_profile = if args.len() >= 2
         && matches!(
@@ -90,7 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "native-variances" | "climatology" | "native-head"
             ))
     {
-        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-seed-shadow|-seed-position|-seed-doppler BASE_NAV] [-ztd-sigma SIGMA_M] [-native-screen] [-native-if-prior] [-retain-arcs] [-timing]".into());
+        return Err("usage: ppc_ppp ROVER_OBS CODE_SP3 CODE_CLK CODE_OSB_BIA GPS_IGS20_ATX CASE_LABEL 1C2W|1C2L calibrated|raw-float [native-variances|climatology|native-head] [-epoch-clock] [-pva] [-seed-shadow|-seed-position|-seed-doppler BASE_NAV] [-ztd-sigma SIGMA_M] [-native-screen] [-native-if-prior] [-native-update] [-retain-arcs] [-timing]".into());
     }
     let open = |name: &str| File::open(name).map(BufReader::new);
     let orbit = read_sp3(open(&args[1])?)?;
@@ -254,6 +260,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if native_if_prior {
         config.filter.ambiguity_initialization = PppAmbiguityInitialization::ReferencePrecise;
     }
+    if native_update {
+        config.filter.measurement_update = PppMeasurementUpdate::ReferenceSinglePass;
+        eprintln!(
+            "measurement_update=ReferenceSinglePass native_min_satellites=4 native_phase_min_lock=1 native_prefit_gates=true native_kinematic_screen_sigma=4 state_dimension_retained_on_screen=true residual_basis=FrozenPriorLinearizedPosterior epoch_lifecycle_still_transactional=true"
+        );
+    }
     eprintln!(
         "config={config:?} case={} pair={} phase={} RINEX_phase_shift_declarations={phase_shifts} excluded_receiver_clocks={} excluded_receiver_bias_rows={} byte_comment_lines={} receiver_calibration_known=false satellite_PCV_applied=false solid_earth_tide_applied=false truth_used_by_solver=false whole_native_PPP_executed=false practical_parity_accepted=false",
         args[5],
@@ -291,14 +303,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if native_screen {
         config.filter.standardized_residual_gate_sigma = Some(4.0);
         eprintln!(
-            "standardized_residual_screen_sigma=4 raw_sigma_screen=false whole_satellite_removed=true fresh_prior_every_retry=true existing_GNSS_gates_unchanged=true"
+            "standardized_residual_screen_sigma=4 raw_sigma_screen=false whole_satellite_removed=true fresh_prior_every_retry=true reference_single_pass={native_update}"
         );
     }
     let mut filter = PppFilter::new(config)?;
     let mut out = BufWriter::new(std::io::stdout().lock());
     writeln!(
         out,
-        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}{}{}{}{}",
+        "week,tow,status,x_m,y_m,z_m,vx_mps,vy_mps,vz_mps,clock_s,zenith_m,position_covariance_trace_m2,velocity_covariance_trace_m2_s2,code_rms_m,phase_rms_m,satellites,ambiguities,arc_resets,nis,error,phase_bias_mode,raw_epoch_flag,code_corrections,phase_OSBs,correction_unavailable,last_rejections,committed_week,committed_tow,phase_unavailable{}{}{}{}{}{}{}",
         if timing {
             ",filter_ms,epoch_stage_ms"
         } else {
@@ -326,6 +338,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         if native_if_prior {
             ",ambiguity_seeds,ambiguity_seed_diagnostics"
+        } else {
+            ""
+        },
+        if native_update {
+            ",measurement_update,residual_basis"
         } else {
             ""
         }
@@ -449,7 +466,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let p = s.position.velocity_covariance.unwrap();
                 row[12] = format!("{:.17e}", p[0][0] + p[1][1] + p[2][2]);
                 row[13] = format!("{:.17e}", s.code_rms_m);
-                row[14] = format!("{:.17e}", s.phase_rms_m);
+                row[14] = s
+                    .phase_rms_m
+                    .map_or_else(String::new, |v| format!("{v:.17e}"));
                 row[15] = s.measurements.len().to_string();
                 row[16] = s.ambiguities.len().to_string();
                 row[17] = s
@@ -505,6 +524,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if native_if_prior {
             let seeds = filter.last_ambiguity_seeds();
             row.extend([seeds.len().to_string(), format!("{seeds:?}")]);
+        }
+        if native_update {
+            row.extend([
+                "ReferenceSinglePass".into(),
+                "FrozenPriorLinearizedPosterior".into(),
+            ]);
         }
         writeln!(
             out,

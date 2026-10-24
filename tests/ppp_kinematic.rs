@@ -892,7 +892,7 @@ fn rounded_clean_trace_retains_full_trace_two_mm_failures_and_meets_the_bound_af
             assert!(error < 0.002, "epoch {i}: {error}");
             assert!(result.code_rms_m < 0.0001);
         }
-        assert!(result.phase_rms_m < 0.0001);
+        assert!(result.phase_rms_m.unwrap() < 0.0001);
         let velocity = result.position.velocity_ecef.unwrap();
         if i == 0 {
             assert_eq!(velocity, [0.0; 3]);
@@ -994,7 +994,7 @@ fn independent_noisy_moving_trace_meets_predeclared_position_and_velocity_bounds
             }
         }
         assert!(result.code_rms_m < 0.2);
-        assert!(result.phase_rms_m < 0.005);
+        assert!(result.phase_rms_m.unwrap() < 0.005);
         last = Some(result);
     }
     assert!(
@@ -1786,4 +1786,145 @@ fn explicit_reference_initial_clock_rejects_nonfinite_seed_before_mutating_state
         assert_eq!(f.state(), &old);
         assert_eq!(f.state_time(), None);
     }
+}
+
+fn reference_update_config() -> PppConfig {
+    let mut c = acceleration_config();
+    c.filter.ambiguity_initialization = PppAmbiguityInitialization::ReferencePrecise;
+    c.filter.measurement_update = PppMeasurementUpdate::ReferenceSinglePass;
+    c.filter.clock_model = PppClockModel::IndependentEpoch;
+    c.filter.motion_seed_policy = Some(PppMotionSeedPolicy {
+        initialize_clock_from_seed: true,
+        update_velocity: false,
+        ..Default::default()
+    });
+    c
+}
+
+#[test]
+fn native_single_pass_accepts_four_code_satellites_then_enables_continuous_phase() {
+    let ee = acceleration_epochs(false);
+    let p = products();
+    let s: BTreeMap<_, _> = selections().into_iter().take(4).collect();
+    let mut c = reference_update_config();
+    // These legacy IEKF controls must have no effect on this source port.
+    c.filter.max_iterations = 1;
+    c.filter.convergence_m = 1e-99;
+    c.filter.max_nis_per_row = 1e-99;
+    c.filter.max_postfit_code_m = 1e-99;
+    c.filter.max_postfit_phase_m = 1e-99;
+    let mut f = PppFilter::new(c).unwrap();
+    for (i, e) in ee.iter().take(2).enumerate() {
+        let r = solution(
+            f.process_epoch_with_seed(e, &p, &biases(e.time), &s, Some(&code_motion_seed(e)))
+                .unwrap(),
+        );
+        assert_eq!(r.iterations, 1);
+        assert_eq!(r.position.num_satellites, 4);
+        assert_eq!(r.ambiguities.len(), 4);
+        assert_eq!(
+            r.residual_basis,
+            PppResidualBasis::FrozenPriorLinearizedPosterior
+        );
+        assert_eq!(
+            r.measurements
+                .iter()
+                .filter(|m| m.phase_residual_m.is_some())
+                .count(),
+            if i == 0 { 0 } else { 4 }
+        );
+        assert_eq!(r.phase_rms_m.is_some(), i != 0);
+        assert!(r.normalized_innovation_squared > 1e-99);
+        for m in &r.measurements {
+            let d = m.model.satellite_position_m;
+            let rx = m.model.receiver_position_m;
+            let norm = (d.x - rx.x).hypot(d.y - rx.y).hypot(d.z - rx.z);
+            for (value, delta) in
+                m.model.head_design[..3]
+                    .iter()
+                    .zip([d.x - rx.x, d.y - rx.y, d.z - rx.z])
+            {
+                assert!((value + delta / norm).abs() < 1e-15);
+            }
+        }
+    }
+}
+
+#[test]
+fn native_single_pass_preserves_all_ambiguity_states_when_screening_a_satellite() {
+    let ee = acceleration_epochs(false);
+    let p = products();
+    let s = selections();
+    let mut f = PppFilter::new(reference_update_config()).unwrap();
+    for e in &ee[..2] {
+        f.process_epoch_with_seed(e, &p, &biases(e.time), &s, Some(&code_motion_seed(e)))
+            .unwrap();
+    }
+    let mut e = ee[2].clone();
+    let bad = "G09".parse().unwrap();
+    add_code_fault(&mut e, bad, 100.0);
+    let r = solution(
+        f.process_epoch_with_seed(&e, &p, &biases(e.time), &s, Some(&code_motion_seed(&ee[2])))
+            .unwrap(),
+    );
+    assert!(
+        r.residual_screening
+            .iter()
+            .any(|s| s.satellite == bad && s.removed)
+    );
+    assert!(r.measurements.iter().all(|m| m.satellite != bad));
+    assert_eq!(r.ambiguities.len(), 9);
+    assert_eq!(f.state().mean.len(), 20);
+    assert!(r.ambiguities.iter().any(|a| a.satellite == bad));
+    assert_eq!(r.iterations, 1);
+}
+
+#[test]
+fn native_single_pass_restarts_phase_lock_after_lli_without_resetting_other_satellites() {
+    let ee = acceleration_epochs(false);
+    let p = products();
+    let s = selections();
+    let mut f = PppFilter::new(reference_update_config()).unwrap();
+    for e in &ee[..2] {
+        f.process_epoch_with_seed(e, &p, &biases(e.time), &s, Some(&code_motion_seed(e)))
+            .unwrap();
+    }
+    let mut e = ee[2].clone();
+    let reset = "G09".parse().unwrap();
+    for o in e.observations.iter_mut().filter(|o| o.satellite == reset) {
+        o.lli = Some(1);
+    }
+    let r = solution(
+        f.process_epoch_with_seed(&e, &p, &biases(e.time), &s, Some(&code_motion_seed(&e)))
+            .unwrap(),
+    );
+    assert_eq!(
+        r.measurements
+            .iter()
+            .filter(|m| m.phase_residual_m.is_some())
+            .count(),
+        8
+    );
+    assert_eq!(
+        r.measurements
+            .iter()
+            .find(|m| m.satellite == reset)
+            .unwrap()
+            .phase_residual_m,
+        None
+    );
+    assert_eq!(r.ambiguity_seeds.len(), 1);
+    assert_eq!(r.ambiguity_seeds[0].satellite, reset);
+    let e = &ee[3];
+    let r = solution(
+        f.process_epoch_with_seed(e, &p, &biases(e.time), &s, Some(&code_motion_seed(e)))
+            .unwrap(),
+    );
+    assert_eq!(
+        r.measurements
+            .iter()
+            .filter(|m| m.phase_residual_m.is_some())
+            .count(),
+        9
+    );
 }

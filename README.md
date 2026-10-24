@@ -6,11 +6,13 @@
 
 
 **開発中：18/24項目（75%）。** RTK・PPPの実用同等性能は未達です。
-2026-10-24時点で451テストと標準チェックが通過しています。
+2026-10-24時点で456テストと標準チェックが通過しています。
 
 [元C++のIF初期化](docs/comparison/2026-10-24-ppp-reference-initialization/README.md)を直接移植しました。
 新しい位相アークの平均と25 m²の分散、SPP時計の初期化順を元の32ケースと照合しています。
-単一カルマン更新と全エポックの処理順の移植は継続中です。
+[単一カルマン更新](docs/comparison/2026-10-24-ppp-reference-update/README.md)と位相の使用開始条件も移植しました。
+PPC全6走行1C/2Wで位相付き出力は14,666点。コードのみの25,611点と分けて記録し、
+500 m超の外れを保持しています。棄却時も進む予測・時計・位相履歴の処理順を引き続き移植します。
 
 [GPS/Galileo別時計SPP](docs/comparison/2026-10-21-multiclock-spp/README.md)をRTKの種位置へ接続し、
 [元C++の観測分散モデル](docs/comparison/2026-10-21-spp-variance/README.md)と

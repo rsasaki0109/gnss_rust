@@ -269,7 +269,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     })
                     .collect();
                 println!(
-                    "{},{:.7},{:.9},{:.9},{:.9},{:.15e},{},PPP_FLOAT,{:.9},{:.9},{:.9},{},{},{:.9},{},{},{:.9},{},{:.9},{},{:.9},{},{:.9}",
+                    "{},{:.7},{:.9},{:.9},{:.9},{:.15e},{},PPP_FLOAT,{:.9},{:.9},{},{},{},{:.9},{},{},{:.9},{},{:.9},{},{:.9},{},{:.9}",
                     epoch.time.week(),
                     epoch.time.tow(),
                     p.x,
@@ -279,7 +279,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     result.position.num_satellites,
                     result.zenith_delay_m,
                     result.code_rms_m,
-                    result.phase_rms_m,
+                    result
+                        .phase_rms_m
+                        .map_or_else(String::new, |v| format!("{v:.9}")),
                     result.iterations,
                     result.ambiguities.len(),
                     result.normalized_innovation_squared,

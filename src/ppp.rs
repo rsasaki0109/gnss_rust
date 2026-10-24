@@ -166,6 +166,7 @@ pub struct PppFilterSettings {
     pub initial_ambiguity_variance_m2: f64,
     pub ambiguity_process_noise_m2_per_s: f64,
     pub ambiguity_initialization: PppAmbiguityInitialization,
+    pub measurement_update: PppMeasurementUpdate,
     pub elevation_mask_rad: f64,
     pub max_iterations: usize,
     pub convergence_m: f64,
@@ -187,6 +188,7 @@ impl Default for PppFilterSettings {
             initial_ambiguity_variance_m2: 1e14,
             ambiguity_process_noise_m2_per_s: 1e-8,
             ambiguity_initialization: PppAmbiguityInitialization::IndependentZeroMean,
+            measurement_update: PppMeasurementUpdate::Iterated,
             elevation_mask_rad: 10_f64.to_radians(),
             max_iterations: 8,
             convergence_m: 1e-4,
@@ -203,6 +205,20 @@ pub enum PppAmbiguityInitialization {
     IndependentZeroMean,
     /// Pinned precise IF initializeAmbiguityState: L_IF - model, variance 25 m².
     ReferencePrecise,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum PppMeasurementUpdate {
+    #[default]
+    Iterated,
+    /// Pinned ordinary precise IF update: frozen prior geometry, one Joseph
+    /// update, native prefit gates and kinematic 4-sigma satellite screening.
+    /// Does not select the native epoch/ambiguity lifecycle automatically.
+    ReferenceSinglePass,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PppResidualBasis {
+    RelinearizedPosterior,
+    FrozenPriorLinearizedPosterior,
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct PppAmbiguitySeed {
@@ -379,6 +395,9 @@ pub enum PppError {
     InsufficientPhase {
         available: usize,
     },
+    InsufficientMeasurementRows {
+        available: usize,
+    },
     NonConvergent,
     PostfitRejected,
     NonPhysicalState,
@@ -545,8 +564,9 @@ pub struct PppModel {
     pub elevation_rad: f64,
     pub troposphere_mapping: f64,
     pub code_prediction_m: f64,
-    /// XYZ, clock metres, zenith total delay. Adds first-order Sagnac position
-    /// partials to native -LOS; mapping/orbit/tide receiver partials are neglected.
+    /// XYZ, clock metres, zenith total delay. ReferenceSinglePass uses native
+    /// -LOS; Iterated adds first-order Sagnac position partials. Other receiver
+    /// partials (mapping/orbit/tide) are neglected in both modes.
     pub head_design: [f64; 5],
 }
 /// Native IF code model rho + receiver clock - c*satellite clock + NMF*ZTD.
@@ -609,9 +629,20 @@ pub fn evaluate_ppp_model(
     if !prediction.is_finite() {
         return Err(Error::NonFinite.into());
     }
+    let reference = config.filter.measurement_update == PppMeasurementUpdate::ReferenceSinglePass;
     let head_design = [
-        -difference.x / norm - c::OMEGA_E * satellite_position.y / c::SPEED_OF_LIGHT,
-        -difference.y / norm + c::OMEGA_E * satellite_position.x / c::SPEED_OF_LIGHT,
+        -difference.x / norm
+            - if reference {
+                0.0
+            } else {
+                c::OMEGA_E * satellite_position.y / c::SPEED_OF_LIGHT
+            },
+        -difference.y / norm
+            + if reference {
+                0.0
+            } else {
+                c::OMEGA_E * satellite_position.x / c::SPEED_OF_LIGHT
+            },
         -difference.z / norm,
         1.0,
         mapping,
@@ -632,7 +663,15 @@ pub fn evaluate_ppp_model(
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PppRejection {
-    StandardizedResidual { phase_row: bool, statistic: f64 },
+    ReferencePrefit {
+        phase_row: bool,
+        residual_m: f64,
+        limit_m: f64,
+    },
+    StandardizedResidual {
+        phase_row: bool,
+        statistic: f64,
+    },
     Model(PppError),
     ClockSourceMismatch,
     BelowElevationMask,
@@ -697,8 +736,10 @@ pub struct PppSolution {
     pub rejected: BTreeMap<SatelliteId, PppRejection>,
     pub iterations: usize,
     pub normalized_innovation_squared: f64,
+    pub residual_basis: PppResidualBasis,
     pub code_rms_m: f64,
-    pub phase_rms_m: f64,
+    /// None when no phase row participated (native startup can be code-only).
+    pub phase_rms_m: Option<f64>,
     pub coordinate_system: String,
     /// Input SP3 reference. With satellite PCO enabled the model geometry is
     /// APC, while the original transmit state and this declaration remain COM.
@@ -723,6 +764,8 @@ pub struct PppFilter {
     last_motion_seed: Option<PppMotionSeedDiagnostic>,
     last_residual_screening: Vec<PppResidualScreeningDiagnostic>,
     last_ambiguity_seeds: Vec<PppAmbiguitySeed>,
+    reference_positions: Vec<EcefCoord>,
+    reference_converged: bool,
     windup: BTreeMap<SatelliteId, PppWindupState>,
 }
 impl PppFilter {
@@ -764,6 +807,8 @@ impl PppFilter {
             last_motion_seed: None,
             last_residual_screening: Vec::new(),
             last_ambiguity_seeds: Vec::new(),
+            reference_positions: Vec::new(),
+            reference_converged: false,
             windup: BTreeMap::new(),
         })
     }
@@ -973,13 +1018,19 @@ impl PppFilter {
                     .sum::<f64>()
                     / measurements.len() as f64)
                     .sqrt();
-                let phase_rms_m = (measurements
+                let phase_count = measurements
                     .iter()
-                    .filter_map(|m| m.phase_residual_m)
-                    .map(|v| v * v)
-                    .sum::<f64>()
-                    / layout.len() as f64)
-                    .sqrt();
+                    .filter(|m| m.phase_residual_m.is_some())
+                    .count();
+                let phase_rms_m = (phase_count > 0).then(|| {
+                    (measurements
+                        .iter()
+                        .filter_map(|m| m.phase_residual_m)
+                        .map(|v| v * v)
+                        .sum::<f64>()
+                        / phase_count as f64)
+                        .sqrt()
+                });
                 let solution = PppSolution {
                     position_model: self.config.filter.position_model,
                     clock_model: self.config.filter.clock_model,
@@ -1013,6 +1064,13 @@ impl PppFilter {
                     rejected: self.last_rejections.clone(),
                     iterations,
                     normalized_innovation_squared: nis,
+                    residual_basis: if self.config.filter.measurement_update
+                        == PppMeasurementUpdate::ReferenceSinglePass
+                    {
+                        PppResidualBasis::FrozenPriorLinearizedPosterior
+                    } else {
+                        PppResidualBasis::RelinearizedPosterior
+                    },
                     code_rms_m,
                     phase_rms_m,
                     coordinate_system: self.config.expected_coordinate_system.clone(),
@@ -1021,6 +1079,28 @@ impl PppFilter {
                 self.state = posterior;
                 self.layout = layout;
                 self.state_time = Some(epoch.time);
+                if self.config.filter.measurement_update
+                    == PppMeasurementUpdate::ReferenceSinglePass
+                    && !self.reference_converged
+                {
+                    self.reference_positions.push(receiver(&self.state.mean));
+                    if self.reference_positions.len() > 20 {
+                        self.reference_positions.remove(0);
+                    }
+                    if self.reference_positions.len() == 20 {
+                        let average = EcefCoord::new(
+                            self.reference_positions.iter().map(|p| p.x).sum::<f64>() / 20.0,
+                            self.reference_positions.iter().map(|p| p.y).sum::<f64>() / 20.0,
+                            self.reference_positions.iter().map(|p| p.z).sum::<f64>() / 20.0,
+                        );
+                        self.reference_converged = self.reference_positions.iter().all(|p| {
+                            (p.x - average.x)
+                                .hypot(p.y - average.y)
+                                .hypot(p.z - average.z)
+                                < 0.1
+                        });
+                    }
+                }
                 Ok(PppEpoch::Solution(Box::new(solution)))
             }
             Err(error) => {
@@ -1383,12 +1463,14 @@ impl PppFilter {
             observations.insert(sat, observation.clone());
         }
         'screening: loop {
-            if observations.len() < 5 {
+            let reference =
+                self.config.filter.measurement_update == PppMeasurementUpdate::ReferenceSinglePass;
+            if observations.len() < if reference { 4 } else { 5 } {
                 return Err(PppError::InsufficientCode {
                     available: observations.len(),
                 });
             }
-            if layout.len() < 4 {
+            if !reference && layout.len() < 4 {
                 return Err(PppError::InsufficientPhase {
                     available: layout.len(),
                 });
@@ -1436,6 +1518,65 @@ impl PppFilter {
                         committed: false,
                     });
                 }
+            }
+            if reference {
+                let system = self.measurement_system(
+                    epoch.time,
+                    products,
+                    &observations,
+                    &layout,
+                    &prior.mean,
+                    windup_context.as_ref(),
+                )?;
+                let pass = reference_single_pass(
+                    &prior,
+                    &system,
+                    !matches!(self.config.filter.position_model, PppPositionModel::Static),
+                    self.reference_converged,
+                    &mut self.last_residual_screening,
+                    &mut self.last_rejections,
+                )?;
+                let delta: Vec<_> = pass
+                    .update
+                    .posterior
+                    .mean
+                    .iter()
+                    .zip(&prior.mean)
+                    .map(|(x, p)| x - p)
+                    .collect();
+                let mut accepted = BTreeMap::new();
+                for &row in &pass.kept {
+                    let (sat, phase) = system.row_satellites[row];
+                    let residual = system.innovations[row]
+                        - system.design[row]
+                            .iter()
+                            .zip(&delta)
+                            .map(|(h, x)| h * x)
+                            .sum::<f64>();
+                    if phase {
+                        if let Some(m) = accepted.get_mut(&sat) {
+                            let m: &mut PppMeasurement = m;
+                            m.phase_residual_m = Some(residual);
+                        }
+                    } else {
+                        let mut m = system
+                            .measurements
+                            .iter()
+                            .find(|m| m.satellite == sat)
+                            .unwrap()
+                            .clone();
+                        m.code_residual_m = residual;
+                        m.phase_residual_m = None;
+                        accepted.insert(sat, m);
+                    }
+                }
+                return Ok((
+                    pass.update.posterior,
+                    layout,
+                    accepted.into_values().collect(),
+                    1,
+                    pass.update.normalized_innovation_squared,
+                ));
             }
             let mut iterate = prior.mean.clone();
             for iteration in 1..=self.config.filter.max_iterations {
@@ -1690,11 +1831,21 @@ impl PppFilter {
                     + windup.as_ref().map_or(0.0, |w| w.phase_if_add_m)
                     - (model.code_prediction_m + mean[index]);
                 row[index] = 1.0;
-                design.push(row);
-                innovations.push(residual);
-                row_satellites.push((sat, true));
-                variances.push(phase.variance_m2);
-                Some(residual)
+                let phase_ready = self.config.filter.measurement_update
+                    != PppMeasurementUpdate::ReferenceSinglePass
+                    || self
+                        .layout
+                        .get(&sat)
+                        .is_some_and(|&(_, old)| old == layout[&sat].1);
+                if phase_ready {
+                    design.push(row);
+                    innovations.push(residual);
+                    row_satellites.push((sat, true));
+                    variances.push(phase.variance_m2);
+                    Some(residual)
+                } else {
+                    None
+                }
             } else {
                 None
             };
@@ -1835,6 +1986,155 @@ struct MeasurementSystem {
     code_design: Vec<[f64; 5]>,
     row_satellites: Vec<(SatelliteId, bool)>,
 }
+struct ReferencePass {
+    update: crate::filter::FilterUpdate,
+    kept: Vec<usize>,
+}
+/// Ordinary precise-IF branch of pinned formMeasurementEquations/updateFilter.
+/// Keep the complete predicted state while dropping measurement rows; commit
+/// exactly once from that prior. No IEKF, code-rank, average-NIS, nonnegative-ZTD
+/// or Rust postfit gate is part of this native branch.
+fn reference_single_pass(
+    prior: &GaussianState,
+    system: &MeasurementSystem,
+    kinematic: bool,
+    converged: bool,
+    screens: &mut Vec<PppResidualScreeningDiagnostic>,
+    rejections: &mut BTreeMap<SatelliteId, PppRejection>,
+) -> Result<ReferencePass, PppError> {
+    let mut kept = reference_prefit_indices(prior, system, kinematic, converged, rejections);
+    loop {
+        if kept.len() < 4 {
+            return Err(PppError::InsufficientMeasurementRows {
+                available: kept.len(),
+            });
+        }
+        let design: Matrix = kept.iter().map(|&i| system.design[i].clone()).collect();
+        let innovations: Vec<_> = kept.iter().map(|&i| system.innovations[i]).collect();
+        let mut noise = zeros(kept.len(), kept.len());
+        for (i, &original) in kept.iter().enumerate() {
+            noise[i][i] =
+                system.noise[original][original].max(if system.row_satellites[original].1 {
+                    1e-8
+                } else {
+                    1e-6
+                });
+        }
+        if kinematic {
+            let screen = crate::ppp_screening::screen_measurements(
+                prior,
+                &design,
+                &innovations,
+                &noise,
+                4.0,
+            )?;
+            if let Some(worst) = screen.worst_row {
+                let (satellite, phase_row) = system.row_satellites[kept[worst]];
+                let code = kept
+                    .iter()
+                    .filter(|&&i| {
+                        !system.row_satellites[i].1 && system.row_satellites[i].0 != satellite
+                    })
+                    .count();
+                let phase = kept
+                    .iter()
+                    .filter(|&&i| {
+                        system.row_satellites[i].1 && system.row_satellites[i].0 != satellite
+                    })
+                    .count();
+                let remaining: BTreeSet<_> = kept
+                    .iter()
+                    .map(|&i| system.row_satellites[i].0)
+                    .filter(|s| *s != satellite)
+                    .collect();
+                let removed = remaining.len() >= 4;
+                let statistic = screen.standardized_residuals[worst];
+                screens.push(PppResidualScreeningDiagnostic {
+                    satellite,
+                    phase_row,
+                    standardized_residual: statistic,
+                    threshold_sigma: 4.0,
+                    remaining_code_satellites: code,
+                    remaining_phase_satellites: phase,
+                    removed,
+                });
+                rejections.insert(
+                    satellite,
+                    PppRejection::StandardizedResidual {
+                        phase_row,
+                        statistic,
+                    },
+                );
+                if !removed {
+                    return Err(PppError::ResidualScreeningExhausted {
+                        satellite,
+                        code,
+                        phase,
+                    });
+                }
+                kept.retain(|&i| system.row_satellites[i].0 != satellite);
+                continue;
+            }
+        }
+        let update = measurement_update(prior, &design, &innovations, &noise, None)?;
+        return Ok(ReferencePass { update, kept });
+    }
+}
+fn reference_prefit_indices(
+    prior: &GaussianState,
+    system: &MeasurementSystem,
+    kinematic: bool,
+    converged: bool,
+    rejections: &mut BTreeMap<SatelliteId, PppRejection>,
+) -> Vec<usize> {
+    let mut kept = Vec::new();
+    let mut code_rejected = BTreeSet::new();
+    for (i, &(satellite, phase)) in system.row_satellites.iter().enumerate() {
+        if code_rejected.contains(&satellite) {
+            continue;
+        }
+        let row = &system.design[i];
+        let variance = system.noise[i][i].max(if phase { 1e-8 } else { 1e-6 });
+        let limit = if phase {
+            (40.0 * variance.sqrt()).max(if kinematic {
+                if converged { 20.0 } else { 200.0 }
+            } else if converged {
+                10.0
+            } else {
+                50.0
+            })
+        } else {
+            let projected: f64 = row
+                .iter()
+                .enumerate()
+                .map(|(a, h)| {
+                    h * prior.covariance[a]
+                        .iter()
+                        .zip(row)
+                        .map(|(p, h)| p * h)
+                        .sum::<f64>()
+                })
+                .sum();
+            (40.0 * variance.max(projected).sqrt()).max(if converged { 500.0 } else { 50000.0 })
+        };
+        if system.innovations[i].abs() > limit {
+            rejections.insert(
+                satellite,
+                PppRejection::ReferencePrefit {
+                    phase_row: phase,
+                    residual_m: system.innovations[i],
+                    limit_m: limit,
+                },
+            );
+            if !phase {
+                code_rejected.insert(satellite);
+            }
+        } else {
+            kept.push(i);
+        }
+    }
+    kept
+}
 fn receiver(mean: &[f64]) -> EcefCoord {
     EcefCoord::new(mean[0], mean[1], mean[2])
 }
@@ -1860,6 +2160,174 @@ fn ensure_geometry(rows: &[[f64; 5]]) -> Result<(), PppError> {
         basis.push(v.into_iter().map(|x| x / norm).collect());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod reference_update_tests {
+    use super::*;
+
+    #[test]
+    fn native_prefit_boundary_does_not_impose_legacy_nis_rank_or_ztd_gates() {
+        let prior = GaussianState {
+            mean: vec![1.0, 2.0, 3.0, 0.0, -2.3],
+            covariance: (0..5)
+                .map(|i| (0..5).map(|j| f64::from(i == j)).collect())
+                .collect(),
+        };
+        let mut system = MeasurementSystem {
+            design: zeros(4, 5),
+            innovations: vec![50000.0; 4],
+            noise: (0..4)
+                .map(|i| (0..4).map(|j| f64::from(i == j)).collect())
+                .collect(),
+            measurements: Vec::new(),
+            code_design: vec![[0.0; 5]; 4],
+            row_satellites: (1..=4)
+                .map(|n| (SatelliteId::new(GnssSystem::Gps, n).unwrap(), false))
+                .collect(),
+        };
+        let mut screens = Vec::new();
+        let mut rejected = BTreeMap::new();
+        let pass =
+            reference_single_pass(&prior, &system, false, false, &mut screens, &mut rejected)
+                .unwrap();
+        assert_eq!(pass.update.posterior, prior);
+        assert_eq!(pass.update.normalized_innovation_squared, 1e10);
+        assert!(screens.is_empty() && rejected.is_empty());
+        system.innovations[0] = 50000.0_f64.next_up();
+        assert!(matches!(
+            reference_single_pass(&prior, &system, false, false, &mut screens, &mut rejected),
+            Err(PppError::InsufficientMeasurementRows { available: 3 })
+        ));
+        assert!(matches!(
+            rejected.values().next(),
+            Some(PppRejection::ReferencePrefit {
+                phase_row: false,
+                limit_m: 50000.0,
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn single_update_matches_native_measurement_assembly_and_copied_joseph_update() {
+        let mut count = 0;
+        let mut successes = 0;
+        let mut failures = 0;
+        let mut exclusions = 0;
+        for line in include_str!("../tests/fixtures/upstream_ppp_reference_update.csv")
+            .lines()
+            .skip(1)
+        {
+            let v: Vec<f64> = line.split(',').map(|s| s.parse().unwrap()).collect();
+            let id = v[0] as usize;
+            let n = v[1] as usize;
+            let m = v[2] as usize;
+            let kinematic = v[3] == 1.0;
+            let converged = v[4] == 1.0;
+            let success = v[5] == 1.0;
+            let screen_count = v[6] as usize;
+            let mut offset = 8;
+            let mut take = |length: usize| {
+                let s = &v[offset..offset + length];
+                offset += length;
+                s.to_vec()
+            };
+            let prior = GaussianState {
+                mean: take(n),
+                covariance: take(n * n).chunks(n).map(|r| r.to_vec()).collect(),
+            };
+            let satellites = take(m);
+            let phases = take(m);
+            let design = take(m * n).chunks(n).map(|r| r.to_vec()).collect();
+            let innovations = take(m);
+            let variances = take(m);
+            let prefit_mask = take(m);
+            let keep_mask = take(m);
+            let expected_screens = take(m);
+            let expected_mean = take(n);
+            let expected_covariance = take(n * n);
+            assert_eq!(offset, v.len());
+            let mut noise = zeros(m, m);
+            for (i, &value) in variances.iter().enumerate() {
+                noise[i][i] = value;
+            }
+            let system = MeasurementSystem {
+                design,
+                innovations,
+                noise,
+                measurements: Vec::new(),
+                code_design: Vec::new(),
+                row_satellites: satellites
+                    .iter()
+                    .zip(&phases)
+                    .map(|(&sat, &phase)| {
+                        (
+                            SatelliteId::new(GnssSystem::Gps, sat as u8).unwrap(),
+                            phase == 1.0,
+                        )
+                    })
+                    .collect(),
+            };
+            let mut rejections = BTreeMap::new();
+            let prefit =
+                reference_prefit_indices(&prior, &system, kinematic, converged, &mut rejections);
+            let expected_prefit: Vec<_> = prefit_mask
+                .iter()
+                .enumerate()
+                .filter_map(|(i, &v)| (v == 1.0).then_some(i))
+                .collect();
+            assert_eq!(prefit, expected_prefit, "native prefit {id}");
+            let mut screens = Vec::new();
+            let result = reference_single_pass(
+                &prior,
+                &system,
+                kinematic,
+                converged,
+                &mut screens,
+                &mut rejections,
+            );
+            assert_eq!(result.is_ok(), success, "case {id}");
+            assert_eq!(screens.len(), screen_count, "case {id}");
+            for (s, &sat) in screens.iter().zip(&expected_screens) {
+                assert_eq!(s.satellite.prn(), sat as u8, "case {id}");
+            }
+            exclusions += screens.iter().filter(|s| s.removed).count();
+            if let Ok(pass) = result {
+                successes += 1;
+                let expected_keep: Vec<_> = keep_mask
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, &v)| (v == 1.0).then_some(i))
+                    .collect();
+                assert_eq!(pass.kept, expected_keep, "case {id}");
+                assert_eq!(pass.update.posterior.mean.len(), n);
+                for (actual, expected) in pass
+                    .update
+                    .posterior
+                    .mean
+                    .iter()
+                    .chain(pass.update.posterior.covariance.iter().flatten())
+                    .zip(expected_mean.iter().chain(&expected_covariance))
+                {
+                    assert!(
+                        (actual - expected).abs() <= 1e-10 * expected.abs().max(1.0),
+                        "case {id}: {actual} != {expected}"
+                    );
+                }
+                assert!(
+                    (pass.update.normalized_innovation_squared - v[7]).abs()
+                        <= 1e-10 * v[7].abs().max(1.0),
+                    "NIS {id}"
+                );
+            } else {
+                failures += 1;
+            }
+            count += 1;
+        }
+        assert_eq!(count, 32);
+        assert!(successes > 20 && failures > 0 && exclusions > 0);
+    }
 }
 
 #[cfg(test)]

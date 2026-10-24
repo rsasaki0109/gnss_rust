@@ -362,7 +362,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     row[12] = format!("{:.17e}", p[0][0] + p[1][1] + p[2][2]);
                 }
                 row[13] = format!("{:.17e}", s.code_rms_m);
-                row[14] = format!("{:.17e}", s.phase_rms_m);
+                row[14] = s
+                    .phase_rms_m
+                    .map_or_else(String::new, |v| format!("{v:.17e}"));
                 row[15] = s.measurements.len().to_string();
                 row[16] = s.ambiguities.len().to_string();
                 row[17] = s
