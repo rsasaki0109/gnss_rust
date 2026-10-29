@@ -5,7 +5,14 @@ use crate::navigation::{BroadcastClock, BroadcastEphemeris, KeplerOrbit, Navigat
 use crate::observation::{Observation, ObservationEpoch};
 use crate::time::{CalendarDateTime, TimeScale};
 use crate::{EcefCoord, GnssSystem, SatelliteId};
-use std::{collections::BTreeMap, fmt, io::BufRead};
+use std::{
+    collections::BTreeMap,
+    fmt,
+    io::{BufRead, Read},
+};
+
+/// Maximum wire bytes per RINEX line, including CR/LF. Bound malformed-input allocation.
+pub const MAX_LINE_BYTES: usize = 16_384;
 
 #[derive(Debug)]
 pub enum RinexError {
@@ -61,10 +68,15 @@ impl<R: BufRead> Input<R> {
             return Ok(Some(line));
         }
         let mut text = String::new();
-        if self.reader.read_line(&mut text)? == 0 {
+        let bytes =
+            Read::take(&mut self.reader, (MAX_LINE_BYTES + 1) as u64).read_line(&mut text)?;
+        if bytes == 0 {
             return Ok(None);
         }
         self.line += 1;
+        if bytes > MAX_LINE_BYTES {
+            return Err(bad(self.line, "RINEX line exceeds 16384-byte input limit"));
+        }
         if !text.is_ascii() {
             return Err(bad(self.line, "RINEX records must be ASCII"));
         }
@@ -76,6 +88,43 @@ impl<R: BufRead> Input<R> {
     fn required(&mut self) -> Result<(usize, String), RinexError> {
         self.next_line()?
             .ok_or_else(|| bad(self.line + 1, "unexpected end of file"))
+    }
+}
+
+#[cfg(test)]
+mod input_limit_tests {
+    use super::*;
+    use std::io::Cursor;
+    #[test]
+    fn accepts_exact_wire_limit_and_rejects_one_more_byte() {
+        let data = format!(
+            "{}\n{}\n",
+            "x".repeat(MAX_LINE_BYTES - 1),
+            "x".repeat(MAX_LINE_BYTES)
+        );
+        let mut input = Input {
+            reader: Cursor::new(data),
+            line: 0,
+            pending: None,
+        };
+        assert_eq!(
+            input.next_line().unwrap().unwrap().1.len(),
+            MAX_LINE_BYTES - 1
+        );
+        assert!(matches!(
+            input.next_line(),
+            Err(RinexError::Parse { line: 2, .. })
+        ));
+    }
+    #[test]
+    fn stops_reading_an_unterminated_giant_line_at_the_limit() {
+        let mut input = Input {
+            reader: Cursor::new(vec![b'x'; 1_000_000]),
+            line: 0,
+            pending: None,
+        };
+        assert!(input.next_line().is_err());
+        assert_eq!(input.reader.position(), (MAX_LINE_BYTES + 1) as u64);
     }
 }
 
@@ -245,7 +294,7 @@ fn apply_header_line<R: BufRead>(
                 .collect();
             while types.len() < count {
                 let (next_line, continuation) = input.required()?;
-                if !continuation.get(60..).is_some_and(|x| x.trim() == label)
+                if continuation.get(60..).is_none_or(|x| x.trim() != label)
                     || !continuation
                         .as_bytes()
                         .first()
@@ -312,7 +361,7 @@ fn apply_header_line<R: BufRead>(
             let mut entries: Vec<String> = tokens[1..].iter().map(|x| (*x).to_owned()).collect();
             while entries.len() < count * 2 {
                 let (next_line, continuation) = input.required()?;
-                if !continuation.get(60..).is_some_and(|x| x.trim() == label) {
+                if continuation.get(60..).is_none_or(|x| x.trim() != label) {
                     return Err(bad(next_line, "invalid GLONASS continuation"));
                 }
                 let extra: Vec<_> = continuation[..60]
@@ -394,7 +443,7 @@ fn apply_header_line<R: BufRead>(
                     break;
                 }
                 (row_line, row) = input.required()?;
-                if !row.get(60..).is_some_and(|s| s.trim() == label)
+                if row.get(60..).is_none_or(|s| s.trim() != label)
                     || !field(&row, 0, 18).trim().is_empty()
                     || field(&row, 19, 40).trim().is_empty()
                 {
