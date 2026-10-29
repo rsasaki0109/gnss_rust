@@ -676,7 +676,167 @@ fn observation_fields(payload: &str, line: usize) -> Result<Vec<String>, RinexEr
 /// Read RINEX 3 Kepler navigation. GLONASS/SBAS state-vector records and RINEX
 /// 2/4 are deliberately rejected until their models and parsers are implemented.
 pub fn read_navigation<R: BufRead>(reader: R) -> Result<NavigationData, RinexError> {
-    read_navigation_impl(reader, None).map(|result| result.navigation)
+    read_navigation_impl(reader, None, false).map(|result| result.navigation)
+}
+
+/// Strict navigation parsing with a source-order metadata ledger. Transmission
+/// time is broadcast metadata, never a receiver arrival/availability timestamp.
+pub fn read_navigation_with_metadata<R: BufRead>(
+    reader: R,
+) -> Result<SelectedNavigation, RinexError> {
+    read_navigation_impl(reader, None, true)
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct KeplerNavigationRecord {
+    /// First line of the original eight-line record (one-based).
+    pub first_line: usize,
+    pub rinex_version: f64,
+    pub ephemeris: BroadcastEphemeris,
+    /// Raw BROADCAST ORBIT-7 fields, retaining blank versus numeric zero.
+    /// Field 1 is transmission time in the broadcasting system's seconds.
+    /// GPS may use negative seconds to refer to the TOE week. No wrapping,
+    /// GPS-week inference, arrival inference or fit admission is performed.
+    pub last_record_fields: [Option<f64>; 4],
+}
+
+impl KeplerNavigationRecord {
+    pub fn transmission_time_s(&self) -> Option<f64> {
+        self.last_record_fields[0]
+    }
+
+    /// RINEX >=3.03 GPS specifies hours, unlike QZSS's flag or BeiDou's AODC.
+    /// Earlier GPS versions are ambiguous. This accessor preserves the raw
+    /// value (even zero/negative); admission and validation belong to the caller.
+    pub fn gps_fit_interval_hours(&self) -> Option<f64> {
+        if self.ephemeris.satellite.system() == GnssSystem::Gps && self.rinex_version >= 3.03 {
+            self.last_record_fields[1]
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(test)]
+mod navigation_metadata_tests {
+    use super::*;
+    use std::io::Cursor;
+
+    fn file(system: &str, version: &str, last: [Option<f64>; 4]) -> String {
+        let mut text = format!(
+            "{:<60}RINEX VERSION / TYPE\n{:<60}END OF HEADER\n",
+            format!("     {version}           N                   M"),
+            ""
+        );
+        text.push_str(&format!(
+            "{system} 2024 02 04 00 00 00{:19.12E}{:19.12E}{:19.12E}\n",
+            0.0, 0.0, 0.0
+        ));
+        for row in [
+            [9.0, 0.0, 0.0, 0.0],
+            [0.0, 0.01, 0.0, 5153.7],
+            [0.0, 0.0, 0.0, 0.0],
+            [0.95, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 2300.0, 0.0],
+            [2.0, 0.0, 0.0, 9.0],
+        ] {
+            text.push_str("    ");
+            for v in row {
+                text.push_str(&format!("{v:19.12E}"));
+            }
+            text.push('\n');
+        }
+        text.push_str("    ");
+        for v in last {
+            text.push_str(
+                &v.map(|v| format!("{v:19.12E}"))
+                    .unwrap_or_else(|| " ".repeat(19)),
+            );
+        }
+        text.push('\n');
+        text
+    }
+
+    #[test]
+    fn gps_metadata_preserves_blank_zero_negative_and_legacy_ambiguity() {
+        for (tx, fit) in [
+            (Some(-30.0), Some(4.0)),
+            (Some(0.0), Some(0.0)),
+            (None, None),
+        ] {
+            let text = file("G01", "3.04", [tx, fit, None, Some(0.0)]);
+            let parsed = read_navigation_with_metadata(Cursor::new(&text)).unwrap();
+            let record = &parsed.records[0];
+            assert_eq!(record.first_line, 3);
+            assert_eq!(record.transmission_time_s(), tx);
+            assert_eq!(record.gps_fit_interval_hours(), fit);
+            assert_eq!(record.last_record_fields, [tx, fit, None, Some(0.0)]);
+            assert_eq!(
+                parsed.navigation,
+                read_navigation(Cursor::new(text)).unwrap()
+            );
+        }
+        let legacy = read_navigation_with_metadata(Cursor::new(file(
+            "G01",
+            "3.02",
+            [Some(-30.0), Some(1.0), None, None],
+        )))
+        .unwrap();
+        assert_eq!(legacy.records[0].gps_fit_interval_hours(), None);
+        assert_eq!(legacy.records[0].last_record_fields[1], Some(1.0));
+    }
+    #[test]
+    fn qzss_flag_and_beidou_aodc_are_not_gps_fit_hours() {
+        for system in ["J01", "C01"] {
+            let parsed = read_navigation_with_metadata(Cursor::new(file(
+                system,
+                "3.04",
+                [Some(0.0), Some(1.0), None, None],
+            )))
+            .unwrap();
+            assert_eq!(parsed.records[0].last_record_fields[1], Some(1.0));
+            assert_eq!(parsed.records[0].gps_fit_interval_hours(), None);
+        }
+    }
+    #[test]
+    fn source_order_and_duplicate_identity_survive_sorting_and_selection() {
+        let mut text = file("G02", "3.04", [Some(-30.0), Some(4.0), None, None]);
+        for system in ["G01", "G02", "J01"] {
+            text.push_str(
+                &file(system, "3.04", [Some(0.0), Some(4.0), None, None])
+                    .lines()
+                    .skip(2)
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+            );
+            text.push('\n');
+        }
+        let parsed = read_navigation_with_metadata(Cursor::new(&text)).unwrap();
+        assert_eq!(
+            parsed
+                .records
+                .iter()
+                .map(|r| r.first_line)
+                .collect::<Vec<_>>(),
+            [3, 11, 19, 27]
+        );
+        assert_eq!(parsed.records[0].ephemeris.satellite.to_string(), "G02");
+        assert_eq!(
+            parsed
+                .navigation
+                .records()
+                .next()
+                .unwrap()
+                .satellite
+                .to_string(),
+            "G01"
+        );
+        assert_eq!(parsed.records[0].transmission_time_s(), Some(-30.0));
+        assert_eq!(parsed.records[2].transmission_time_s(), Some(0.0));
+        let selected = read_navigation_for_systems(Cursor::new(text), &[GnssSystem::Gps]).unwrap();
+        assert_eq!(selected.records.len(), 3);
+        assert_eq!(selected.excluded_records[0].first_line, 27);
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -690,6 +850,9 @@ pub struct ExcludedNavigationRecord {
 #[derive(Debug, Clone, PartialEq)]
 pub struct SelectedNavigation {
     pub navigation: NavigationData,
+    /// Selected Kepler records in original source order, including duplicates.
+    /// Each record owns its ephemeris so metadata cannot drift after sorting.
+    pub records: Vec<KeplerNavigationRecord>,
     /// Every record outside the explicitly selected systems, including raw data.
     pub excluded_records: Vec<ExcludedNavigationRecord>,
 }
@@ -720,12 +883,13 @@ pub fn read_navigation_for_systems<R: BufRead>(
             "navigation selection requires distinct supported systems",
         ));
     }
-    read_navigation_impl(reader, Some(systems))
+    read_navigation_impl(reader, Some(systems), true)
 }
 
 fn read_navigation_impl<R: BufRead>(
     reader: R,
     systems: Option<&[GnssSystem]>,
+    retain_metadata: bool,
 ) -> Result<SelectedNavigation, RinexError> {
     let mut input = Input {
         reader,
@@ -734,6 +898,7 @@ fn read_navigation_impl<R: BufRead>(
     };
     let header = read_header(&mut input, b'N')?;
     let mut navigation = NavigationData::default();
+    let mut records = Vec::new();
     let mut excluded_records = Vec::new();
     navigation.gps_ionosphere = header.gps_ionosphere_alpha.zip(header.gps_ionosphere_beta);
     while let Some((line, text)) = input.next_line()? {
@@ -856,12 +1021,21 @@ fn read_navigation_impl<R: BufRead>(
             data_source: unsigned_field(rows[4][1].unwrap_or(0.0), line + 5)?,
             accuracy_m: rows[5][0],
         };
+        if retain_metadata {
+            records.push(KeplerNavigationRecord {
+                first_line: line,
+                rinex_version: header.version,
+                ephemeris: eph.clone(),
+                last_record_fields: rows[6],
+            });
+        }
         navigation
             .add_ephemeris(eph)
             .map_err(|e| bad(line, e.to_string()))?;
     }
     Ok(SelectedNavigation {
         navigation,
+        records,
         excluded_records,
     })
 }

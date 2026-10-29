@@ -1,5 +1,16 @@
 # 最終目標: PPC-Datasetでlibgnss++と実用上同程度のRTK・PPP性能
 
+## 2026-10-29: 航法レコードのメタデータ保持
+
+`read_navigation_with_metadata` と選択読込みに、原本行番号・原本順・
+RINEX版・ORBIT-7の4値を保持するledgerを追加。重複も対応する暦とともに残す。
+GPS >=3.03のfit hoursを、QZSS flag・BeiDou AODC・旧GPSの曖昧な値と区別する。
+欠測/0、負の送信時刻、原本順と正規化順、衛星系選択を3テストで検証。
+旧 `read_navigation` の戻り値・暦選択・推定モデルは変更せず、追加ledgerを確保しない。
+送信時刻を受信機の到着時刻として推測しない。実用RTK/PPP未達・18/24は維持。
+欄の意味は [IGS RINEX 3.04 §6.11/6.13・Table A6/A12](https://files.igs.org/pub/data/format/rinex304.pdf)
+で確認。全テスト・fmt/clippy・release buildを検証し、元の数値回帰も維持する。
+
 ## 2026-10-29: RINEX入力の行長制限
 
 RINEX共通readerの1行をCR/LF込み16,384 bytesに制限し、改行のない巨大入力でも
